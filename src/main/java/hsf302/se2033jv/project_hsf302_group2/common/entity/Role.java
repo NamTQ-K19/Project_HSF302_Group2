@@ -1,4 +1,4 @@
-package hsf302.se2033jv.project_hsf302_group2.auth.entity;
+package hsf302.se2033jv.project_hsf302_group2.common.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

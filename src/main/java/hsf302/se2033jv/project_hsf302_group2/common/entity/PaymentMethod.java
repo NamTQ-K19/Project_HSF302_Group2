@@ -1,4 +1,4 @@
-package hsf302.se2033jv.project_hsf302_group2.payment.entity;
+package hsf302.se2033jv.project_hsf302_group2.common.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.List;
-import hsf302.se2033jv.project_hsf302_group2.reservation.entity.ReservationDeposit;
 
 /**
  * Entity class ánh xạ tới bảng 'payment_methods' trong database.

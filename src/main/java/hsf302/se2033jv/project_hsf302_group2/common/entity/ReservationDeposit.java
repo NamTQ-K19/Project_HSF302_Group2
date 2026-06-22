@@ -1,8 +1,7 @@
-package hsf302.se2033jv.project_hsf302_group2.reservation.entity;
+package hsf302.se2033jv.project_hsf302_group2.common.entity;
 
 import hsf302.se2033jv.project_hsf302_group2.common.enums.DepositPaymentStatus;
 import hsf302.se2033jv.project_hsf302_group2.common.enums.RefundStatus;
-import hsf302.se2033jv.project_hsf302_group2.payment.entity.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

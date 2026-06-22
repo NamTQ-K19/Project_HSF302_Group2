@@ -1,4 +1,4 @@
-package hsf302.se2033jv.project_hsf302_group2.catalog.entity;
+package hsf302.se2033jv.project_hsf302_group2.common.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -7,8 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
-import hsf302.se2033jv.project_hsf302_group2.ordering.entity.OrderDetail;
-import hsf302.se2033jv.project_hsf302_group2.customer.entity.Review;
 
 /**
  * Entity class ánh xạ tới bảng 'products' trong database.

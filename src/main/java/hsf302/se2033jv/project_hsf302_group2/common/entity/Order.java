@@ -1,17 +1,13 @@
-package hsf302.se2033jv.project_hsf302_group2.ordering.entity;
+package hsf302.se2033jv.project_hsf302_group2.common.entity;
 
-import hsf302.se2033jv.project_hsf302_group2.auth.entity.User;
 import hsf302.se2033jv.project_hsf302_group2.common.enums.OrderStatus;
 import hsf302.se2033jv.project_hsf302_group2.common.enums.OrderType;
-import hsf302.se2033jv.project_hsf302_group2.customer.entity.CustomerAddress;
-import hsf302.se2033jv.project_hsf302_group2.reservation.entity.CoffeeTable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.List;
-import hsf302.se2033jv.project_hsf302_group2.customer.entity.Review;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

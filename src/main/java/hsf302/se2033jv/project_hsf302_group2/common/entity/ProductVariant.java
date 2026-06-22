@@ -1,4 +1,4 @@
-package hsf302.se2033jv.project_hsf302_group2.catalog.entity;
+package hsf302.se2033jv.project_hsf302_group2.common.entity;
 
 import hsf302.se2033jv.project_hsf302_group2.common.enums.VariantSize;
 import hsf302.se2033jv.project_hsf302_group2.common.enums.VariantTemperature;
@@ -9,7 +9,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.util.List;
-import hsf302.se2033jv.project_hsf302_group2.ordering.entity.OrderDetail;
 
 /**
  * Entity class ánh xạ tới bảng 'product_variants' trong database.

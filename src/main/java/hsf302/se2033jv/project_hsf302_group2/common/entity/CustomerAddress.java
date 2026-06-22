@@ -1,6 +1,5 @@
-package hsf302.se2033jv.project_hsf302_group2.customer.entity;
+package hsf302.se2033jv.project_hsf302_group2.common.entity;
 
-import hsf302.se2033jv.project_hsf302_group2.auth.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
-import hsf302.se2033jv.project_hsf302_group2.ordering.entity.Order;
 
 /**
  * Entity ánh xạ tới bảng 'customer_addresses'

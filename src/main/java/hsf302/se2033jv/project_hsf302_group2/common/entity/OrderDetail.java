@@ -1,7 +1,5 @@
-package hsf302.se2033jv.project_hsf302_group2.ordering.entity;
+package hsf302.se2033jv.project_hsf302_group2.common.entity;
 
-import hsf302.se2033jv.project_hsf302_group2.catalog.entity.Product;
-import hsf302.se2033jv.project_hsf302_group2.catalog.entity.ProductVariant;
 import hsf302.se2033jv.project_hsf302_group2.common.enums.OrderItemStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
