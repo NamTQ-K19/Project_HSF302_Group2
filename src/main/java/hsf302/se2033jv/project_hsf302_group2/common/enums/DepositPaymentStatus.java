@@ -4,11 +4,11 @@ package hsf302.se2033jv.project_hsf302_group2.common.enums;
  * Enum đại diện cho trạng thái thanh toán của deposit
  */
 public enum DepositPaymentStatus {
-    PENDING("pending"),
-    PAID("paid"),
-    REFUNDED("refunded"),
-    CANCELLED("cancelled"),
-    FORFEITED("forfeited");
+    PENDING("PENDING"),
+    PAID("PAID"),
+    REFUNDED("REFUNDED"),
+    CANCELLED("CANCELLED"),
+    FORFEITED("FORFEITED");
 
     private final String value;
 

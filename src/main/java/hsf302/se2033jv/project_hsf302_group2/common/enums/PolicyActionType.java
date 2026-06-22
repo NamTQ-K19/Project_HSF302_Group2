@@ -4,9 +4,9 @@ package hsf302.se2033jv.project_hsf302_group2.common.enums;
  * Enum đại diện cho action_type trong policies
  */
 public enum PolicyActionType {
-    DISCOUNT("discount"),
-    ORDER("order"),
-    REVIEW("review");
+    DISCOUNT("DISCOUNT"),
+    ORDER("ORDER"),
+    REVIEW("REVIEW");
 
     private final String value;
 

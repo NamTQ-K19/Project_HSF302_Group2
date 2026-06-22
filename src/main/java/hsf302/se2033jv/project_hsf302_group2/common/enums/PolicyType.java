@@ -4,8 +4,8 @@ package hsf302.se2033jv.project_hsf302_group2.common.enums;
  * Enum đại diện cho policy_type trong policies
  */
 public enum PolicyType {
-    EARN("earn"),
-    REDEEM("redeem");
+    EARN("EARN"),
+    REDEEM("REDEEM");
 
     private final String value;
 
