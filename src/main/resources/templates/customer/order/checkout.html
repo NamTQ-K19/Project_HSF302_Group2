@@ -1,0 +1,535 @@
+<!-- src/main/resources/templates/customer/order/checkout.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh toán - BrewMaster</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link th:href="@{/css/customer/customer.css}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<header class="header">
+    <a href="/" class="header-logo">
+        <div class="header-logo-icon"><i class="fas fa-mug-hot"></i></div>
+        <span class="header-logo-text">Brew<span>Master</span></span>
+    </a>
+    <nav class="header-nav">
+        <a href="/menu"><i class="fas fa-utensils"></i><span>Menu</span></a>
+        <a href="/customer/cart"><i class="fas fa-shopping-cart"></i><span>Giỏ hàng</span></a>
+        <a href="/customer/orders/history"><i class="fas fa-history"></i><span>Lịch sử</span></a>
+        <div class="header-avatar"><i class="fas fa-user"></i></div>
+    </nav>
+</header>
+
+<main class="main">
+    <div class="steps">
+        <div class="step"><span class="num">1</span><span>Giỏ hàng</span></div>
+        <span class="step-line"></span>
+        <div class="step active"><span class="num">2</span><span>Thanh toán</span></div>
+        <span class="step-line"></span>
+        <div class="step"><span class="num">3</span><span>Xác nhận</span></div>
+    </div>
+
+    <div class="page-header">
+        <div class="page-header-left">
+            <h1><i class="fas fa-credit-card"></i>Thanh toán</h1>
+            <p>Hoàn tất đơn hàng của bạn</p>
+        </div>
+    </div>
+
+    <form id="checkoutForm">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card mb-4">
+                    <div class="card-header"><i class="fas fa-map-marker-alt"></i> Địa chỉ giao hàng</div>
+                    <div class="card-body">
+                        <div th:if="${addresses == null or addresses.isEmpty()}" class="text-center py-3">
+                            <p style="color: var(--text-muted);">Bạn chưa có địa chỉ giao hàng.</p>
+                            <a href="/customer/addresses/new" class="btn-primary" style="padding: 8px 20px; font-size: 14px;"><i class="fas fa-plus"></i> Thêm địa chỉ mới</a>
+                        </div>
+                        <div th:if="${addresses != null and !addresses.isEmpty()}">
+                            <div th:each="addr : ${addresses}" class="address-card">
+                                <label class="d-block" style="cursor: pointer;">
+                                    <input type="radio" name="deliveryAddressId" th:value="${addr.addressId}" th:checked="${addrStat.index == 0}" required>
+                                    <div class="ms-3">
+                                        <div>
+                                            <strong th:text="${addr.label}">Nhà</strong>
+                                            <p class="mb-0 text-muted small" th:text="${addr.fullAddress}">Địa chỉ</p>
+                                            <p class="mb-0 text-muted small"><i class="fas fa-user"></i> <span th:text="${addr.recipientName}">Người nhận</span> <i class="fas fa-phone ms-2"></i> <span th:text="${addr.recipientPhone}">SĐT</span></p>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header"><i class="fas fa-pen"></i> Ghi chú đơn hàng</div>
+                    <div class="card-body">
+                        <textarea class="form-control" id="orderNote" rows="3" placeholder="Ghi chú cho đơn hàng (ví dụ: giao giờ hành chính)" style="border-radius: var(--radius-md); border: 2px solid var(--brown-beige);"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="summary-card mb-4">
+                    <div style="font-weight: 600; font-size: 16px; margin-bottom: 16px; color: var(--text-dark);">
+                        <i class="fas fa-receipt" style="color: var(--brown-primary);"></i> Tóm tắt đơn hàng
+                    </div>
+                    <div class="summary-row">
+                        <span style="color: var(--text-muted);">Tạm tính</span>
+                        <span class="fw-bold" id="subtotal">0₫</span>
+                    </div>
+
+                    <div class="summary-row" id="discountRow" style="display: none;">
+                        <span style="color: var(--text-muted);">Giảm giá điểm</span>
+                        <span class="text-success" id="discountAmount">-0₫</span>
+                    </div>
+
+                    <div class="summary-row total">
+                        <span class="label">Tổng cộng</span>
+                        <span class="value" id="total">0₫</span>
+                    </div>
+
+                    <div class="points-discount-box">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="usePointsCheckbox">
+                                    <label class="form-check-label" for="usePointsCheckbox">
+                                        <i class="fas fa-gem" style="color: var(--brown-gold);"></i> Sử dụng điểm tích lũy
+                                    </label>
+                                </div>
+                                <div class="points-balance">
+                                    Bạn có <strong id="availablePoints">0</strong> điểm
+                                    (<span id="pointsValue">0₫</span>)
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <span class="badge" style="background: var(--brown-primary); color: white; font-size: 12px;">
+                                    1 điểm = 100đ
+                                </span>
+                            </div>
+                        </div>
+                        <div class="discount-info" id="discountInfo">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Sử dụng <strong id="usedPointsText">0</strong> điểm để giảm <span class="saving" id="savingAmount">0₫</span>
+                            <span id="remainingPointsText" style="color: var(--text-muted);"></span>
+                        </div>
+                    </div>
+
+                    <div class="text-muted small mt-2">
+                        <i class="fas fa-gem" style="color: var(--brown-gold);"></i>
+                        Bạn sẽ nhận được <strong id="pointsEarned">0</strong> điểm tích lũy cho đơn hàng này
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header"><i class="fas fa-wallet"></i> Phương thức thanh toán</div>
+                    <div class="card-body">
+                        <div th:each="method : ${paymentMethods}" class="payment-card">
+                            <label class="d-block" style="cursor: pointer;">
+                                <input type="radio" name="paymentMethodId" th:value="${method.paymentMethodId}" th:checked="${methodStat.index == 0}" required>
+                                <span class="ms-2" th:text="${method.name}">Tiền mặt</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary" id="placeOrderBtn" style="width: 100%; justify-content: center; padding: 14px; font-size: 16px;">
+                    <i class="fas fa-check-circle"></i> Đặt hàng
+                </button>
+                <a href="/customer/cart" class="btn-outline" style="width: 100%; justify-content: center; margin-top: 10px;"><i class="fas fa-arrow-left"></i> Quay lại giỏ hàng</a>
+                <div class="text-center text-muted small mt-3"><i class="fas fa-lock"></i> Thông tin được bảo mật</div>
+            </div>
+        </div>
+    </form>
+</main>
+
+<!-- TOAST BOTTOM RIGHT -->
+<div class="toast-container-bottom" id="toastContainer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.5/dist/sweetalert2.all.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // ==================== BIẾN TOÀN CỤC ====================
+        let subtotal = 0;
+        let availablePoints = 0;
+        let usePoints = false;
+        let discountFromPoints = 0;
+        const POINT_VALUE = 100;
+        let selectedItemIds = [];
+        let isLoading = false;
+
+        // ==================== LẤY ITEMS TỪ URL ====================
+        const urlParams = new URLSearchParams(window.location.search);
+        const itemsParam = urlParams.get('items');
+
+        console.log('Items param from URL:', itemsParam);
+
+        if (itemsParam && itemsParam.length > 0) {
+            try {
+                selectedItemIds = itemsParam.split(',').map(id => parseInt(id.trim()));
+                selectedItemIds = selectedItemIds.filter(id => !isNaN(id));
+                console.log('Selected items from URL:', selectedItemIds);
+
+                if (selectedItemIds.length > 0) {
+                    loadSelectedItems();
+                } else {
+                    loadCartData();
+                }
+            } catch(e) {
+                console.error('Error parsing items:', e);
+                loadCartData();
+            }
+        } else {
+            console.log('No items selected, loading full cart');
+            loadCartData();
+        }
+
+        // ==================== LOAD SELECTED ITEMS ====================
+        function loadSelectedItems() {
+            if (isLoading) return;
+            isLoading = true;
+
+            console.log('Loading selected items...', selectedItemIds);
+
+            $('#subtotal').text('Đang tải...');
+            $('#total').text('Đang tải...');
+
+            $.ajax({
+                url: '/customer/cart/selected-items',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(selectedItemIds),
+                timeout: 10000,
+                success: function(response) {
+                    isLoading = false;
+                    console.log('Selected items response:', response);
+
+                    if (response.success) {
+                        subtotal = response.total || 0;
+                        $('#subtotal').text(formatCurrency(subtotal));
+                        $('#total').text(formatCurrency(subtotal));
+
+                        if ($('#selectedCount').length > 0) {
+                            $('#selectedCount').text(response.count || 0);
+                        }
+
+                        loadLoyaltyPoints();
+
+                        const earnedPoints = Math.floor(subtotal / 10000);
+                        $('#pointsEarned').text(earnedPoints);
+
+                        calculateDiscount();
+                        showToast('Đã tải ' + (response.count || 0) + ' sản phẩm được chọn', 'success');
+                    } else {
+                        showToast((response.message || 'Không thể tải dữ liệu'), 'error');
+                        loadCartData();
+                    }
+                },
+                error: function(xhr) {
+                    isLoading = false;
+                    console.error('Error loading selected items:', xhr);
+
+                    let errorMsg = 'Không thể tải dữ liệu';
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.message) errorMsg = response.message;
+                    } catch(e) {}
+
+                    showToast(errorMsg + ', chuyển sang tải toàn bộ giỏ hàng', 'warning');
+
+                    setTimeout(function() {
+                        loadCartData();
+                    }, 500);
+                }
+            });
+        }
+
+        // ==================== LOAD CART DATA ====================
+        function loadCartData() {
+            if (isLoading) return;
+            isLoading = true;
+
+            console.log('Loading full cart data...');
+
+            $.ajax({
+                url: '/customer/cart/json',
+                type: 'GET',
+                timeout: 10000,
+                success: function(cart) {
+                    isLoading = false;
+                    console.log('Cart data:', cart);
+
+                    subtotal = cart.subtotal || 0;
+                    $('#subtotal').text(formatCurrency(subtotal));
+                    $('#total').text(formatCurrency(subtotal));
+
+                    availablePoints = cart.loyaltyPoints || 0;
+                    updatePointsDisplay();
+
+                    const earnedPoints = Math.floor(subtotal / 10000);
+                    $('#pointsEarned').text(earnedPoints);
+
+                    if ($('#selectedCount').length > 0) {
+                        $('#selectedCount').text(cart.totalItems || 0);
+                    }
+
+                    calculateDiscount();
+                    showToast('Đã tải toàn bộ giỏ hàng', 'success');
+                },
+                error: function(xhr) {
+                    isLoading = false;
+                    console.error('Error loading cart JSON:', xhr);
+                    loadCartDataFallback();
+                }
+            });
+        }
+
+        // ==================== LOAD CART DATA FALLBACK ====================
+        function loadCartDataFallback() {
+            console.log('Loading cart data fallback...');
+
+            $.ajax({
+                url: '/customer/cart',
+                type: 'GET',
+                timeout: 10000,
+                success: function(html) {
+                    const $html = $(html);
+                    const subtotalText = $html.find('.summary-row .fw-bold').first().text() || '0₫';
+                    subtotal = parseCurrency(subtotalText);
+                    $('#subtotal').text(formatCurrency(subtotal));
+                    $('#total').text(formatCurrency(subtotal));
+
+                    const pointsText = $html.find('.points-number').text() || '0';
+                    availablePoints = parseInt(pointsText) || 0;
+                    updatePointsDisplay();
+
+                    const earnedPoints = Math.floor(subtotal / 10000);
+                    $('#pointsEarned').text(earnedPoints);
+
+                    calculateDiscount();
+                },
+                error: function(xhr) {
+                    console.error('Error loading cart fallback:', xhr);
+                    showToast('Không thể tải dữ liệu giỏ hàng', 'error');
+
+                    $('#subtotal').text('0₫');
+                    $('#total').text('0₫');
+                    subtotal = 0;
+                    calculateDiscount();
+                }
+            });
+        }
+
+        // ==================== LOAD LOYALTY POINTS ====================
+        function loadLoyaltyPoints() {
+            $.ajax({
+                url: '/customer/cart/json',
+                type: 'GET',
+                timeout: 5000,
+                success: function(cart) {
+                    availablePoints = cart.loyaltyPoints || 0;
+                    updatePointsDisplay();
+                },
+                error: function() {
+                    availablePoints = 0;
+                    updatePointsDisplay();
+                }
+            });
+        }
+
+        // ==================== UPDATE POINTS DISPLAY ====================
+        function updatePointsDisplay() {
+            $('#availablePoints').text(availablePoints);
+            $('#pointsValue').text(formatCurrency(availablePoints * POINT_VALUE));
+        }
+
+        // ==================== CALCULATE DISCOUNT ====================
+        function calculateDiscount() {
+            if (usePoints && availablePoints > 0) {
+                let maxDiscount = subtotal * 0.5;
+                let maxPointsCanUse = Math.floor(maxDiscount / POINT_VALUE);
+                let pointsToUse = Math.min(availablePoints, maxPointsCanUse);
+                discountFromPoints = pointsToUse * POINT_VALUE;
+
+                $('#discountRow').show();
+                $('#discountAmount').text('- ' + formatCurrency(discountFromPoints));
+                $('#usedPointsText').text(pointsToUse);
+                $('#savingAmount').text(formatCurrency(discountFromPoints));
+                $('#remainingPointsText').text('(Còn ' + (availablePoints - pointsToUse) + ' điểm)');
+            } else {
+                discountFromPoints = 0;
+                $('#discountRow').hide();
+                $('#usedPointsText').text('0');
+                $('#savingAmount').text('0₫');
+                $('#remainingPointsText').text('');
+            }
+
+            let total = subtotal - discountFromPoints;
+            $('#total').text(formatCurrency(total));
+        }
+
+        // ==================== SELECT ADDRESS ====================
+        $('.address-card').click(function() {
+            $('.address-card').removeClass('selected');
+            $(this).addClass('selected');
+            $(this).find('input[type="radio"]').prop('checked', true);
+        });
+
+        // ==================== SELECT PAYMENT ====================
+        $('.payment-card').click(function() {
+            $('.payment-card').removeClass('selected');
+            $(this).addClass('selected');
+            $(this).find('input[type="radio"]').prop('checked', true);
+        });
+
+        // ==================== POINTS CHECKBOX ====================
+        $('#usePointsCheckbox').change(function() {
+            usePoints = $(this).is(':checked');
+            calculateDiscount();
+        });
+
+        // ==================== PARSE CURRENCY ====================
+        function parseCurrency(text) {
+            if (!text) return 0;
+            let cleaned = text.replace(/[^0-9.,]/g, '');
+            if (cleaned === '') return 0;
+            cleaned = cleaned.replace(/\./g, '');
+            cleaned = cleaned.replace(/,/g, '.');
+            return parseFloat(cleaned) || 0;
+        }
+
+        // ==================== FORMAT CURRENCY ====================
+        function formatCurrency(amount) {
+            if (amount === undefined || amount === null || isNaN(amount)) return '0₫';
+            const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+            if (isNaN(num)) return '0₫';
+            return new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(num);
+        }
+
+        // ==================== SELECT DEFAULT ====================
+        $('.address-card input[type="radio"]:checked').closest('.address-card').addClass('selected');
+        $('.payment-card input[type="radio"]:checked').closest('.payment-card').addClass('selected');
+
+        // ==================== SUBMIT FORM ====================
+        $('#checkoutForm').submit(function(e) {
+            e.preventDefault();
+            const btn = $('#placeOrderBtn');
+            const originalText = btn.html();
+
+            if (!$('input[name="deliveryAddressId"]:checked').length) {
+                showToast('Vui lòng chọn địa chỉ giao hàng', 'warning');
+                return false;
+            }
+
+            if (!$('input[name="paymentMethodId"]:checked').length) {
+                showToast('Vui lòng chọn phương thức thanh toán', 'warning');
+                return false;
+            }
+
+            btn.prop('disabled', true);
+            btn.html('<i class="fas fa-spinner fa-spin"></i> Đang xử lý...');
+
+            const request = {
+                deliveryAddressId: parseInt($('input[name="deliveryAddressId"]:checked').val()),
+                paymentMethodId: parseInt($('input[name="paymentMethodId"]:checked').val()),
+                note: $('#orderNote').val(),
+                usePoints: usePoints
+            };
+
+            if (selectedItemIds.length > 0) {
+                request.itemIds = selectedItemIds;
+            }
+
+            console.log('Placing order:', request);
+
+            $.ajax({
+                url: '/customer/orders/place',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(request),
+                success: function(response) {
+                    if (response.success && response.data) {
+                        window.location.href = '/customer/orders/confirmation/' + response.data.orderId;
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi!',
+                            text: response.message || 'Không thể đặt hàng'
+                        });
+                        btn.prop('disabled', false);
+                        btn.html(originalText);
+                    }
+                },
+                error: function(xhr) {
+                    btn.prop('disabled', false);
+                    btn.html(originalText);
+                    let errorMsg = 'Có lỗi xảy ra khi đặt hàng';
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.message) errorMsg = response.message;
+                    } catch(e) {}
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Đặt hàng thất bại',
+                        text: errorMsg
+                    });
+                }
+            });
+        });
+
+        // ==================== TOAST ====================
+        function showToast(message, type) {
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                warning: 'fa-exclamation-triangle',
+                info: 'fa-info-circle'
+            };
+
+            const toast = $(`
+            <div class="toast-item-bottom ${type}">
+                <i class="fas ${icons[type] || 'fa-info-circle'} icon"></i>
+                <span class="msg">${message}</span>
+                <button class="close" onclick="this.parentElement.remove()">&times;</button>
+            </div>
+        `);
+
+            $('#toastContainer').append(toast);
+            setTimeout(() => {
+                toast.fadeOut(300, () => toast.remove());
+            }, 3500);
+        }
+
+        // ==================== UPDATE CART BADGE ====================
+        function updateCartBadge() {
+            $.ajax({
+                url: '/customer/cart/count',
+                type: 'GET',
+                success: function(count) {
+                    $('#cartCount').text(count || 0);
+                    count > 0 ? $('#cartBadge').css('display', 'flex') : $('#cartBadge').hide();
+                }
+            });
+        }
+        updateCartBadge();
+
+        console.log('Checkout page loaded successfully!');
+        console.log('Selected items:', selectedItemIds);
+    });
+</script>
+</body>
+</html>

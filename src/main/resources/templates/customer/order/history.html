@@ -1,0 +1,366 @@
+<!-- src/main/resources/templates/customer/order/history.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch sử đơn hàng - BrewMaster</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link th:href="@{/css/customer/customer.css}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .order-card {
+            transition: var(--transition);
+            border-radius: var(--radius-lg);
+            margin-bottom: 16px;
+            border: 2px solid var(--brown-beige);
+            background: var(--white);
+        }
+        .order-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--brown-primary);
+        }
+        .status-badge {
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        .status-badge.PENDING { background: #fff3cd; color: #856404; }
+        .status-badge.CONFIRMED { background: #cce5ff; color: #004085; }
+        .status-badge.PREPARING { background: #d1ecf1; color: #0c5460; }
+        .status-badge.READY { background: #d4edda; color: #155724; }
+        .status-badge.COMPLETED { background: #d4edda; color: #155724; }
+        .status-badge.CANCELLED { background: #f8d7da; color: #721c24; }
+
+        .order-item-thumb {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            background: var(--bg-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .order-item-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* ✅ CĂN CHỈNH KÍCH THƯỚC NÚT ĐỒNG ĐỀU */
+        .btn-action {
+            border-radius: var(--radius-md);
+            padding: 4px 12px;
+            font-size: 12px;
+            white-space: nowrap;
+            min-width: 85px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            height: 40px;
+        }
+        .btn-action i {
+            font-size: 11px;
+        }
+
+        .btn-cancel-order-ajax {
+            background: #dc3545;
+            border: none;
+            color: white;
+            transition: var(--transition);
+        }
+        .btn-cancel-order-ajax:hover {
+            background: #c82333;
+            transform: translateY(-1px);
+        }
+        .btn-cancel-order-ajax:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-status-disabled {
+            border: none;
+            color: white;
+            cursor: default;
+        }
+        .btn-status-disabled.cancelled {
+            background: #6c757d;
+            opacity: 0.5;
+        }
+        .btn-status-disabled.completed {
+            background: #0a761b;
+            opacity: 0.7;
+            color: white;
+        }
+
+        .btn-view {
+            border: 2px solid var(--brown-primary);
+            color: var(--brown-primary);
+            background: transparent;
+        }
+        .btn-view:hover {
+            background: var(--brown-primary);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .action-group {
+            display: flex;
+            gap: 6px;
+            justify-content: flex-end;
+            align-items: center;
+            flex-wrap: nowrap;
+        }
+        @media (max-width: 768px) {
+            .action-group {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+<header class="header">
+    <a href="/" class="header-logo">
+        <div class="header-logo-icon"><i class="fas fa-mug-hot"></i></div>
+        <span class="header-logo-text">Brew<span>Master</span></span>
+    </a>
+    <nav class="header-nav">
+        <a href="/menu"><i class="fas fa-utensils"></i><span>Menu</span></a>
+        <a href="/customer/cart" class="header-cart">
+            <i class="fas fa-shopping-cart"></i><span>Giỏ hàng</span>
+            <span class="header-cart-badge" id="cartBadge"><span id="cartCount">0</span></span>
+        </a>
+        <a href="/customer/orders/history" class="active"><i class="fas fa-history"></i><span>Lịch sử</span></a>
+        <div class="header-avatar"><i class="fas fa-user"></i></div>
+    </nav>
+</header>
+
+<main class="main">
+    <div class="page-header">
+        <div class="page-header-left">
+            <h1><i class="fas fa-history"></i>Lịch sử đơn hàng</h1>
+            <p>Xem lại tất cả đơn hàng bạn đã đặt</p>
+        </div>
+        <a href="/menu" class="btn-primary"><i class="fas fa-plus"></i> Đặt hàng mới</a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form class="row g-3" method="GET" id="filterForm">
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">Trạng thái</label>
+                    <select class="form-select" name="status" style="border-radius: var(--radius-md); border: 2px solid var(--brown-beige);">
+                        <option value="">Tất cả</option>
+                        <option value="PENDING" th:selected="${selectedStatus == 'PENDING'}">Đang xử lý</option>
+                        <option value="CONFIRMED" th:selected="${selectedStatus == 'CONFIRMED'}">Đã xác nhận</option>
+                        <option value="PREPARING" th:selected="${selectedStatus == 'PREPARING'}">Đang chuẩn bị</option>
+                        <option value="READY" th:selected="${selectedStatus == 'READY'}">Sẵn sàng</option>
+                        <option value="COMPLETED" th:selected="${selectedStatus == 'COMPLETED'}">Hoàn thành</option>
+                        <option value="CANCELLED" th:selected="${selectedStatus == 'CANCELLED'}">Đã hủy</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">Từ ngày</label>
+                    <input type="date" class="form-control" name="startDate" th:value="${startDate}" style="border-radius: var(--radius-md); border: 2px solid var(--brown-beige);">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">Đến ngày</label>
+                    <input type="date" class="form-control" name="endDate" th:value="${endDate}" style="border-radius: var(--radius-md); border: 2px solid var(--brown-beige);">
+                </div>
+                <div class="col-md-3 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-filter flex-grow-1"><i class="fas fa-search me-2"></i> Lọc</button>
+                    <button type="button" class="btn btn-refresh" id="btnRefresh"><i class="fas fa-sync-alt"></i></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div th:if="${orders == null or orders.isEmpty()}" style="text-align: center; padding: 60px 0;">
+        <i class="fas fa-inbox" style="font-size: 64px; color: var(--text-light);"></i>
+        <h3 style="color: var(--text-muted); margin-top: 20px;">Chưa có đơn hàng nào</h3>
+        <p style="color: var(--text-muted);">Bắt đầu đặt hàng ngay hôm nay!</p>
+        <a href="/menu" class="btn-primary" style="margin-top: 16px;"><i class="fas fa-utensils"></i> Khám phá menu</a>
+    </div>
+
+    <div th:if="${orders != null and !orders.isEmpty()}">
+        <div th:each="order : ${orders.getContent()}" class="order-card card">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-3">
+                        <strong class="text-primary" th:text="${order.orderNumber}">#ORD-001</strong>
+                        <br><small class="text-muted"><i class="far fa-calendar-alt me-1"></i><span th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</span></small>
+                    </div>
+                    <div class="col-md-2">
+                        <span class="fw-bold" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT') + '₫'}">35.000₫</span>
+                        <br><small class="text-muted"><span th:text="${order.items.size()} + ' sản phẩm'">2 sản phẩm</span></small>
+                    </div>
+                    <div class="col-md-2">
+                        <span class="status-badge" th:class="${order.orderStatus}" th:text="${order.orderStatus}">PENDING</span>
+                        <br><small class="text-muted" th:text="${order.orderType}">ONLINE</small>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex gap-1">
+                            <div th:each="item : ${order.items}" class="order-item-thumb" th:if="${itemStat.index < 3}">
+                                <img th:src="${item.productImage != null ? item.productImage : '/images/default-product.png'}" alt="Product" onerror="this.style.display='none'">
+                            </div>
+                            <div th:if="${order.items.size() > 3}" class="order-item-thumb" style="background: var(--brown-beige); font-size: 12px; font-weight: 600; color: var(--text-muted);">
+                                +<span th:text="${order.items.size() - 3}">2</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="action-group">
+                            <a th:href="@{/customer/orders/detail/{id}(id=${order.orderId})}"
+                               class="btn btn-action btn-view">
+                                <i class="fas fa-eye"></i> Xem
+                            </a>
+
+                            <!-- NÚT HỦY - KHI PENDING HOẶC CONFIRMED -->
+                            <button th:if="${order.orderStatus == 'PENDING' or order.orderStatus == 'CONFIRMED'}"
+                                    class="btn btn-action btn-cancel-order-ajax"
+                                    data-order-id="${order.orderId}">
+                                <i class="fas fa-times"></i> Hủy
+                            </button>
+
+                            <!-- NÚT ĐÃ HỦY - KHI CANCELLED -->
+                            <button th:if="${order.orderStatus == 'CANCELLED'}"
+                                    class="btn btn-action btn-status-disabled cancelled"
+                                    disabled>
+                                <i class="fas fa-times"></i> Đã hủy
+                            </button>
+
+                            <!-- NÚT ĐÃ HOÀN THÀNH - KHI COMPLETED -->
+                            <button th:if="${order.orderStatus == 'COMPLETED'}"
+                                    class="btn btn-action btn-status-disabled completed"
+                                    disabled>
+                                <i class="fas fa-check-circle"></i> Hoàn Thành
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${totalPages > 1}" class="d-flex justify-content-center mt-4">
+            <nav><ul class="pagination">
+                <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
+                    <a class="page-link" th:href="@{/customer/orders/history(page=${currentPage - 1}, status=${selectedStatus}, startDate=${startDate}, endDate=${endDate})}"><i class="fas fa-chevron-left"></i></a>
+                </li>
+                <li th:each="page : ${#numbers.sequence(0, totalPages - 1)}" class="page-item" th:classappend="${page == currentPage ? 'active' : ''}">
+                    <a class="page-link" th:href="@{/customer/orders/history(page=${page}, status=${selectedStatus}, startDate=${startDate}, endDate=${endDate})}" th:text="${page + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
+                    <a class="page-link" th:href="@{/customer/orders/history(page=${currentPage + 1}, status=${selectedStatus}, startDate=${startDate}, endDate=${endDate})}"><i class="fas fa-chevron-right"></i></a>
+                </li>
+            </ul></nav>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.5/dist/sweetalert2.all.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // CANCEL ORDER - AJAX
+        $('.btn-cancel-order-ajax').on('click', function(e) {
+            e.preventDefault();
+            const orderId = $(this).data('order-id');
+            const btn = $(this);
+
+            if (!orderId) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi!',
+                    text: 'Không tìm thấy ID đơn hàng'
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: 'Hủy đơn hàng?',
+                text: 'Bạn có chắc muốn hủy đơn hàng này?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Hủy đơn hàng',
+                cancelButtonText: 'Không hủy',
+                input: 'text',
+                inputPlaceholder: 'Lý do hủy (không bắt buộc)'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const reason = result.value || '';
+
+                    btn.prop('disabled', true);
+                    btn.html('<i class="fas fa-spinner fa-spin"></i>');
+
+                    $.ajax({
+                        url: '/customer/orders/cancel/' + orderId,
+                        type: 'PUT',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ reason: reason }),
+                        success: function(response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Hủy đơn hàng thành công!',
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Lỗi!',
+                                    text: response.message || 'Không thể hủy đơn hàng'
+                                });
+                                btn.prop('disabled', false);
+                                btn.html('<i class="fas fa-times"></i> Hủy');
+                            }
+                        },
+                        error: function(xhr) {
+                            let errorMsg = 'Có lỗi xảy ra khi hủy đơn hàng';
+                            try {
+                                const response = JSON.parse(xhr.responseText);
+                                if (response.message) errorMsg = response.message;
+                            } catch(e) {}
+                            Swal.fire({ icon: 'error', title: 'Lỗi!', text: errorMsg });
+                            btn.prop('disabled', false);
+                            btn.html('<i class="fas fa-times"></i> Hủy');
+                        }
+                    });
+                }
+            });
+        });
+
+        $('#btnRefresh').click(function() {
+            $('#filterForm select[name="status"]').val('');
+            $('#filterForm input[name="startDate"]').val('');
+            $('#filterForm input[name="endDate"]').val('');
+            $('#filterForm').submit();
+        });
+
+        function updateCartBadge() {
+            $.ajax({
+                url: '/customer/cart/count',
+                type: 'GET',
+                success: function(count) {
+                    $('#cartCount').text(count || 0);
+                    count > 0 ? $('#cartBadge').css('display', 'flex') : $('#cartBadge').hide();
+                }
+            });
+        }
+        updateCartBadge();
+    });
+</script>
+</body>
+</html>

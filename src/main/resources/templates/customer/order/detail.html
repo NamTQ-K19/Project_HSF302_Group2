@@ -1,0 +1,466 @@
+<!-- src/main/resources/templates/customer/order/detail.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết đơn hàng - BrewMaster</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link th:href="@{/css/customer/customer.css}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .status-badge {
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        .status-badge.PENDING { background: #fff3cd; color: #856404; }
+        .status-badge.CONFIRMED { background: #cce5ff; color: #004085; }
+        .status-badge.PREPARING { background: #d1ecf1; color: #0c5460; }
+        .status-badge.READY { background: #d4edda; color: #155724; }
+        .status-badge.COMPLETED { background: #d4edda; color: #155724; }
+        .status-badge.CANCELLED { background: #f8d7da; color: #721c24; }
+
+        .detail-item {
+            border-bottom: 1px solid var(--brown-beige);
+            padding: 12px 0;
+        }
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+        .detail-item .thumb {
+            width: 50px;
+            height: 50px;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            background: var(--bg-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .detail-item .thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .item-status-badge {
+            font-size: 12px;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+        .item-status-badge.PENDING { background: #fff3cd; color: #856404; }
+        .item-status-badge.PREPARING { background: #d1ecf1; color: #0c5460; }
+        .item-status-badge.COMPLETED { background: #d4edda; color: #155724; }
+        .item-status-badge.CANCELLED { background: #f8d7da; color: #721c24; }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--brown-beige);
+        }
+        .timeline-item {
+            position: relative;
+            padding-bottom: 20px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -22px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--brown-beige);
+            border: 2px solid var(--white);
+        }
+        .timeline-item.active::before {
+            background: var(--brown-primary);
+        }
+        .timeline-item .time {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .summary-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            border: 2px solid var(--brown-beige);
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+        }
+        .summary-row.total {
+            border-top: 2px solid var(--brown-beige);
+            margin-top: 12px;
+            padding-top: 16px;
+        }
+        .summary-row.total .label {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+        .summary-row.total .value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--brown-primary);
+        }
+        .btn-review {
+            background: var(--brown-primary);
+            border: none;
+            color: var(--white);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            font-weight: 600;
+            transition: var(--transition);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-review:hover {
+            background: var(--brown-dark);
+            color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(107, 68, 35, 0.3);
+        }
+        .btn-review:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-review i {
+            font-size: 16px;
+        }
+        .btn-cancel-order-ajax {
+            border-radius: var(--radius-md);
+            padding: 12px;
+            width: 100%;
+            background: #dc3545;
+            border: none;
+            color: white;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+        .btn-cancel-order-ajax:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(220, 53, 69, 0.3);
+        }
+        .btn-cancel-order-ajax:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .reviewed-badge {
+            font-size: 11px;
+            padding: 2px 10px;
+            border-radius: 12px;
+        }
+        .reviewed-badge.done {
+            background: #d4edda;
+            color: #155724;
+        }
+        .reviewed-badge.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .fully-reviewed-alert {
+            border-radius: var(--radius-md);
+            border-left: 4px solid #28a745;
+            background: #d4edda;
+            color: #155724;
+            padding: 12px 16px;
+            margin-bottom: 0;
+        }
+        .fully-reviewed-alert i {
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+<header class="header">
+    <a href="/" class="header-logo">
+        <div class="header-logo-icon"><i class="fas fa-mug-hot"></i></div>
+        <span class="header-logo-text">Brew<span>Master</span></span>
+    </a>
+    <nav class="header-nav">
+        <a href="/menu"><i class="fas fa-utensils"></i><span>Menu</span></a>
+        <a href="/customer/cart" class="header-cart">
+            <i class="fas fa-shopping-cart"></i><span>Giỏ hàng</span>
+            <span class="header-cart-badge" id="cartBadge"><span id="cartCount">0</span></span>
+        </a>
+        <a href="/customer/orders/history" class="active"><i class="fas fa-history"></i><span>Lịch sử</span></a>
+        <div class="header-avatar"><i class="fas fa-user"></i></div>
+    </nav>
+</header>
+
+<main class="main">
+    <div class="page-header">
+        <div class="page-header-left">
+            <h1><i class="fas fa-file-invoice"></i>Chi tiết đơn hàng</h1>
+            <p th:text="${order.orderNumber}">#ORD-001</p>
+        </div>
+        <a href="/customer/orders/history" class="btn-outline"><i class="fas fa-arrow-left"></i> Quay lại</a>
+    </div>
+
+    <!-- ✅ HIỂN THỊ THÔNG BÁO KHI ĐÁNH GIÁ THÀNH CÔNG -->
+    <div th:if="${param.reviewed != null}" class="alert alert-success alert-dismissible fade show mb-4" role="alert" style="border-radius: var(--radius-md); border-left: 4px solid #28a745;">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-check-circle me-2" style="font-size: 20px; color: #28a745;"></i>
+            <div>
+                <strong>Đánh giá thành công!</strong> Cảm ơn bạn đã đánh giá sản phẩm.
+                <span class="ms-2 text-muted">Bạn đã nhận được 5 điểm tích lũy.</span>
+            </div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h5 class="mb-0" th:text="${order.orderNumber}">#ORD-001</h5>
+                            <small class="text-muted"><i class="far fa-calendar-alt me-1"></i><span th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</span></small>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <span class="status-badge" th:class="${order.orderStatus}" th:text="${order.orderStatus}">PENDING</span>
+                            <br><small class="text-muted" th:text="${order.orderType}">ONLINE</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header"><i class="fas fa-shopping-bag"></i> Sản phẩm</div>
+                <div class="card-body p-0">
+                    <div th:each="item : ${order.items}" class="detail-item d-flex align-items-center px-3">
+                        <div class="thumb me-3">
+                            <img th:src="${item.productImage != null ? item.productImage : '/images/default-product.png'}" alt="Product" onerror="this.style.display='none'">
+                        </div>
+                        <div class="flex-grow-1">
+                            <div>
+                                <strong th:text="${item.productName}">Product</strong>
+                                <span class="text-muted ms-2" th:text="${item.variantName}">Variant</span>
+                                <!-- ✅ BADGE ĐÃ ĐÁNH GIÁ / CHƯA ĐÁNH GIÁ -->
+                                <span th:if="${item.reviewed == true}" class="reviewed-badge done ms-2">
+                                    <i class="fas fa-check-circle me-1"></i> Đã đánh giá
+                                </span>
+                                <span th:if="${item.reviewed == false and order.orderStatus == 'COMPLETED'}" class="reviewed-badge pending ms-2">
+                                    <i class="fas fa-star me-1"></i> Chưa đánh giá
+                                </span>
+                            </div>
+                            <div><span class="text-muted" th:text="'x' + ${item.quantity} + ' - ' + ${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT') + '₫'}">x2 - 35.000₫</span></div>
+                            <div th:if="${item.specialNote != null}" class="text-warning small"><i class="fas fa-pen me-1"></i><span th:text="${item.specialNote}">Note</span></div>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-bold text-primary" th:text="${#numbers.formatDecimal(item.itemTotal, 0, 'COMMA', 0, 'POINT') + '₫'}">70.000₫</div>
+                            <span class="item-status-badge" th:class="${item.itemStatus}" th:text="${item.itemStatus}">PENDING</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header"><i class="fas fa-clock"></i> Trạng thái đơn hàng</div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item active"><div><strong>Đã đặt hàng</strong><div class="time" th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</div></div></div>
+                        <div th:if="${order.orderStatus == 'CONFIRMED' or order.orderStatus == 'PREPARING' or order.orderStatus == 'READY' or order.orderStatus == 'COMPLETED'}" class="timeline-item active">
+                            <div><strong>Đã xác nhận</strong><div class="time" th:text="${#temporals.format(order.updatedAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:15</div></div>
+                        </div>
+                        <div th:if="${order.orderStatus == 'PREPARING' or order.orderStatus == 'READY' or order.orderStatus == 'COMPLETED'}" class="timeline-item active">
+                            <div><strong>Đang chuẩn bị</strong><div class="time" th:text="${#temporals.format(order.updatedAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:30</div></div>
+                        </div>
+                        <div th:if="${order.orderStatus == 'READY' or order.orderStatus == 'COMPLETED'}" class="timeline-item active">
+                            <div><strong>Sẵn sàng</strong><div class="time" th:text="${#temporals.format(order.updatedAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:45</div></div>
+                        </div>
+                        <div th:if="${order.orderStatus == 'COMPLETED'}" class="timeline-item active">
+                            <div><strong>Hoàn thành</strong><div class="time" th:text="${#temporals.format(order.updatedAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 11:00</div></div>
+                        </div>
+                        <div th:if="${order.orderStatus == 'CANCELLED'}" class="timeline-item active">
+                            <div><strong>Đã hủy</strong><div class="time" th:text="${#temporals.format(order.updatedAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:20</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="summary-card mb-4">
+                <div style="font-weight: 600; font-size: 16px; margin-bottom: 16px; color: var(--text-dark);">
+                    <i class="fas fa-receipt" style="color: var(--brown-primary);"></i> Tóm tắt
+                </div>
+                <div class="summary-row"><span style="color: var(--text-muted);">Tạm tính</span><span th:text="${#numbers.formatDecimal(order.subtotal, 0, 'COMMA', 0, 'POINT') + '₫'}">35.000₫</span></div>
+                <div class="summary-row" th:if="${order.discountAmount != null and order.discountAmount.compareTo(0) > 0}">
+                    <span style="color: var(--text-muted);">Giảm giá</span><span class="text-success" th:text="'- ' + ${#numbers.formatDecimal(order.discountAmount, 0, 'COMMA', 0, 'POINT') + '₫'}">-5.000₫</span></div>
+                <div class="summary-row total"><span class="label">Tổng cộng</span><span class="value" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT') + '₫'}">35.000₫</span></div>
+                <div class="text-muted small mt-2"><i class="fas fa-gem text-warning me-1"></i> Nhận <span th:text="${order.pointsEarned}">0</span> điểm tích lũy</div>
+            </div>
+
+            <div class="card mb-4" th:if="${order.deliveryAddress != null}">
+                <div class="card-header"><i class="fas fa-map-marker-alt"></i> Địa chỉ giao hàng</div>
+                <div class="card-body">
+                    <p class="mb-1"><strong th:text="${order.deliveryAddress.label}">Nhà</strong></p>
+                    <p class="mb-1" th:text="${order.deliveryAddress.fullAddress}">Địa chỉ</p>
+                    <p class="mb-0"><span th:text="${order.deliveryAddress.recipientName}">Người nhận</span> <span class="mx-2">|</span> <span th:text="${order.deliveryAddress.recipientPhone}">SĐT</span></p>
+                </div>
+            </div>
+
+            <div class="card mb-4" th:if="${order.payment != null}">
+                <div class="card-header"><i class="fas fa-credit-card"></i> Thanh toán</div>
+                <div class="card-body">
+                    <p class="mb-1"><strong>Phương thức:</strong> <span th:text="${order.payment.paymentMethod}">Tiền mặt</span></p>
+                    <p class="mb-1"><strong>Mã giao dịch:</strong> <span th:text="${order.payment.transactionRef}">PAY-001</span></p>
+                    <p class="mb-0"><strong>Trạng thái:</strong>
+                        <span class="badge" th:class="${order.payment.paymentStatus == 'SUCCESS' ? 'bg-success' : 'bg-warning'}"
+                              th:text="${order.payment.paymentStatus}">PENDING</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- ===== ACTIONS ===== -->
+            <div class="d-grid gap-2">
+                <!-- NÚT HỦY ĐƠN HÀNG -->
+                <button th:if="${order.orderStatus == 'PENDING' or order.orderStatus == 'CONFIRMED'}"
+                        class="btn-cancel-order-ajax"
+                        th:data-order-id="${order.orderId}">
+                    <i class="fas fa-times me-2"></i> Hủy đơn hàng
+                </button>
+
+                <!-- ✅ NÚT ĐÁNH GIÁ - CHỈ HIỆN KHI COMPLETED -->
+                <div th:if="${order.orderStatus == 'COMPLETED'}">
+                    <!-- Nếu đã đánh giá hết -->
+                    <div th:if="${order.fullyReviewed == true}" class="fully-reviewed-alert">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Đã đánh giá tất cả sản phẩm!</strong>
+                        <br>
+                        <small>Cảm ơn bạn đã đánh giá sản phẩm.</small>
+                    </div>
+                    <!-- Nếu chưa đánh giá hết -->
+                    <a th:if="${order.fullyReviewed == false or order.fullyReviewed == null}"
+                       th:href="@{/customer/reviews/create(orderId=${order.orderId})}"
+                       class="btn-review">
+                        <i class="fas fa-star"></i> Đánh giá sản phẩm
+                    </a>
+                </div>
+
+                <!-- NÚT ĐẶT HÀNG MỚI -->
+                <a href="/menu" class="btn btn-outline" style="border-radius: var(--radius-md); padding: 12px; justify-content: center;">
+                    <i class="fas fa-utensils me-2"></i> Đặt hàng mới
+                </a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.5/dist/sweetalert2.all.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // CANCEL ORDER - AJAX
+        $('.btn-cancel-order-ajax').on('click', function(e) {
+            e.preventDefault();
+            const orderId = $(this).data('order-id');
+            const btn = $(this);
+
+            if (!orderId) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi!',
+                    text: 'Không tìm thấy ID đơn hàng'
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: 'Hủy đơn hàng?',
+                text: 'Bạn có chắc muốn hủy đơn hàng này?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Hủy đơn hàng',
+                cancelButtonText: 'Không hủy',
+                input: 'text',
+                inputPlaceholder: 'Lý do hủy (không bắt buộc)'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const reason = result.value || '';
+
+                    btn.prop('disabled', true);
+                    btn.html('<i class="fas fa-spinner fa-spin"></i> Đang xử lý...');
+
+                    $.ajax({
+                        url: '/customer/orders/cancel/' + orderId,
+                        type: 'PUT',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ reason: reason }),
+                        success: function(response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Hủy đơn hàng thành công!',
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Lỗi!',
+                                    text: response.message || 'Không thể hủy đơn hàng'
+                                });
+                                btn.prop('disabled', false);
+                                btn.html('<i class="fas fa-times me-2"></i> Hủy đơn hàng');
+                            }
+                        },
+                        error: function(xhr) {
+                            let errorMsg = 'Có lỗi xảy ra khi hủy đơn hàng';
+                            try {
+                                const response = JSON.parse(xhr.responseText);
+                                if (response.message) errorMsg = response.message;
+                            } catch(e) {}
+                            Swal.fire({ icon: 'error', title: 'Lỗi!', text: errorMsg });
+                            btn.prop('disabled', false);
+                            btn.html('<i class="fas fa-times me-2"></i> Hủy đơn hàng');
+                        }
+                    });
+                }
+            });
+        });
+
+        function updateCartBadge() {
+            $.ajax({
+                url: '/customer/cart/count',
+                type: 'GET',
+                success: function(count) {
+                    $('#cartCount').text(count || 0);
+                    count > 0 ? $('#cartBadge').css('display', 'flex') : $('#cartBadge').hide();
+                }
+            });
+        }
+        updateCartBadge();
+    });
+</script>
+</body>
+</html>
