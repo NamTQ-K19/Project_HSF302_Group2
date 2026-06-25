@@ -1,7 +1,7 @@
 package hsf302.se2033jv.project_hsf302_group2.catalog.service.impl;
 
 import hsf302.se2033jv.project_hsf302_group2.catalog.dto.ProductDetailDTO;
-import hsf302.se2033jv.project_hsf302_group2.catalog.repository.ProductRepository;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.ProductRepository;
 import hsf302.se2033jv.project_hsf302_group2.catalog.service.interfaces.IProductDetailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

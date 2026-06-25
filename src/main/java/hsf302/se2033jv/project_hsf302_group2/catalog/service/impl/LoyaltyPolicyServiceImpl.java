@@ -1,6 +1,6 @@
 package hsf302.se2033jv.project_hsf302_group2.catalog.service.impl;
 import hsf302.se2033jv.project_hsf302_group2.catalog.dto.PolicyDTO;
-import hsf302.se2033jv.project_hsf302_group2.catalog.repository.PolicyRepository;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.PolicyRepository;
 import hsf302.se2033jv.project_hsf302_group2.catalog.service.interfaces.ILoyaltyPolicyService;
 import hsf302.se2033jv.project_hsf302_group2.common.enums.PolicyType;
 import lombok.RequiredArgsConstructor;
