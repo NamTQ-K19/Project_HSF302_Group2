@@ -1,4 +1,3 @@
-// customer/repository/CustomerAddressRepository.java
 package hsf302.se2033jv.project_hsf302_group2.customer.repository;
 
 import hsf302.se2033jv.project_hsf302_group2.common.entity.CustomerAddress;
@@ -12,6 +11,12 @@ import java.util.Optional;
 public interface CustomerAddressRepository extends JpaRepository<CustomerAddress, Integer> {
 
     List<CustomerAddress> findByCustomer_UserId(Long userId);
+    List<CustomerAddress> findByCustomerUserIdOrderByCreatedAtDesc(Integer userId);
+
+    Optional<CustomerAddress> findByAddressIdAndCustomerUserId(Integer addressId, Integer userId);
 
     Optional<CustomerAddress> findByAddressIdAndCustomer_UserId(Integer addressId, Long userId);
+    boolean existsByCustomer_UserIdAndRecipientPhone(Integer customerId, String recipientPhone);
+
+    boolean existsByCustomer_UserIdAndRecipientPhoneAndAddressIdNot(Integer customerId, String recipientPhone, Integer addressId);
 }

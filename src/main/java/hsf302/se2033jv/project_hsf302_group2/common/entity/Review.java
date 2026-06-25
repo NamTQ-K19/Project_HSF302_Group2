@@ -3,8 +3,9 @@ package hsf302.se2033jv.project_hsf302_group2.common.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
@@ -14,7 +15,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "reviews",
        uniqueConstraints = @UniqueConstraint(columnNames = {"customer_id", "order_id", "product_id"}))
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -37,7 +39,7 @@ public class Review {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @Column(name = "rating", nullable = false)
+    @Column(name = "rating", nullable = false, columnDefinition = "TINYINT")
     private Integer rating;
 
     @Column(name = "comment", columnDefinition = "NVARCHAR(MAX)")

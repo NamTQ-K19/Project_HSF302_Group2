@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Xác Nhận Hủy Đặt Bàn – Cafe Shop</title>
+    <link th:href="@{/css/customer/profile.css}"       rel="stylesheet"/>
+    <link th:href="@{/css/reservation/reservation.css}" rel="stylesheet"/>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}"   class="alert alert-error"   th:text="${errorMessage}"></div>
+
+    <div class="cancel-layout">
+
+        <!-- ── Breadcrumb ──────────────────────────────────── -->
+        <div style="margin-bottom:16px; font-size:14px; color:var(--text-muted);">
+            <a th:href="@{/customer/reservations}">← Quay lại danh sách đặt bàn</a>
+        </div>
+
+        <!-- ── Card: Thông tin đặt bàn ───────────────────── -->
+        <div class="card">
+            <div class="card-header">
+                <span>🪑</span>
+                <h2>Thông Tin Đặt Bàn</h2>
+                <span th:text="${reservation.statusVi}"
+                      style="margin-left:auto;"
+                      th:class="${'badge badge-' + reservation.status.name().toLowerCase()}">
+                </span>
+            </div>
+            <div class="card-body" style="padding:0;">
+                <div class="info-grid">
+                    <div class="info-row">
+                        <span class="info-label">Mã đặt bàn</span>
+                        <span class="info-value"
+                              th:text="'#' + ${reservation.reservationId}"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Số khách</span>
+                        <span class="info-value"
+                              th:text="${reservation.partySize + ' người'}"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Ngày</span>
+                        <span class="info-value"
+                              th:text="${#temporals.format(reservation.reservationDate,'dd/MM/yyyy')}"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Giờ đến</span>
+                        <span class="info-value"
+                              th:text="${#temporals.format(reservation.reservationTime,'HH:mm')}"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Thời gian</span>
+                        <span class="info-value"
+                              th:text="${reservation.durationMinutes + ' phút'}"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Bàn số</span>
+                        <span class="info-value"
+                              th:text="${reservation.tableIds != null and not #lists.isEmpty(reservation.tableIds)
+                                        ? #strings.listJoin(reservation.tableIds, ', ') : '—'}"></span>
+                    </div>
+                    <div class="info-row" th:if="${reservation.depositAmount != null}">
+                        <span class="info-label">Số tiền cọc</span>
+                        <span class="info-value" style="color:var(--coffee-main); font-weight:700;"
+                              th:text="${#numbers.formatDecimal(reservation.depositAmount,0,'COMMA',0,'POINT') + ' đ'}"></span>
+                    </div>
+                    <div class="info-row" th:if="${reservation.depositStatusVi != null}">
+                        <span class="info-label">Trạng thái cọc</span>
+                        <span class="info-value" th:text="${reservation.depositStatusVi}"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Cảnh báo đặt cọc ───────────────────────────── -->
+        <div th:if="${reservation.depositStatus != null
+                     and reservation.depositStatus.name() == 'PAID'}"
+             class="warning-box">
+            <span class="warning-box-icon">⚠️</span>
+            <div>
+                <strong>Lưu ý về đặt cọc:</strong> Khoản đặt cọc
+                <strong th:text="${#numbers.formatDecimal(reservation.depositAmount,0,'COMMA',0,'POINT') + ' đ'}"></strong>
+                của bạn sẽ <strong>bị mất (không hoàn lại)</strong> vì bạn đã thanh toán cọc trước đó.
+                Nếu có thắc mắc, vui lòng liên hệ quán trước khi xác nhận hủy.
+            </div>
+        </div>
+
+        <div th:unless="${reservation.depositStatus != null
+                         and reservation.depositStatus.name() == 'PAID'}"
+             class="safe-box">
+            <span class="safe-box-icon">✅</span>
+            <div>
+                Đặt cọc của bạn chưa được thanh toán nên sẽ được
+                <strong>hủy tự động — bạn không mất tiền.</strong>
+            </div>
+        </div>
+
+        <!-- ── Card: Form hủy ─────────────────────────────── -->
+        <div class="card">
+            <div class="card-header">
+                <span>📝</span>
+                <h2>Xác Nhận Hủy Đặt Bàn</h2>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/customer/reservations/cancel}"
+                      method="post"
+                      th:object="${cancelForm}">
+                    <input type="hidden"
+                           th:name="${_csrf.parameterName}"
+                           th:value="${_csrf.token}"/>
+                    <input type="hidden"
+                           name="reservationId"
+                           th:value="${reservation.reservationId}"/>
+
+                    <div class="form-group">
+                        <label class="form-label" for="cancellationReason">
+                            Lý do hủy
+                            <span style="font-weight:400; color:var(--text-muted);">
+                                (không bắt buộc)
+                            </span>
+                        </label>
+                        <textarea id="cancellationReason"
+                                  name="cancellationReason"
+                                  th:field="*{cancellationReason}"
+                                  class="form-control"
+                                  th:classappend="${#fields.hasErrors('cancellationReason')} ? ' is-invalid'"
+                                  rows="3"
+                                  maxlength="500"
+                                  placeholder="Ví dụ: Tôi có việc bận đột xuất, không thể đến đúng giờ...">
+                        </textarea>
+                        <div th:if="${#fields.hasErrors('cancellationReason')}"
+                             class="form-error"
+                             th:errors="*{cancellationReason}"></div>
+                        <div class="form-hint">Tối đa 500 ký tự</div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit"
+                                id="btnConfirmCancel"
+                                class="btn btn-danger">
+                            🗑 Xác nhận hủy đặt bàn
+                        </button>
+                        <a th:href="@{/customer/reservations}"
+                           class="btn btn-secondary">
+                            ← Quay lại
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script th:src="@{/js/reservation/reservation.js}"></script>
+</body>
+</html>

@@ -1,1 +1,0 @@
-/* Hãy xóa class này nếu trong package cha của nó đã có file khác */

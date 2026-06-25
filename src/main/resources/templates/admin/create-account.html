@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${pageTitle} + ' - BrewMaster'">BrewMaster - Tạo tài khoản mới</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="/css/admin/create-account.css" />
+</head>
+<body>
+<div class="dashboard-grid">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon"><i class="fas fa-mug-hot"></i></div>
+            <span class="logo-text">BrewMaster</span>
+        </div>
+
+        <nav>
+            <div class="nav-label">CHÍNH</div>
+            <a th:href="@{/admin/dashboard}" class="nav-item" th:classappend="${currentPage == 'dashboard'} ? 'active' : ''">
+                <span class="nav-icon"><i class="fas fa-chart-pie"></i></span>
+                Tổng quan
+            </a>
+            <a th:href="@{/admin/accounts}" class="nav-item" th:classappend="${currentPage == 'accounts'} ? 'active' : ''">
+                <span class="nav-icon"><i class="fas fa-users"></i></span>
+                Người dùng
+            </a>
+
+            <div class="nav-divider"></div>
+
+            <div class="nav-label">HỆ THỐNG</div>
+            <a href="#" class="nav-item">
+                <span class="nav-icon"><i class="fas fa-history"></i></span>
+                Nhật ký hệ thống
+            </a>
+            <a href="#" class="nav-item">
+                <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                Cấu hình hệ thống
+            </a>
+
+            <!-- ===== LOGOUT BUTTON ===== -->
+            <div class="nav-divider"></div>
+
+            <form th:action="@{/logout}" method="post" class="logout-form">
+                <button type="submit" class="nav-item logout-btn">
+                    <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
+                    Đăng xuất
+                </button>
+            </form>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div>
+                <h1>Tạo tài khoản mới</h1>
+                <div style="font-size: 14px; color: #64748b; margin-top: 4px;">
+                    Tạo tài khoản nội bộ cho nhân viên hoặc quản lý
+                </div>
+            </div>
+            <div class="topbar-actions">
+                <span class="date">22 Tháng 6, 2026</span>
+                <a th:href="@{/admin/accounts}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </a>
+            </div>
+        </header>
+
+        <!-- Form Section -->
+        <div class="form-container">
+            <div class="form-card">
+                <div class="form-header">
+                    <h2><i class="fas fa-user-plus" style="color: #c8a882;"></i> Thông tin tài khoản</h2>
+                    <p>Vui lòng điền đầy đủ thông tin bên dưới. Mã OTP sẽ được gửi đến email của bạn để xác thực.</p>
+                </div>
+
+                <!-- FORM SUBMIT - KHÔNG DÙNG FETCH API -->
+                <form th:action="@{/admin/accounts/create}" th:object="${request}" method="post">
+                    <!-- Họ và Tên (2 cột) -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstName">
+                                Họ <span class="required">*</span>
+                            </label>
+                            <input type="text" id="firstName" name="firstName"
+                                   th:field="*{firstName}"
+                                   placeholder="Nhập họ" maxlength="100" required />
+                            <span class="error" id="firstNameError"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">
+                                Tên <span class="required">*</span>
+                            </label>
+                            <input type="text" id="lastName" name="lastName"
+                                   th:field="*{lastName}"
+                                   placeholder="Nhập tên" maxlength="100" required />
+                            <span class="error" id="lastNameError"></span>
+                        </div>
+                    </div>
+
+                    <!-- Username và Email (2 cột) -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="username">
+                                Tên đăng nhập <span class="required">*</span>
+                            </label>
+                            <input type="text" id="username" name="username"
+                                   th:field="*{username}"
+                                   placeholder="Nhập tên đăng nhập" maxlength="50" required />
+                            <span class="error" id="usernameError"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">
+                                Email <span class="required">*</span>
+                            </label>
+                            <input type="email" id="email" name="email"
+                                   th:field="*{email}"
+                                   placeholder="Nhập địa chỉ email" maxlength="150" required />
+                            <span class="error" id="emailError"></span>
+                        </div>
+                    </div>
+
+                    <!-- Số điện thoại và Vai trò (2 cột) -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="phone">
+                                Số điện thoại <span class="required">*</span>
+                            </label>
+                            <input type="tel" id="phone" name="phone"
+                                   th:field="*{phone}"
+                                   placeholder="Nhập số điện thoại" maxlength="20" required />
+                            <span class="error" id="phoneError"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="role">
+                                Vai trò <span class="required">*</span>
+                            </label>
+                            <select id="role" name="role" th:field="*{role}" required>
+                                <option value="">Chọn vai trò</option>
+                                <option value="ADMIN">Admin</option>
+                                <option value="MANAGER">Manager</option>
+                                <option value="CASHIER">Cashier</option>
+                                <option value="BARISTA">Barista</option>
+                            </select>
+                            <span class="error" id="roleError"></span>
+                        </div>
+                    </div>
+
+                    <div th:if="${error != null}" class="alert alert-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span th:text="${error}"></span>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-paper-plane"></i> Tạo tài khoản
+                        </button>
+                        <a th:href="@{/admin/accounts}" class="btn btn-secondary btn-lg">
+                            <i class="fas fa-times"></i> Hủy bỏ
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Thông tin hướng dẫn -->
+            <div class="info-box">
+                <div class="info-item">
+                    <i class="fas fa-info-circle" style="color: #c8a882;"></i>
+                    <div>
+                        <strong>Lưu ý:</strong>
+                        <p>Sau khi tạo tài khoản, hệ thống sẽ gửi mã OTP đến email của bạn. Vui lòng kiểm tra email và nhập mã OTP để hoàn tất quá trình tạo tài khoản.</p>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-clock" style="color: #f59e0b;"></i>
+                    <div>
+                        <strong>Thời gian hiệu lực OTP:</strong>
+                        <p>Mã OTP có hiệu lực trong vòng 5 phút. Nếu hết hạn, bạn có thể yêu cầu gửi lại mã mới.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="toast" style="display:none;">
+    <span id="toastMessage"></span>
+    <button id="toastClose">&times;</button>
+</div>
+
+<script src="/js/admin/create-account.js"></script>
+</body>
+</html>
