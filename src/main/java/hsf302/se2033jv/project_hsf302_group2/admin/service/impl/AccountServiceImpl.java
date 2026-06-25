@@ -272,6 +272,6 @@ public class AccountServiceImpl implements AccountService {
     }
 
     private String generateDefaultPassword() {
-        return "Default@123";
+        return "G123@123";
     }
 }
