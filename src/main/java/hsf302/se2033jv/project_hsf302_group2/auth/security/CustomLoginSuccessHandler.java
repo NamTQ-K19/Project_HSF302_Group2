@@ -9,7 +9,7 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import hsf302.se2033jv.project_hsf302_group2.auth.security.CustomUserDetails;
-import hsf302.se2033jv.project_hsf302_group2.auth.entity.User;
+import hsf302.se2033jv.project_hsf302_group2.common.entity.User;
 
 import java.io.IOException;
 import java.util.Collection;

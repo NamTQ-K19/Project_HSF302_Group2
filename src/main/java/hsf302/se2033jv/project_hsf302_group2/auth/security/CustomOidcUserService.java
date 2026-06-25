@@ -8,9 +8,8 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Service;
-import hsf302.se2033jv.project_hsf302_group2.auth.entity.User;
-import hsf302.se2033jv.project_hsf302_group2.auth.entity.Role;
-import hsf302.se2033jv.project_hsf302_group2.auth.repository.UserRepository;
+import hsf302.se2033jv.project_hsf302_group2.common.entity.*;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.UserRepository;
 import hsf302.se2033jv.project_hsf302_group2.auth.repository.RoleRepository;
 
 import java.util.Optional;

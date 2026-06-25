@@ -5,7 +5,7 @@ import hsf302.se2033jv.project_hsf302_group2.common.entity.ReservationDeposit;
 import hsf302.se2033jv.project_hsf302_group2.common.entity.User;
 import hsf302.se2033jv.project_hsf302_group2.common.enums.DepositPaymentStatus;
 import hsf302.se2033jv.project_hsf302_group2.common.enums.ReservationStatus;
-import hsf302.se2033jv.project_hsf302_group2.customer.repository.UserRepository;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.UserRepository;
 import hsf302.se2033jv.project_hsf302_group2.manager.dto.request.ReservationScheduleFilterRequest;
 import hsf302.se2033jv.project_hsf302_group2.manager.dto.response.ReservationScheduleResponse;
 import hsf302.se2033jv.project_hsf302_group2.manager.dto.response.ReservationStatsResponse;

@@ -1,6 +1,6 @@
 package hsf302.se2033jv.project_hsf302_group2.auth.service.interfaces;
 
-import hsf302.se2033jv.project_hsf302_group2.auth.entity.User;
+import hsf302.se2033jv.project_hsf302_group2.common.entity.User;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 

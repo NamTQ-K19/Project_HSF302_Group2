@@ -1,19 +1,20 @@
-package hsf302.se2033jv.project_hsf302_group2.customer.repository;
+package hsf302.se2033jv.project_hsf302_group2.common.repository;
 
-import hsf302.se2033jv.project_hsf302_group2.common.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
+import hsf302.se2033jv.project_hsf302_group2.common.entity.User;
 import java.util.Optional;
 
-@Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
+
+    User getUserByUserId(int userId);
+
+    Optional<User> findByUsername(String username);
 
     Optional<User> findByEmail(String email);
 
-    Optional<User> findByPhone(String phone);
+    User findByPhone(String phone);
 
-    Optional<User> findByUsername(String username);
+    boolean existsByEmailIgnoreCase(String email);
 
     boolean existsByEmailAndUserIdNot(String email, Integer userId);
 

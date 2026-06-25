@@ -4,9 +4,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import hsf302.se2033jv.project_hsf302_group2.auth.repository.UserRepository;
-
-import hsf302.se2033jv.project_hsf302_group2.auth.security.CustomUserDetails;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.UserRepository;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {

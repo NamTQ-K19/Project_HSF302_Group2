@@ -1,6 +1,6 @@
 package hsf302.se2033jv.project_hsf302_group2.auth.security;
 
-import hsf302.se2033jv.project_hsf302_group2.auth.entity.User;
+import hsf302.se2033jv.project_hsf302_group2.common.entity.User;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

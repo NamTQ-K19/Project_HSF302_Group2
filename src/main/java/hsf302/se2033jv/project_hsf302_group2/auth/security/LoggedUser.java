@@ -5,7 +5,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Component;
 import hsf302.se2033jv.project_hsf302_group2.auth.service.interfaces.UserService;
-import hsf302.se2033jv.project_hsf302_group2.auth.entity.User;
+import hsf302.se2033jv.project_hsf302_group2.common.entity.User;
 
 @Component
 public class LoggedUser {

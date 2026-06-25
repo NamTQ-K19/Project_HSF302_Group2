@@ -2,12 +2,11 @@ package hsf302.se2033jv.project_hsf302_group2.auth.service.implement;
 
 import hsf302.se2033jv.project_hsf302_group2.auth.service.interfaces.OtpService;
 import hsf302.se2033jv.project_hsf302_group2.auth.service.interfaces.PasswordService;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
-import hsf302.se2033jv.project_hsf302_group2.auth.entity.User;
-import hsf302.se2033jv.project_hsf302_group2.auth.repository.UserRepository;
+import hsf302.se2033jv.project_hsf302_group2.common.entity.User;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.UserRepository;
 
 @Service
 public class PasswordServiceImpl implements PasswordService {

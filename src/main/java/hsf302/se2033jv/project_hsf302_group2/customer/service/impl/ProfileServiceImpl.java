@@ -5,7 +5,7 @@ import hsf302.se2033jv.project_hsf302_group2.common.entity.User;
 import hsf302.se2033jv.project_hsf302_group2.customer.dto.request.AddressRequest;
 import hsf302.se2033jv.project_hsf302_group2.customer.dto.request.ProfileUpdateRequest;
 import hsf302.se2033jv.project_hsf302_group2.customer.repository.CustomerAddressRepository;
-import hsf302.se2033jv.project_hsf302_group2.customer.repository.UserRepository;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.UserRepository;
 import hsf302.se2033jv.project_hsf302_group2.customer.service.interfaces.ProfileService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
