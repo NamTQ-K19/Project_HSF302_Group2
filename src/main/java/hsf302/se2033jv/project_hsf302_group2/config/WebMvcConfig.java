@@ -3,6 +3,7 @@ package hsf302.se2033jv.project_hsf302_group2.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.nio.file.Path;
@@ -24,5 +25,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
         registry.addResourceHandler(avatarUrlPrefix + "/**")
                 .addResourceLocations("file:///" + absolutePath + "/");
+    }
+
+    @Override
+    public void addViewControllers(ViewControllerRegistry registry) {
+        registry.addRedirectViewController("/", "/home");
     }
 }

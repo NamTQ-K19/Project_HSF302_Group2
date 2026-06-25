@@ -101,7 +101,7 @@ img { max-width: 100%; display: block; }
     background: #fff; border-radius: var(--radius); box-shadow: var(--shadow-lg);
     min-width: 200px; padding: .4rem 0; z-index: 200;
 }
-.dropdown:hover .dropdown-menu { display: block; }
+dropdown:focus-within .dropdown-menu { display: block; }
 .dropdown-item { display: block; padding: .5rem 1rem; color: var(--text-dark); font-size: .9rem; }
 .dropdown-item:hover { background: var(--cream); text-decoration: none; }
 .dropdown-divider { border: none; border-top: 1px solid var(--border); margin: .3rem 0; }

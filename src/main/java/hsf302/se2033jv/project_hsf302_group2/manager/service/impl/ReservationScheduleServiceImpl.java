@@ -9,7 +9,7 @@ import hsf302.se2033jv.project_hsf302_group2.common.repository.UserRepository;
 import hsf302.se2033jv.project_hsf302_group2.manager.dto.request.ReservationScheduleFilterRequest;
 import hsf302.se2033jv.project_hsf302_group2.manager.dto.response.ReservationScheduleResponse;
 import hsf302.se2033jv.project_hsf302_group2.manager.dto.response.ReservationStatsResponse;
-import hsf302.se2033jv.project_hsf302_group2.manager.repository.ReservationScheduleRepository;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.ReservationScheduleRepository;
 import hsf302.se2033jv.project_hsf302_group2.manager.service.interfaces.ManagerEmailService;
 import hsf302.se2033jv.project_hsf302_group2.manager.service.interfaces.ReservationScheduleService;
 import lombok.RequiredArgsConstructor;

@@ -53,8 +53,10 @@ public class SecurityConfig {
                 .authenticationProvider(customerAuthenticationProvider())
                 .csrf(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login**", "/staff/login**", "/assets/**", "/css/**", "/images/**", "/js/**", "/forgot-password", "/product/**", "/product/{id}",
-                                "/set-password**", "/resend-otp", "/verify-email", "/register", "/home", "/login", "/uploads/**", "/api/banners", "/favicon.ico", "/webjars/**")
+                        .requestMatchers("/","/login**", "/staff/login**", "/assets/**", "/css/**", "/images/**",
+                                "/js/**", "/forgot-password", "/products/**", "/set-password**",
+                                "/resend-otp", "/verify-email", "/register", "/home", "/login", "/uploads/**",
+                                "/api/banners", "/favicon.ico", "/webjars/**", "/search", "/loyalty-policy")
                         .permitAll()
                         .requestMatchers("/customer/profile/**").authenticated()
                         .requestMatchers("/customer/points/**").authenticated()

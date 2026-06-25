@@ -1,4 +1,4 @@
-package hsf302.se2033jv.project_hsf302_group2.manager.repository;
+package hsf302.se2033jv.project_hsf302_group2.common.repository;
 
 import hsf302.se2033jv.project_hsf302_group2.common.entity.Reservation;
 import hsf302.se2033jv.project_hsf302_group2.common.enums.ReservationStatus;

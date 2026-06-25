@@ -1,4 +1,4 @@
-package hsf302.se2033jv.project_hsf302_group2.auth.service.implement;
+package hsf302.se2033jv.project_hsf302_group2.auth.service.impl;
 
 import hsf302.se2033jv.project_hsf302_group2.auth.service.interfaces.OtpService;
 import org.springframework.stereotype.Service;

@@ -2,12 +2,11 @@
 package hsf302.se2033jv.project_hsf302_group2.customer.controller;
 
 import hsf302.se2033jv.project_hsf302_group2.common.entity.CartItem;
-import hsf302.se2033jv.project_hsf302_group2.common.exception.BusinessException;
 import hsf302.se2033jv.project_hsf302_group2.common.util.SecurityUtils;
 import hsf302.se2033jv.project_hsf302_group2.customer.dto.request.AddToCartRequest;
 import hsf302.se2033jv.project_hsf302_group2.customer.dto.request.CartUpdateRequest;
 import hsf302.se2033jv.project_hsf302_group2.customer.dto.response.CartResponse;
-import hsf302.se2033jv.project_hsf302_group2.customer.repository.CartItemRepository;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.CartItemRepository;
 import hsf302.se2033jv.project_hsf302_group2.customer.service.interfaces.CustomerCartService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

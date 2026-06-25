@@ -44,7 +44,7 @@ public class CatalogController {
     /**
      * Landing page — accessed when user navigates to root URL (TRG-01).
      */
-    @GetMapping("/home")
+    @GetMapping({"/", "/home"})
     public String viewHomepage(Model model) {
         try {
             model.addAttribute("bestSellers", homepageService.getBestSellers());

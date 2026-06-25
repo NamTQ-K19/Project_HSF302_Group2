@@ -36,7 +36,7 @@
         <!-- Right section: nav links + Login/Register (Field #6 – UC_01) -->
         <div class="navbar-right">
             <!-- Product Categories (Field #4 – UC_01) -->
-            <div class="dropdown">
+            <div class="dropdown" tabindex="0">
                 <button class="nav-link dropdown-toggle">Menu ▾</button>
                 <div class="dropdown-menu">
                     <a th:href="@{/search}" class="dropdown-item">Tất cả sản phẩm</a>
@@ -54,7 +54,7 @@
             <!-- Login / Register (visible to anonymous visitors) -->
             <div sec:authorize="isAnonymous()" class="auth-buttons">
                 <a th:href="@{/auth/login}" class="btn btn-outline">Đăng nhập</a>
-                <a th:href="@{/auth/register}" class="btn btn-primary">Đăng ký</a>
+                <a th:href="@{/register}" class="btn btn-primary">Đăng ký</a>
             </div>
 
             <!-- Logged-in user menu -->
@@ -64,7 +64,9 @@
                     <span class="header-cart-badge" id="cartBadge"><span id="cartCount">0</span></span>
                 </a>
                 <span sec:authentication="name" class="user-name"></span>
-                <a th:href="@{/auth/logout}" class="btn btn-outline">Đăng xuất</a>
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="btn btn-outline">Đăng xuất</button>
+                </form>
             </div>
         </div>
 

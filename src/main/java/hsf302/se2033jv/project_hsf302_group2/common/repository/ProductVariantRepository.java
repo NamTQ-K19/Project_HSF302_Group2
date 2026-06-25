@@ -1,5 +1,5 @@
 // customer/repository/ProductVariantRepository.java
-package hsf302.se2033jv.project_hsf302_group2.customer.repository;
+package hsf302.se2033jv.project_hsf302_group2.common.repository;
 
 import hsf302.se2033jv.project_hsf302_group2.common.entity.ProductVariant;
 import org.springframework.data.jpa.repository.JpaRepository;
