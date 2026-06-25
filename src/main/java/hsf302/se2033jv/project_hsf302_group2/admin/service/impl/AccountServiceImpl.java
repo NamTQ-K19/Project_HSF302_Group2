@@ -10,8 +10,8 @@ import hsf302.se2033jv.project_hsf302_group2.admin.service.interfaces.EmailServi
 import hsf302.se2033jv.project_hsf302_group2.common.entity.Role;
 import hsf302.se2033jv.project_hsf302_group2.common.entity.User;
 import hsf302.se2033jv.project_hsf302_group2.common.exception.BusinessException;
-import hsf302.se2033jv.project_hsf302_group2.admin.repository.RoleRepository;
-import hsf302.se2033jv.project_hsf302_group2.admin.repository.UserRepository;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.RoleRepository;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.UserRepository;
 import hsf302.se2033jv.project_hsf302_group2.common.util.EmailUtil;
 import hsf302.se2033jv.project_hsf302_group2.common.util.OtpUtil;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +32,7 @@ public class AccountServiceImpl implements AccountService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
     private final OtpUtil otpUtil;
     private final EmailService emailService;
 

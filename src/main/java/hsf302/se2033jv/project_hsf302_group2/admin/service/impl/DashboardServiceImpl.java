@@ -4,9 +4,9 @@ import hsf302.se2033jv.project_hsf302_group2.admin.dto.response.ChartDataRespons
 import hsf302.se2033jv.project_hsf302_group2.admin.dto.response.DashboardStatsResponse;
 import hsf302.se2033jv.project_hsf302_group2.admin.dto.response.RoleStatsDTO;
 import hsf302.se2033jv.project_hsf302_group2.admin.dto.response.SystemLogDTO;
-import hsf302.se2033jv.project_hsf302_group2.admin.repository.OrderRepository;
-import hsf302.se2033jv.project_hsf302_group2.admin.repository.SystemLogRepository;
-import hsf302.se2033jv.project_hsf302_group2.admin.repository.UserRepository;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.OrderRepository;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.SystemLogRepository;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.UserRepository;
 import hsf302.se2033jv.project_hsf302_group2.admin.service.interfaces.DashboardService;
 import hsf302.se2033jv.project_hsf302_group2.common.entity.Order;
 import hsf302.se2033jv.project_hsf302_group2.common.entity.OrderDetail;

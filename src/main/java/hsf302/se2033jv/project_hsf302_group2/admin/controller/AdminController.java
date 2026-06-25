@@ -1,5 +1,3 @@
-// D:\SU26\HSF302\Practice\Project_HSF302_Group2\src\main\java\hsf302\se2033jv\project_hsf302_group2\admin\controller\AdminController.java
-
 package hsf302.se2033jv.project_hsf302_group2.admin.controller;
 
 import hsf302.se2033jv.project_hsf302_group2.admin.dto.request.AccountFilterRequest;
@@ -17,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +31,7 @@ import java.util.Map;
 @Slf4j
 @Controller
 @RequestMapping("/admin")
+@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 public class AdminController {
 

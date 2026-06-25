@@ -140,6 +140,56 @@ body {
     margin: 12px 16px;
 }
 
+/* ===== LOGOUT BUTTON ===== */
+.logout-form {
+    margin-top: 8px;
+    padding: 0 4px;
+}
+
+.logout-btn {
+    width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #d4c5b8;
+    padding: 10px 16px;
+    border-radius: 12px;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Inter', sans-serif;
+    position: relative;
+}
+
+.logout-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #f5ede4;
+}
+
+.logout-btn:hover .nav-icon {
+    color: #f5ede4;
+}
+
+.logout-btn .nav-icon {
+    width: 24px;
+    text-align: center;
+    font-size: 15px;
+    color: #a8897a;
+    transition: color 0.25s ease;
+}
+
+.logout-btn i {
+    font-size: 15px;
+}
+
+/* Đổi màu icon khi hover */
+.logout-btn:hover i {
+    color: #ef4444;
+}
+
 /* ===== MAIN CONTENT ===== */
 .main-content {
     display: flex;

@@ -55,7 +55,7 @@ public class User implements UserDetails {
     private String passwordHash;
 
     @Column(name = "status")
-    private boolean status;
+    private Boolean status;
 
     @Column(name = "avatar_url", length = 255)
     private String avatarUrl;
@@ -146,6 +146,10 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
+        return status;
+    }
+
+    public boolean isStatus() {
         return status;
     }
 }

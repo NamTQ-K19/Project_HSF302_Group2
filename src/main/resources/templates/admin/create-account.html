@@ -19,11 +19,11 @@
 
         <nav>
             <div class="nav-label">CHÍNH</div>
-            <a th:href="@{/admin/dashboard}" class="nav-item">
+            <a th:href="@{/admin/dashboard}" class="nav-item" th:classappend="${currentPage == 'dashboard'} ? 'active' : ''">
                 <span class="nav-icon"><i class="fas fa-chart-pie"></i></span>
                 Tổng quan
             </a>
-            <a th:href="@{/admin/accounts}" class="nav-item active">
+            <a th:href="@{/admin/accounts}" class="nav-item" th:classappend="${currentPage == 'accounts'} ? 'active' : ''">
                 <span class="nav-icon"><i class="fas fa-users"></i></span>
                 Người dùng
             </a>
@@ -39,6 +39,16 @@
                 <span class="nav-icon"><i class="fas fa-cog"></i></span>
                 Cấu hình hệ thống
             </a>
+
+            <!-- ===== LOGOUT BUTTON ===== -->
+            <div class="nav-divider"></div>
+
+            <form th:action="@{/logout}" method="post" class="logout-form">
+                <button type="submit" class="nav-item logout-btn">
+                    <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
+                    Đăng xuất
+                </button>
+            </form>
         </nav>
     </aside>
 

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import hsf302.se2033jv.project_hsf302_group2.common.entity.User;
 import hsf302.se2033jv.project_hsf302_group2.common.entity.Role;
 import hsf302.se2033jv.project_hsf302_group2.auth.service.interfaces.UserService;
-import hsf302.se2033jv.project_hsf302_group2.auth.repository.RoleRepository;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.RoleRepository;
 import hsf302.se2033jv.project_hsf302_group2.auth.service.interfaces.OtpService;
 import hsf302.se2033jv.project_hsf302_group2.auth.service.interfaces.PasswordService;
 

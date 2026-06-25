@@ -157,11 +157,54 @@ public class UserController {
     public String changePassword(@ModelAttribute(name = "user") User user, @RequestParam(value = "currentPassword") String currentPassword, @RequestParam(value = "newPassword") String newPassword, @RequestParam(value = "confirmPassword") String confirmPassword, Model model) {
         try {
             userService.changePassword(user.getUserId(), newPassword, confirmPassword, currentPassword);
-            return "redirect:/profile";
+            return "redirect:/customer/profile";
         } catch (IllegalArgumentException e) {
             model.addAttribute("errorMessage", e.getMessage());
             model.addAttribute("user", user);
             return "profile/changePassword";
+        }
+    }
+
+    // 1. Hiển thị form đổi mật khẩu cho Staff
+    @GetMapping("/staff/changePassword")
+    public String showChangePasswordStaff(Model model) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        // Chỉ cho phép STAFF hoặc ADMIN truy cập
+        if (!auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_STAFF")) &&
+                !auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+            return "redirect:/login";
+        }
+
+        // Lấy thông tin User đang đăng nhập (hàm getLoggedCustomer thực chất lấy User chung)
+        User user = loggedUser.getLoggedCustomer();
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        model.addAttribute("user", user);
+        // Trỏ tới file HTML giao diện của Staff (để giữ menu/header của Staff)
+        return "staff/changePassword";
+    }
+    // 2. Xử lý logic khi Staff bấm nút Đổi mật khẩu
+    @PostMapping("/staff/changePassword")
+    public String processChangePasswordStaff(@ModelAttribute(name = "user") User user,
+                                             @RequestParam(value = "currentPassword") String currentPassword,
+                                             @RequestParam(value = "newPassword") String newPassword,
+                                             @RequestParam(value = "confirmPassword") String confirmPassword,
+                                             Model model) {
+        try {
+            // Gọi hàm đổi mật khẩu ở tầng Service (tái sử dụng lại logic cũ)
+            userService.changePassword(user.getUserId(), newPassword, confirmPassword, currentPassword);
+
+            // Đổi thành công thì đá về trang dashboard hoặc trang chủ của Staff
+            return "redirect:/staff/dashboard";
+
+        } catch (IllegalArgumentException e) {
+            // Nếu có lỗi (sai mật khẩu cũ, mật khẩu mới không khớp,...)
+            model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("user", user);
+            return "staff/changePassword";
         }
     }
 }
