@@ -37,7 +37,7 @@ public class Review {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @Column(name = "rating", nullable = false)
+    @Column(name = "rating", nullable = false, columnDefinition = "TINYINT")
     private Integer rating;
 
     @Column(name = "comment", columnDefinition = "NVARCHAR(MAX)")

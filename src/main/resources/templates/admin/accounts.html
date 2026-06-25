@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BrewMaster - Quản lý người dùng</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="/css/admin/accounts.css" />
+</head>
+<body>
+<div class="dashboard-grid">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon"><i class="fas fa-mug-hot"></i></div>
+            <span class="logo-text">BrewMaster</span>
+        </div>
+
+        <nav>
+            <div class="nav-label">CHÍNH</div>
+            <a th:href="@{/admin/dashboard}" class="nav-item">
+                <span class="nav-icon"><i class="fas fa-chart-pie"></i></span>
+                Tổng quan
+            </a>
+            <a th:href="@{/admin/accounts}" class="nav-item active">
+                <span class="nav-icon"><i class="fas fa-users"></i></span>
+                Người dùng
+            </a>
+
+            <div class="nav-divider"></div>
+
+            <div class="nav-label">HỆ THỐNG</div>
+            <a href="#" class="nav-item">
+                <span class="nav-icon"><i class="fas fa-history"></i></span>
+                Nhật ký hệ thống
+            </a>
+            <a href="#" class="nav-item">
+                <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                Cấu hình hệ thống
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div>
+                <h1>Quản lý người dùng</h1>
+                <div style="font-size: 14px; color: #64748b; margin-top: 4px;">
+                    Quản lý tài khoản người dùng trong hệ thống
+                </div>
+            </div>
+            <div class="topbar-actions">
+                <span class="date">22 Tháng 6, 2026</span>
+                <a href="/admin/accounts/create" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Tạo mới
+                </a>
+            </div>
+        </header>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <form method="get" action="/admin/accounts">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>Vai trò</label>
+                        <select name="role">
+                            <option value="">Tất cả</option>
+                            <option value="ADMIN" th:selected="${filterRequest.role == 'ADMIN'}">Admin</option>
+                            <option value="MANAGER" th:selected="${filterRequest.role == 'MANAGER'}">Manager</option>
+                            <option value="CASHIER" th:selected="${filterRequest.role == 'CASHIER'}">Cashier</option>
+                            <option value="BARISTA" th:selected="${filterRequest.role == 'BARISTA'}">Barista</option>
+                            <option value="CUSTOMER" th:selected="${filterRequest.role == 'CUSTOMER'}">Customer</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Trạng thái</label>
+                        <select name="status">
+                            <option value="">Tất cả</option>
+                            <option value="ACTIVE" th:selected="${filterRequest.status == 'ACTIVE'}">Hoạt động</option>
+                            <option value="LOCKED" th:selected="${filterRequest.status == 'LOCKED'}">Đã khóa</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Tìm kiếm</label>
+                        <input type="text" name="keyword" placeholder="Tên hoặc email..." th:value="${filterRequest.keyword}" />
+                    </div>
+                    <div class="filter-group" style="flex-direction: row; gap: 8px; align-items: flex-end;">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Tìm kiếm
+                        </button>
+                        <a href="/admin/accounts" class="btn btn-secondary">
+                            <i class="fas fa-undo"></i> Đặt lại
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Table Section -->
+        <div class="table-section">
+            <div class="table-header">
+                <span>Tổng: <strong th:text="${totalElements != null ? totalElements : '0'}">0</strong> tài khoản</span>
+            </div>
+
+            <table class="account-table">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Họ tên</th>
+                    <th>Email</th>
+                    <th>Vai trò</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${accounts != null and !accounts.isEmpty()}" th:each="account, iter : ${accounts}">
+                    <td th:text="${iter.index + 1 + (currentPage * 10)}">1</td>
+                    <td th:text="${account.fullName}">Họ tên</td>
+                    <td th:text="${account.email}">Email</td>
+                    <td th:text="${account.role}">Vai trò</td>
+                    <td>
+                        <span class="status-badge"
+                              th:class="'status-badge ' + (${account.status == 'ACTIVE'} ? 'status-active' : 'status-locked')"
+                              th:text="${account.status == 'ACTIVE'} ? 'Hoạt động' : 'Khóa'">
+                            <!-- Đổi từ 'Đã khóa' thành 'Khóa' để ngắn hơn -->
+                        </span>
+                    </td>
+                    <td>
+                        <!-- Nút Xem -->
+                        <a th:href="'/admin/accounts/profile/' + ${account.userId}"
+                           class="btn-account-view">
+                            <i class="fas fa-eye"></i> Xem
+                        </a>
+
+                        <button class="btn-account-toggle"
+                                th:class="${account.status == 'ACTIVE'} ? 'btn-account-toggle btn-account-lock' : 'btn-account-toggle btn-account-unlock'"
+                                th:data-userid="${account.userId}"
+                                th:data-action="${account.status == 'ACTIVE'} ? 'lock' : 'unlock'"
+                                th:data-name="${account.fullName}"
+                                onclick="openConfirmModal(this)">
+                            <i th:class="${account.status == 'ACTIVE'} ? 'fas fa-lock' : 'fas fa-unlock'"></i>
+                            <span th:text="${account.status == 'ACTIVE'} ? ' Khóa' : ' Mở khóa'"></span>
+                        </button>
+                    </td>
+                </tr>
+                <tr th:if="${accounts == null or accounts.isEmpty()}">
+                    <td colspan="6" style="text-align:center; padding:40px; color:#94a3b8;">
+                        <i class="fas fa-users" style="font-size: 40px; display:block; margin-bottom:10px;"></i>
+                        Không tìm thấy tài khoản nào
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div class="pagination" th:if="${totalPages != null and totalPages > 1}">
+                <a th:href="'?page=' + ${currentPage - 1} + '&role=' + ${roleParam} + '&status=' + ${statusParam} + '&keyword=' + ${keywordParam}"
+                   class="btn btn-sm"
+                   th:classappend="${currentPage == 0} ? 'disabled' : ''">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+                <span>Trang <span th:text="${currentPage + 1}">1</span> / <span th:text="${totalPages}">1</span></span>
+                <a th:href="'?page=' + ${currentPage + 1} + '&role=' + ${roleParam} + '&status=' + ${statusParam} + '&keyword=' + ${keywordParam}"
+                   class="btn btn-sm"
+                   th:classappend="${currentPage >= totalPages - 1} ? 'disabled' : ''">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- ===== CONFIRMATION MODAL ===== -->
+<div id="confirmModal" class="modal-overlay" style="display:none;">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3 id="modalTitle">Xác nhận</h3>
+            <button class="modal-close" onclick="closeConfirmModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p id="modalMessage">Bạn có chắc chắn muốn thực hiện hành động này?</p>
+
+            <div class="modal-user-info" id="modalUserInfo" style="display:none;">
+                <span class="user-label">Người dùng:</span>
+                <span class="user-name" id="modalUserName">---</span>
+            </div>
+            <div class="modal-reason" id="modalReasonGroup" style="margin-top: 16px;">
+                <label for="modalReason" style="display: block; font-size: 14px; font-weight: 500; color: #475569; margin-bottom: 6px;">
+                    Lý do <span class="required">*</span>
+                </label>
+                <textarea id="modalReason"
+                          rows="3"
+                          placeholder="Nhập lý do cho hành động này..."
+                          style="width: 100%; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-family: inherit; resize: vertical; transition: all 0.25s ease; background: #faf8f6;"></textarea>
+                <span class="error" id="modalReasonError" style="color: #ef4444; font-size: 12px; display: block; margin-top: 4px;"></span>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeConfirmModal()">Hủy</button>
+            <button class="btn btn-confirm" id="modalConfirmBtn" onclick="confirmAction()">
+                <i class="fas fa-check"></i> Xác nhận
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="toast" style="display:none;">
+    <span id="toastMessage"></span>
+    <button id="toastClose">&times;</button>
+</div>
+
+<!-- Server Message -->
+<div id="serverMessage"
+     th:if="${message != null}"
+     th:data-message="${message}"
+     th:data-type="${messageType != null ? messageType : 'info'}"
+     style="display:none;"></div>
+
+<script src="/js/admin/accounts.js"></script>
+</body>
+</html>
