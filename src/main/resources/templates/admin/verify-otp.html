@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${pageTitle} + ' - BrewMaster'">BrewMaster - Xác thực OTP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="/css/admin/verify-otp.css" />
+</head>
+<body>
+<div class="dashboard-grid">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon"><i class="fas fa-mug-hot"></i></div>
+            <span class="logo-text">BrewMaster</span>
+        </div>
+
+        <nav>
+            <div class="nav-label">CHÍNH</div>
+            <a th:href="@{/admin/dashboard}" class="nav-item">
+                <span class="nav-icon"><i class="fas fa-chart-pie"></i></span>
+                Tổng quan
+            </a>
+            <a th:href="@{/admin/accounts}" class="nav-item active">
+                <span class="nav-icon"><i class="fas fa-users"></i></span>
+                Người dùng
+            </a>
+
+            <div class="nav-divider"></div>
+
+            <div class="nav-label">HỆ THỐNG</div>
+            <a href="#" class="nav-item">
+                <span class="nav-icon"><i class="fas fa-history"></i></span>
+                Nhật ký hệ thống
+            </a>
+            <a href="#" class="nav-item">
+                <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                Cấu hình hệ thống
+            </a>
+        </nav>
+    </aside>
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div>
+                <h1>Xác thực OTP</h1>
+                <div style="font-size: 14px; color: #64748b; margin-top: 4px;">
+                    Nhập mã OTP để hoàn tất tạo tài khoản
+                </div>
+            </div>
+            <div class="topbar-actions">
+                <span class="date">22 Tháng 6, 2026</span>
+                <a th:href="@{/admin/accounts}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </a>
+            </div>
+        </header>
+
+        <!-- ===== ALERT CONTAINER - KẾT QUẢ TỪ SERVER ===== -->
+        <div id="resultContainer">
+        </div>
+
+        <!-- OTP Form -->
+        <div class="otp-container">
+            <div class="otp-card">
+                <div class="otp-header">
+                    <div class="otp-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <h2>Kiểm tra email của bạn</h2>
+                    <p>Chúng tôi đã gửi mã xác thực đến</p>
+                    <div class="email-display">
+                        <i class="fas fa-envelope"></i>
+                        <span th:text="${adminEmail}">admin@brewmaster.com</span>
+                    </div>
+                    <p style="font-size: 13px; color: #94a3b8; margin-top: 8px;">
+                        <i class="fas fa-info-circle"></i>
+                        Đây là email của quản trị viên nhận mã OTP
+                    </p>
+                </div>
+
+                <form id="otpForm" method="post">
+                    <input type="hidden" name="email" th:value="${email}" />
+
+                    <div class="otp-input-group">
+                        <label for="otpCode">Mã OTP <span class="required">*</span></label>
+                        <div class="otp-input-wrapper">
+                            <input type="text" id="otpCode" name="otpCode"
+                                   maxlength="6" placeholder="Nhập mã 6 chữ số"
+                                   autocomplete="off" required />
+                            <button type="button" id="pasteBtn" class="btn-paste" title="Dán từ clipboard">
+                                <i class="fas fa-paste"></i>
+                            </button>
+                        </div>
+                        <span class="error" id="otpError"></span>
+                    </div>
+
+                    <div class="otp-timer">
+                        <i class="fas fa-clock"></i>
+                        <span>Mã OTP có hiệu lực trong: </span>
+                        <span class="timer" id="timer">05:00</span>
+                    </div>
+
+                    <div class="otp-actions">
+                        <button type="button" class="btn btn-primary btn-lg" id="verifyBtn">
+                            <i class="fas fa-check-circle"></i> Xác thực
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-lg" id="resendBtn" disabled>
+                            <i class="fas fa-clock"></i> Chờ hết thời gian
+                        </button>
+                    </div>
+
+                    <div class="otp-help">
+                        <a th:href="@{/admin/accounts/create}" class="help-link">
+                            <i class="fas fa-arrow-left"></i> Quay lại tạo tài khoản
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Hướng dẫn -->
+            <div class="info-box">
+                <div class="info-item">
+                    <i class="fas fa-info-circle" style="color: #c8a882;"></i>
+                    <div>
+                        <strong>Không nhận được mã OTP?</strong>
+                        <p>Vui lòng kiểm tra hộp thư Spam/Junk hoặc nhấn "Gửi lại mã" để nhận mã mới.</p>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-shield-alt" style="color: #22c55e;"></i>
+                    <div>
+                        <strong>Bảo mật</strong>
+                        <p>Mã OTP chỉ có hiệu lực trong 5 phút và chỉ được sử dụng một lần.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="toast" style="display:none;">
+    <span id="toastMessage"></span>
+    <button id="toastClose">&times;</button>
+</div>
+
+<!-- Server Message -->
+<div id="serverMessage"
+     th:if="${message != null}"
+     th:data-message="${message}"
+     th:data-type="${messageType != null ? messageType : 'info'}"
+     style="display:none;"></div>
+
+<script src="/js/admin/verify-otp.js"></script>
+</body>
+</html>

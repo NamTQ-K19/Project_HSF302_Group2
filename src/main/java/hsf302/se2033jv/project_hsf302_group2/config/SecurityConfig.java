@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -53,7 +54,7 @@ public class SecurityConfig {
                 .csrf(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login**", "/staff/login**", "/assets/**", "/css/**", "/images/**", "/js/**", "/forgot-password", "/product/**", "/product/{id}",
-                                "/set-password**", "/resend-otp", "/verify-email", "/register", "/home", "/login", "/uploads/**", "/api/banners")
+                                "/set-password**", "/resend-otp", "/verify-email", "/register", "/home", "/login", "/uploads/**", "/api/banners", "/favicon.ico", "/webjars/**")
                         .permitAll()
                         .requestMatchers("/customer/profile/**").authenticated()
                         .requestMatchers("/customer/points/**").authenticated()
