@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Chính sách tích điểm – Café Aroma</title>
+    <link rel="stylesheet" th:href="@{/css/catalog/main.css}" />
+</head>
+<body>
+
+<div th:replace="~{catalog/navbar :: navbar}"></div>
+
+<main class="page-main">
+    <div class="section-container">
+
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb" aria-label="breadcrumb">
+            <a th:href="@{/}">Trang chủ</a>
+            <span class="breadcrumb-sep">›</span>
+            <span aria-current="page">Chính sách tích điểm</span>
+        </nav>
+
+        <!-- ============================================================
+             Field #1: Page Title (UC_04 screen def)
+             ============================================================ -->
+        <div class="policy-page-header">
+            <h1 class="policy-page-title">🏅 Chính sách tích điểm & ưu đãi</h1>
+            <p class="policy-subtitle">
+                Tham gia chương trình thành viên Café Aroma – tích điểm mỗi lần mua hàng,
+                đổi điểm lấy quà và ưu đãi độc quyền.
+            </p>
+        </div>
+
+        <!-- ============================================================
+             Field #2: Policy Content – Earn Policies
+             ============================================================ -->
+        <section class="policy-section">
+            <h2 class="policy-section-title">
+                <span class="policy-icon">📈</span>
+                Cách tích điểm (EARN)
+            </h2>
+            <p class="policy-section-desc">
+                Điểm được cộng tự động vào tài khoản sau khi hoàn tất các hành động sau:
+            </p>
+
+            <div class="policy-grid" th:if="${not #lists.isEmpty(earnPolicies)}">
+                <div th:each="policy : ${earnPolicies}" class="policy-card earn-card">
+                    <div class="policy-card-header">
+                        <span class="policy-action-icon"
+                              th:text="${policy.actionType == 'ORDER'} ? '🛒' :
+                                       (${policy.actionType == 'REVIEW'} ? '⭐' : '🎁')">
+                        </span>
+                        <h3 class="policy-name" th:text="${policy.policyName}">Policy Name</h3>
+                        <span class="policy-badge earn">EARN</span>
+                    </div>
+
+                    <div class="policy-value-row">
+                        <span class="policy-value"
+                              th:text="${#numbers.formatDecimal(policy.currencyValue, 0, 'COMMA', 0, 'POINT')}">
+                        </span>
+                        <span class="policy-unit" th:text="${policy.unit}">unit</span>
+                    </div>
+
+                    <p class="policy-comment"
+                       th:if="${policy.comment}"
+                       th:text="${policy.comment}">Comment</p>
+
+                    <div class="policy-meta">
+                        <span class="policy-action-tag"
+                              th:text="${policy.actionType == 'ORDER'} ? 'Mua hàng' :
+                                       (${policy.actionType == 'REVIEW'} ? 'Đánh giá sản phẩm' : 'Khác')">
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <p class="empty-policy" th:if="${#lists.isEmpty(earnPolicies)}">
+                Chưa có chính sách tích điểm nào được công bố.
+            </p>
+        </section>
+
+        <!-- ============================================================
+             Field #2: Policy Content – Redeem Policies
+             ============================================================ -->
+        <section class="policy-section">
+            <h2 class="policy-section-title">
+                <span class="policy-icon">🎁</span>
+                Cách đổi điểm (REDEEM)
+            </h2>
+            <p class="policy-section-desc">
+                Dùng điểm tích lũy để đổi ưu đãi, giảm giá hoặc đồ uống miễn phí:
+            </p>
+
+            <div class="policy-grid" th:if="${not #lists.isEmpty(redeemPolicies)}">
+                <div th:each="policy : ${redeemPolicies}" class="policy-card redeem-card">
+                    <div class="policy-card-header">
+                        <span class="policy-action-icon"
+                              th:text="${policy.actionType == 'DISCOUNT'} ? '💰' :
+                                       (${policy.actionType == 'ORDER'} ? '☕' : '🎁')">
+                        </span>
+                        <h3 class="policy-name" th:text="${policy.policyName}">Policy Name</h3>
+                        <span class="policy-badge redeem">REDEEM</span>
+                    </div>
+
+                    <div class="policy-value-row">
+                        <span class="policy-value"
+                              th:text="${policy.unit != null and #strings.contains(policy.unit,'%')}
+                                       ? ${#numbers.formatDecimal(policy.currencyValue, 0, 'COMMA', 0, 'POINT')} + '%'
+                                       : ${#numbers.formatDecimal(policy.currencyValue, 0, 'COMMA', 0, 'POINT')}">
+                        </span>
+                        <span class="policy-unit"
+                              th:unless="${policy.unit != null and #strings.contains(policy.unit,'%')}"
+                              th:text="${policy.unit}">unit</span>
+                    </div>
+
+                    <p class="policy-comment"
+                       th:if="${policy.comment}"
+                       th:text="${policy.comment}">Comment</p>
+
+                    <div class="policy-meta">
+                        <span class="policy-action-tag"
+                              th:text="${policy.actionType == 'DISCOUNT'} ? 'Giảm giá' :
+                                       (${policy.actionType == 'ORDER'} ? 'Đổi món' : 'Khác')">
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <p class="empty-policy" th:if="${#lists.isEmpty(redeemPolicies)}">
+                Chưa có chính sách đổi điểm nào được công bố.
+            </p>
+        </section>
+
+        <!-- ============================================================
+             How it works – step by step
+             ============================================================ -->
+        <section class="how-it-works">
+            <h2 class="policy-section-title">Cách thức hoạt động</h2>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-num">1</div>
+                    <h3>Đăng ký tài khoản</h3>
+                    <p>Tạo tài khoản miễn phí tại Café Aroma để bắt đầu tích điểm.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">2</div>
+                    <h3>Mua hàng & tích điểm</h3>
+                    <p>Mỗi 100.000₫ chi tiêu = 10 điểm. Điểm cộng ngay sau khi đơn hàng hoàn tất.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">3</div>
+                    <h3>Đổi điểm lấy ưu đãi</h3>
+                    <p>Dùng điểm để giảm giá hóa đơn, đổi đồ uống hoặc nhận quà đặc biệt.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">4</div>
+                    <h3>Nhận ưu đãi sinh nhật</h3>
+                    <p>Tự động giảm 20% cho tất cả đơn hàng trong tháng sinh nhật của bạn.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================
+             Field #3: Register Now CTA button (UC_04 screen def)
+             ============================================================ -->
+        <div class="policy-cta" sec:authorize="isAnonymous()">
+            <h2>Sẵn sàng bắt đầu tích điểm?</h2>
+            <p>Đăng ký ngay hôm nay và nhận ngay ưu đãi chào mừng thành viên mới!</p>
+            <div class="cta-buttons">
+                <!-- Field #3: "Register Now" button -->
+                <a th:href="@{/auth/register}" class="btn btn-primary btn-xl">
+                    🎉 Đăng ký ngay
+                </a>
+                <a th:href="@{/auth/login}" class="btn btn-outline btn-xl">
+                    Đăng nhập
+                </a>
+            </div>
+        </div>
+
+        <!-- Message for logged-in members -->
+        <div class="policy-cta policy-cta-member" sec:authorize="isAuthenticated()">
+            <h2>Bạn đã là thành viên! 🎊</h2>
+            <p>Tiếp tục mua hàng để tích thêm điểm và nhận nhiều ưu đãi hơn.</p>
+            <a th:href="@{/search}" class="btn btn-primary btn-xl">
+                ☕ Đặt hàng ngay
+            </a>
+        </div>
+
+    </div>
+</main>
+
+<div th:replace="~{catalog/footer :: footer}"></div>
+
+</body>
+</html>

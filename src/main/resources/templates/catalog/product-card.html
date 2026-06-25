@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<!--
+    Fragment: product-card
+    Accepts a single `product` (ProductCardDTO) via th:object.
+    Reused by Homepage and Search Results — OCP in templates.
+-->
+<div th:fragment="productCard(product)" class="product-card">
+    <a th:href="@{/products/{id}(id=${product.productId})}" class="product-card-link">
+        <div class="product-img-wrap">
+            <img th:src="@{${product.primaryImageUrl}}"
+                 th:alt="${product.name}"
+                 class="product-img"
+                 loading="lazy"
+                 onerror="this.src='/img/products/placeholder.jpg'"/>
+            <span class="category-badge" th:text="${product.categoryName}">Category</span>
+        </div>
+
+        <div class="product-card-body">
+            <h3 class="product-name" th:text="${product.name}">Product Name</h3>
+
+            <!-- Rating stars -->
+            <div class="rating-row" th:if="${product.reviewCount > 0}">
+                <div class="stars">
+                    <span th:each="i : ${#numbers.sequence(1,5)}"
+                          th:class="${i <= product.averageRating} ? 'star filled' : 'star'">★</span>
+                </div>
+                <span class="review-count"
+                      th:text="'(' + ${product.reviewCount} + ' đánh giá)'"></span>
+            </div>
+            <div class="rating-row" th:unless="${product.reviewCount > 0}">
+                <span class="no-review">Chưa có đánh giá</span>
+            </div>
+
+            <!-- Price -->
+            <div class="price-row">
+                <span class="price"
+                      th:if="${product.minPrice == product.maxPrice}"
+                      th:text="${#numbers.formatDecimal(product.minPrice, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                </span>
+                <span class="price"
+                      th:unless="${product.minPrice == product.maxPrice}"
+                      th:text="${#numbers.formatDecimal(product.minPrice, 0, 'COMMA', 0, 'POINT')}
+                               + ' – '
+                               + ${#numbers.formatDecimal(product.maxPrice, 0, 'COMMA', 0, 'POINT')}
+                               + ' ₫'">
+                </span>
+            </div>
+        </div>
+    </a>
+
+    <div class="product-card-footer">
+        <a th:href="@{/products/{id}(id=${product.productId})}"
+           class="btn btn-primary btn-sm">Xem chi tiết</a>
+    </div>
+</div>
+
+</html>
