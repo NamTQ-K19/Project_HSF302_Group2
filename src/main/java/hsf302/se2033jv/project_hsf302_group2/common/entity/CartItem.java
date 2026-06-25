@@ -3,8 +3,9 @@ package hsf302.se2033jv.project_hsf302_group2.common.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import java.time.LocalDateTime;
 
 /**
@@ -15,7 +16,8 @@ import java.time.LocalDateTime;
 @Table(name = "cart_items", uniqueConstraints = {
     @UniqueConstraint(name = "uq_cart_variant", columnNames = {"cart_id", "variant_id"})
 })
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

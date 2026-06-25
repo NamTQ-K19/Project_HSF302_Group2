@@ -1,0 +1,42 @@
+/* Only keep page-specific styles; shared classes live in profile.css */
+
+/* Sidebar balance block */
+.balance-sidebar {
+    margin-top: 18px;
+    padding: 12px;
+    background: var(--coffee-pale);
+    border-radius: var(--radius);
+    border: 1.5px solid var(--coffee-border);
+}
+.balance-label { font-size: 13px; color: var(--text-muted); }
+.balance-value { font-size: 32px; font-weight: 800; color: var(--coffee-main); }
+.balance-unit  { font-size: 13px; color: var(--text-muted); }
+
+/* Table */
+.transactions-table { width:100%; border-collapse:collapse; font-size:14px; }
+.table-responsive { overflow-x:auto; }
+.transactions-table thead { background:var(--coffee-pale); }
+.transactions-table th, .transactions-table td { padding:12px; text-align:left; }
+.row-number { width:60px; text-align:center; font-weight:600; color:var(--text-muted); }
+.row-date { white-space:nowrap; }
+.row-note { max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text-muted); }
+
+/* Badges */
+.badge { display:inline-block; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:600; }
+.badge-earn { background:#e8f5e9; color:#2e7d32; border:1px solid #a5d6a7; }
+.badge-redeem { background:#fff3e0; color:#e65100; border:1px solid #ffb74d; }
+.badge-adjust { background:#f3e5f5; color:#6a1b9a; border:1px solid #ce93d8; }
+
+/* Points color */
+.points-positive { color:var(--success); font-weight:700; }
+.points-negative { color:var(--danger); font-weight:700; }
+
+/* Empty state */
+.empty-state { text-align:center; padding:30px 10px; color:var(--text-muted); }
+.empty-icon { font-size:48px; margin-bottom:8px; }
+
+/* Pagination */
+.pagination-wrap { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:16px; padding-top:12px; border-top:1px solid var(--coffee-border); }
+.btn-sm { padding:6px 10px; font-size:13px; }
+.btn.disabled, .btn[disabled] { opacity:0.5; pointer-events:none; }
+.pagination-info { font-size:13px; color:var(--text-muted); margin-left:8px; }

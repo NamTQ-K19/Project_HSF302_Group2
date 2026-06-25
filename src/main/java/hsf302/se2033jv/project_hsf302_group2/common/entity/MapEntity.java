@@ -3,15 +3,17 @@ package hsf302.se2033jv.project_hsf302_group2.common.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * Entity ánh xạ tới bảng 'map'
  */
 @Entity
 @Table(name = "map")
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

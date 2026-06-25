@@ -5,8 +5,7 @@ package hsf302.se2033jv.project_hsf302_group2.common.enums;
  */
 public enum TransactionType {
     EARN("EARN"),
-    REDEEM("REDEEM"),
-    ADJUST("ADJUST");
+    REDEEM("REDEEM");
 
     private final String value;
 

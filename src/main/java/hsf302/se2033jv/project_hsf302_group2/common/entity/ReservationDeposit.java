@@ -5,8 +5,9 @@ import hsf302.se2033jv.project_hsf302_group2.common.enums.RefundStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -17,7 +18,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "reservation_deposits",
        uniqueConstraints = @UniqueConstraint(columnNames = {"reservation_id"}))
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

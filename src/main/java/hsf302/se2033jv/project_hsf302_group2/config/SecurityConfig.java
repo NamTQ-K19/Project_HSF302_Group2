@@ -55,6 +55,10 @@ public class SecurityConfig {
                         .requestMatchers("/login**", "/staff/login**", "/assets/**", "/css/**", "/images/**", "/js/**", "/forgot-password", "/product/**", "/product/{id}",
                                 "/set-password**", "/resend-otp", "/verify-email", "/register", "/home", "/login", "/uploads/**", "/api/banners")
                         .permitAll()
+                        .requestMatchers("/customer/profile/**").authenticated()
+                        .requestMatchers("/customer/points/**").authenticated()
+                        .requestMatchers("/customer/reservations/**").authenticated()
+                        .requestMatchers("/manager/**").authenticated()
                         .anyRequest().authenticated())
 
                 .formLogin(form -> form

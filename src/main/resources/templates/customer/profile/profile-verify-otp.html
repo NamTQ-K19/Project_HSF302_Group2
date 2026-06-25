@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Xác nhận mã OTP – Cafe Shop</title>
+    <link th:href="@{/css/customer/profile.css}" rel="stylesheet"/>
+</head>
+<body>
+
+<nav class="navbar">
+    <a class="navbar-brand" th:href="@{/static}">☕ <span>Cafe</span>Shop</a>
+</nav>
+
+<div class="verify-wrap">
+    <div class="verify-card">
+
+        <div class="verify-icon">✉️</div>
+        <div class="verify-title">Nhập mã OTP</div>
+        <div class="verify-subtitle">
+            Chúng tôi đã gửi mã 6 chữ số đến<br/>
+            <strong th:text="${newEmail}"></strong><br/>
+            Mã có hiệu lực trong 5 phút.
+        </div>
+
+        <div th:if="${errorMessage}"
+             class="alert alert-error"
+             th:text="${errorMessage}"></div>
+        <div th:if="${successMessage}"
+             class="alert alert-success"
+             th:text="${successMessage}"></div>
+
+        <!-- OTP verify form -->
+        <form th:action="@{/customer/profile/verify-otp}"
+              th:object="${otpForm}"
+              method="post">
+
+            <input type="hidden" name="newEmail"   th:value="${newEmail}"/>
+            <input type="hidden" name="firstName"  th:value="${firstName}"/>
+            <input type="hidden" name="lastName"   th:value="${lastName}"/>
+            <input type="hidden" name="phone"      th:value="${phone}"/>
+            <input type="hidden" name="username"   th:value="${username}"/>
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+            <div class="form-group">
+                <label class="form-label" style="text-align:center; display:block;">
+                    Mã OTP <span class="required">*</span>
+                </label>
+                <input type="text"
+                       th:field="*{otpCode}"
+                       class="form-control otp-input"
+                       required
+                       pattern="^[0-9]{6}$"
+                       maxlength="6"
+                       minlength="6"
+                       placeholder="______"
+                       autofocus
+                       title="Vui lòng nhập đúng 6 chữ số"
+                       oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                       autocomplete="one-time-code"
+                       th:classappend="${#fields.hasErrors('otpCode')} ? 'is-invalid'"/>
+                <div th:if="${#fields.hasErrors('otpCode')}"
+                     class="form-error"
+                     style="text-align:center"
+                     th:errors="*{otpCode}"></div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full">
+                ✅ Xác nhận &amp; Cập nhật hồ sơ
+            </button>
+        </form>
+
+        <!-- Resend OTP -->
+        <div class="resend-row">
+            <span style="font-size:13px; color:var(--text-muted);">
+                Không nhận được mã?
+            </span>
+            <form th:action="@{/customer/profile/resend-otp}" method="post">
+                <input type="hidden" name="newEmail"  th:value="${newEmail}"/>
+                <input type="hidden" name="firstName" th:value="${firstName}"/>
+                <input type="hidden" name="lastName"  th:value="${lastName}"/>
+                <input type="hidden" name="phone"     th:value="${phone}"/>
+                <input type="hidden" name="username"  th:value="${username}"/>
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <button type="submit" class="btn-link">Gửi lại mã OTP</button>
+            </form>
+        </div>
+
+        <div style="text-align:center; margin-top:12px;">
+            <a th:href="@{/templates/customer/profile}"
+               style="font-size:13px; color:var(--text-muted);">
+                ← Quay lại Hồ sơ
+            </a>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>
