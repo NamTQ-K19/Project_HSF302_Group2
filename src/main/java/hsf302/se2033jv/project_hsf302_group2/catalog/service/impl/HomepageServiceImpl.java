@@ -2,8 +2,8 @@ package hsf302.se2033jv.project_hsf302_group2.catalog.service.impl;
 
 import hsf302.se2033jv.project_hsf302_group2.catalog.dto.CategoryDTO;
 import hsf302.se2033jv.project_hsf302_group2.catalog.dto.ProductCardDTO;
-import hsf302.se2033jv.project_hsf302_group2.catalog.repository.CategoryRepository;
-import hsf302.se2033jv.project_hsf302_group2.catalog.repository.ProductRepository;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.CategoryRepository;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.ProductRepository;
 import hsf302.se2033jv.project_hsf302_group2.catalog.service.interfaces.IHomepageService;
 import hsf302.se2033jv.project_hsf302_group2.common.entity.Product;
 import lombok.RequiredArgsConstructor;
