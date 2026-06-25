@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Home - Bean & Brew</title>
+</head>
+<body>
+
+        <!-- Action Buttons for Authenticated Users -->
+        <div sec:authorize="isAuthenticated()" style="margin-top: 2rem;">
+            <a href="/profile/changePassword">Change Password</a>
+            <br><br>
+            <form th:action="@{/logout}" method="post">
+                <button type="submit">Logout</button>
+            </form>
+        </div>
+
+</body>
+</html>
