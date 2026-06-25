@@ -59,8 +59,9 @@
 
             <!-- Logged-in user menu -->
             <div sec:authorize="isAuthenticated()" class="user-menu">
-                <a th:href="@{/cart}" class="nav-link cart-link" aria-label="Cart">
-                    🛒 <span class="cart-badge" id="cartCount">0</span>
+                <a href="/customer/cart" class="header-cart">
+                    <i class="fas fa-shopping-cart"></i><span>Giỏ hàng</span>
+                    <span class="header-cart-badge" id="cartBadge"><span id="cartCount">0</span></span>
                 </a>
                 <span sec:authentication="name" class="user-name"></span>
                 <a th:href="@{/auth/logout}" class="btn btn-outline">Đăng xuất</a>

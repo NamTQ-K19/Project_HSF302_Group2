@@ -9,6 +9,8 @@ import hsf302.se2033jv.project_hsf302_group2.common.entity.ProductVariant;
 import hsf302.se2033jv.project_hsf302_group2.common.entity.User;
 import hsf302.se2033jv.project_hsf302_group2.common.exception.BusinessException;
 import hsf302.se2033jv.project_hsf302_group2.common.exception.ResourceNotFoundException;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.ProductRepository;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.UserRepository;
 import hsf302.se2033jv.project_hsf302_group2.customer.repository.*;
 import hsf302.se2033jv.project_hsf302_group2.customer.dto.request.AddToCartRequest;
 import hsf302.se2033jv.project_hsf302_group2.customer.dto.request.CartUpdateRequest;
@@ -40,7 +42,7 @@ public class CustomerCartServiceImpl implements CustomerCartService {
     private static final String DEFAULT_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Crect width='60' height='60' fill='%23f8f9fa'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='30' fill='%23dee2e6'%3E☕%3C/text%3E%3C/svg%3E";
 
     @Override
-    public CartResponse getCart(Long userId) {
+    public CartResponse getCart(Integer userId) {
         Cart cart = getOrCreateCart(userId);
         List<CartItem> cartItems = cartItemRepository.findByCart_CartId(cart.getCartId());
         return buildCartResponse(cart, cartItems, userId);
@@ -48,7 +50,7 @@ public class CustomerCartServiceImpl implements CustomerCartService {
 
     @Override
     @Transactional
-    public CartResponse addToCart(Long userId, AddToCartRequest request) {
+    public CartResponse addToCart(Integer userId, AddToCartRequest request) {
         log.info("Adding to cart: userId={}, request={}", userId, request);
 
         Product product = productRepository.findById(request.getProductId())
@@ -97,7 +99,7 @@ public class CustomerCartServiceImpl implements CustomerCartService {
 
     @Override
     @Transactional
-    public CartResponse updateCartItem(Long userId, CartUpdateRequest request) {
+    public CartResponse updateCartItem(Integer userId, CartUpdateRequest request) {
         log.info("Updating cart item: userId={}, cartItemId={}, action={}",
                 userId, request.getCartItemId(), request.getAction());
 
@@ -139,7 +141,7 @@ public class CustomerCartServiceImpl implements CustomerCartService {
 
     @Override
     @Transactional
-    public CartResponse removeCartItem(Long userId, Integer cartItemId) {
+    public CartResponse removeCartItem(Integer userId, Integer cartItemId) {
         log.info("Removing cart item: userId={}, itemId={}", userId, cartItemId);
 
         CartItem item = cartItemRepository.findById(cartItemId)
@@ -160,7 +162,7 @@ public class CustomerCartServiceImpl implements CustomerCartService {
 
     @Override
     @Transactional
-    public CartResponse clearCart(Long userId) {
+    public CartResponse clearCart(Integer userId) {
         log.info("Clearing cart: userId={}", userId);
 
         Cart cart = getOrCreateCart(userId);
@@ -171,7 +173,7 @@ public class CustomerCartServiceImpl implements CustomerCartService {
     }
 
     @Override
-    public Integer getCartCount(Long userId) {
+    public Integer getCartCount(Integer userId) {
         Cart cart = cartRepository.findByCustomer_UserId(userId).orElse(null);
         if (cart == null) {
             return 0;
@@ -182,7 +184,7 @@ public class CustomerCartServiceImpl implements CustomerCartService {
 
     // ==================== PRIVATE METHODS ====================
 
-    private Cart getOrCreateCart(Long userId) {
+    private Cart getOrCreateCart(Integer userId) {
         return cartRepository.findByCustomer_UserId(userId)
                 .orElseGet(() -> {
                     User user = userRepository.findById(userId)
@@ -195,7 +197,7 @@ public class CustomerCartServiceImpl implements CustomerCartService {
                 });
     }
 
-    private CartResponse buildCartResponse(Cart cart, List<CartItem> cartItems, Long userId) {
+    private CartResponse buildCartResponse(Cart cart, List<CartItem> cartItems, Integer userId) {
         CartResponse response = new CartResponse();
         response.setCartId(cart.getCartId());
 

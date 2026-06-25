@@ -33,7 +33,7 @@ public class CustomerCartController {
     @GetMapping
     public String showCart(Model model) {
         try {
-            Long userId = SecurityUtils.getCurrentUserId();
+            Integer userId = SecurityUtils.getCurrentUserId().intValue();
             log.info("Showing cart for user: {}", userId);
             CartResponse cart = cartService.getCart(userId);
             model.addAttribute("cart", cart);
@@ -49,7 +49,7 @@ public class CustomerCartController {
     @GetMapping("/json")
     @ResponseBody
     public ResponseEntity<CartResponse> getCartJson() {
-        Long userId = SecurityUtils.getCurrentUserId();
+        Integer userId = SecurityUtils.getCurrentUserId().intValue();
         CartResponse cart = cartService.getCart(userId);
         return ResponseEntity.ok(cart);
     }
@@ -59,7 +59,7 @@ public class CustomerCartController {
     public ResponseEntity<Map<String, Object>> addToCart(@RequestBody AddToCartRequest request) {
         Map<String, Object> response = new HashMap<>();
         try {
-            Long userId = SecurityUtils.getCurrentUserId();
+            Integer userId = SecurityUtils.getCurrentUserId().intValue();
             log.info("Add to cart: userId={}, productId={}, variantId={}, quantity={}",
                     userId, request.getProductId(), request.getVariantId(), request.getQuantity());
 
@@ -82,7 +82,7 @@ public class CustomerCartController {
     public ResponseEntity<Map<String, Object>> updateCartItem(@RequestBody CartUpdateRequest request) {
         Map<String, Object> response = new HashMap<>();
         try {
-            Long userId = SecurityUtils.getCurrentUserId();
+            Integer userId = SecurityUtils.getCurrentUserId().intValue();
             log.info("Update cart: userId={}, cartItemId={}, action={}",
                     userId, request.getCartItemId(), request.getAction());
 
@@ -105,7 +105,7 @@ public class CustomerCartController {
     public ResponseEntity<Map<String, Object>> removeCartItem(@PathVariable Integer itemId) {
         Map<String, Object> response = new HashMap<>();
         try {
-            Long userId = SecurityUtils.getCurrentUserId();
+            Integer userId = SecurityUtils.getCurrentUserId().intValue();
             log.info("Remove cart item: userId={}, itemId={}", userId, itemId);
 
             CartResponse cart = cartService.removeCartItem(userId, itemId);
@@ -127,7 +127,7 @@ public class CustomerCartController {
     public ResponseEntity<Map<String, Object>> clearCart() {
         Map<String, Object> response = new HashMap<>();
         try {
-            Long userId = SecurityUtils.getCurrentUserId();
+            Integer userId = SecurityUtils.getCurrentUserId().intValue();
             log.info("Clear cart: userId={}", userId);
 
             CartResponse cart = cartService.clearCart(userId);
@@ -148,7 +148,7 @@ public class CustomerCartController {
     @ResponseBody
     public ResponseEntity<Integer> getCartCount() {
         try {
-            Long userId = SecurityUtils.getCurrentUserId();
+            Integer userId = SecurityUtils.getCurrentUserId().intValue();
             Integer count = cartService.getCartCount(userId);
             return ResponseEntity.ok(count);
         } catch (Exception e) {
@@ -162,7 +162,7 @@ public class CustomerCartController {
     public ResponseEntity<Map<String, Object>> getSelectedItems(@RequestBody List<Integer> itemIds) {
         Map<String, Object> response = new HashMap<>();
         try {
-            Long userId = SecurityUtils.getCurrentUserId();
+            Integer userId = SecurityUtils.getCurrentUserId().intValue();
             log.info("Getting selected items: userId={}, itemIds={}", userId, itemIds);
 
             if (itemIds == null || itemIds.isEmpty()) {

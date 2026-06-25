@@ -33,7 +33,7 @@ public class CustomerOrderController {
 
     @GetMapping("/checkout")
     public String showCheckout(Model model) {
-        Long userId = SecurityUtils.getCurrentUserId();
+        Integer userId = SecurityUtils.getCurrentUserId().intValue();
 
         List<CustomerAddress> addresses = addressRepository.findByCustomer_UserId(userId);
         List<PaymentMethod> paymentMethods = paymentMethodRepository.findAll();
@@ -49,7 +49,7 @@ public class CustomerOrderController {
     public ResponseEntity<Map<String, Object>> placeOrder(@RequestBody PlaceOrderRequest request) {
         Map<String, Object> response = new HashMap<>();
         try {
-            Long userId = SecurityUtils.getCurrentUserId();
+            Integer userId = SecurityUtils.getCurrentUserId().intValue();
             log.info("Customer {} placing online order", userId);
             OrderConfirmationResponse orderResponse = orderService.placeOnlineOrder(userId, request);
 
@@ -67,7 +67,7 @@ public class CustomerOrderController {
 
     @GetMapping("/confirmation/{orderId}")
     public String showConfirmation(@PathVariable Integer orderId, Model model) {
-        Long userId = SecurityUtils.getCurrentUserId();
+        Integer userId = SecurityUtils.getCurrentUserId().intValue();
         OrderResponse order = orderService.getOrderDetails(orderId, userId);
         model.addAttribute("order", order);
         model.addAttribute("pageTitle", "Xác nhận đơn hàng");
@@ -83,7 +83,7 @@ public class CustomerOrderController {
             @RequestParam(required = false) String reason) {
         Map<String, Object> response = new HashMap<>();
         try {
-            Long userId = SecurityUtils.getCurrentUserId();
+            Integer userId = SecurityUtils.getCurrentUserId().intValue();
             log.info("Customer {} cancelling order {}", userId, orderId);
 
             OrderResponse order = orderService.cancelOrder(orderId, userId, reason);

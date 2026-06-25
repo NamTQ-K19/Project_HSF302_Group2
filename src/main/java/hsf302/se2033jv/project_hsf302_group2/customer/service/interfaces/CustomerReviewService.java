@@ -8,15 +8,15 @@ import java.util.List;
 
 public interface CustomerReviewService {
 
-    ReviewResponse createReview(Long userId, CreateReviewRequest request);
+    ReviewResponse createReview(Integer userId, CreateReviewRequest request);
 
-    List<ReviewResponse> getReviewsByCustomer(Long userId);
+    List<ReviewResponse> getReviewsByCustomer(Integer userId);
 
-    List<ReviewResponse> getReviewsByOrder(Long userId, Integer orderId);
+    List<ReviewResponse> getReviewsByOrder(Integer userId, Integer orderId);
 
-    boolean hasReviewed(Long userId, Integer orderId, Integer productId);
+    boolean hasReviewed(Integer userId, Integer orderId, Integer productId);
 
-    List<ReviewResponse> getReviewableProducts(Long userId, Integer orderId);
+    List<ReviewResponse> getReviewableProducts(Integer userId, Integer orderId);
 
-    boolean isOrderFullyReviewed(Long userId, Integer orderId);
+    boolean isOrderFullyReviewed(Integer userId, Integer orderId);
 }

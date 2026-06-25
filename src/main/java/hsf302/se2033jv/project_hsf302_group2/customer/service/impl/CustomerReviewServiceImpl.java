@@ -12,6 +12,9 @@ import hsf302.se2033jv.project_hsf302_group2.common.enums.ReferenceType;
 import hsf302.se2033jv.project_hsf302_group2.common.enums.TransactionType;
 import hsf302.se2033jv.project_hsf302_group2.common.exception.BusinessException;
 import hsf302.se2033jv.project_hsf302_group2.common.exception.ResourceNotFoundException;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.OrderRepository;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.ProductRepository;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.UserRepository;
 import hsf302.se2033jv.project_hsf302_group2.customer.repository.*;
 import hsf302.se2033jv.project_hsf302_group2.customer.dto.request.CreateReviewRequest;
 import hsf302.se2033jv.project_hsf302_group2.customer.dto.response.ReviewResponse;
@@ -44,7 +47,7 @@ public class CustomerReviewServiceImpl implements CustomerReviewService {
 
     @Override
     @Transactional
-    public ReviewResponse createReview(Long userId, CreateReviewRequest request) {
+    public ReviewResponse createReview(Integer userId, CreateReviewRequest request) {
         log.info("Creating review for user: {}, order: {}, product: {}", userId, request.getOrderId(), request.getProductId());
 
         User user = userRepository.findById(userId)
@@ -107,7 +110,7 @@ public class CustomerReviewServiceImpl implements CustomerReviewService {
     }
 
     @Override
-    public List<ReviewResponse> getReviewsByCustomer(Long userId) {
+    public List<ReviewResponse> getReviewsByCustomer(Integer userId) {
         List<Review> reviews = reviewRepository.findByCustomer_UserIdOrderByCreatedAtDesc(userId);
         return reviews.stream()
                 .map(this::buildReviewResponse)
@@ -115,7 +118,7 @@ public class CustomerReviewServiceImpl implements CustomerReviewService {
     }
 
     @Override
-    public List<ReviewResponse> getReviewsByOrder(Long userId, Integer orderId) {
+    public List<ReviewResponse> getReviewsByOrder(Integer userId, Integer orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
@@ -131,13 +134,13 @@ public class CustomerReviewServiceImpl implements CustomerReviewService {
     }
 
     @Override
-    public boolean hasReviewed(Long userId, Integer orderId, Integer productId) {
+    public boolean hasReviewed(Integer userId, Integer orderId, Integer productId) {
         return reviewRepository.existsByCustomer_UserIdAndOrder_OrderIdAndProduct_ProductId(
                 userId, orderId, productId);
     }
 
     @Override
-    public List<ReviewResponse> getReviewableProducts(Long userId, Integer orderId) {
+    public List<ReviewResponse> getReviewableProducts(Integer userId, Integer orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
@@ -180,7 +183,7 @@ public class CustomerReviewServiceImpl implements CustomerReviewService {
     }
 
     @Override
-    public boolean isOrderFullyReviewed(Long userId, Integer orderId) {
+    public boolean isOrderFullyReviewed(Integer userId, Integer orderId) {
         List<OrderDetail> details = orderDetailRepository.findByOrder_OrderId(orderId);
 
         for (OrderDetail detail : details) {
@@ -218,7 +221,7 @@ public class CustomerReviewServiceImpl implements CustomerReviewService {
         return response;
     }
 
-    private Integer getCurrentPoints(Long customerId) {
+    private Integer getCurrentPoints(Integer customerId) {
         Integer points = loyaltyPointRepository.getTotalPointsByCustomerId(customerId);
         return points != null ? points : 0;
     }

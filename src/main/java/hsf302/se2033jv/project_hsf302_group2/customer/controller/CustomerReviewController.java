@@ -29,17 +29,17 @@ public class CustomerReviewController {
      */
     @GetMapping
     public String showMyReviews(Model model) {
-        Long userId = SecurityUtils.getCurrentUserId();
+        Integer userId = SecurityUtils.getCurrentUserId().intValue();
         List<ReviewResponse> reviews = reviewService.getReviewsByCustomer(userId);
         model.addAttribute("reviews", reviews);
         model.addAttribute("pageTitle", "Đánh giá của tôi");
         return "customer/review/list";
     }
 
-    
+
     @GetMapping("/create")
     public String showCreateReview(@RequestParam Integer orderId, Model model) {
-        Long userId = SecurityUtils.getCurrentUserId();
+        Integer userId = SecurityUtils.getCurrentUserId().intValue();
         log.info("Showing create review page for order: {}", orderId);
 
         // Lấy danh sách sản phẩm có thể đánh giá
@@ -65,7 +65,7 @@ public class CustomerReviewController {
     public ResponseEntity<Map<String, Object>> createReview(@RequestBody CreateReviewRequest request) {
         Map<String, Object> response = new HashMap<>();
         try {
-            Long userId = SecurityUtils.getCurrentUserId();
+            Integer userId = SecurityUtils.getCurrentUserId().intValue();
             log.info("Customer {} creating review", userId);
 
             ReviewResponse review = reviewService.createReview(userId, request);
@@ -88,7 +88,7 @@ public class CustomerReviewController {
     @GetMapping("/order/{orderId}")
     @ResponseBody
     public ResponseEntity<List<ReviewResponse>> getReviewsByOrder(@PathVariable Integer orderId) {
-        Long userId = SecurityUtils.getCurrentUserId();
+        Integer userId = SecurityUtils.getCurrentUserId().intValue();
         List<ReviewResponse> reviews = reviewService.getReviewsByOrder(userId, orderId);
         return ResponseEntity.ok(reviews);
     }
@@ -101,7 +101,7 @@ public class CustomerReviewController {
     public ResponseEntity<Map<String, Object>> hasReviewed(
             @RequestParam Integer orderId,
             @RequestParam Integer productId) {
-        Long userId = SecurityUtils.getCurrentUserId();
+        Integer userId = SecurityUtils.getCurrentUserId().intValue();
         boolean hasReviewed = reviewService.hasReviewed(userId, orderId, productId);
 
         Map<String, Object> response = new HashMap<>();
@@ -113,7 +113,7 @@ public class CustomerReviewController {
     @GetMapping("/reviewable")
     @ResponseBody
     public ResponseEntity<List<ReviewResponse>> getReviewableProducts(@RequestParam Integer orderId) {
-        Long userId = SecurityUtils.getCurrentUserId();
+        Integer userId = SecurityUtils.getCurrentUserId().intValue();
         List<ReviewResponse> products = reviewService.getReviewableProducts(userId, orderId);
         return ResponseEntity.ok(products);
     }

@@ -40,7 +40,7 @@ public class CustomerHistoryController {
             @RequestParam(required = false) String endDate,
             Model model) {
 
-        Long userId = SecurityUtils.getCurrentUserId();
+        Integer userId = SecurityUtils.getCurrentUserId().intValue();
         log.info("Getting order history for user: {}", userId);
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
@@ -69,7 +69,7 @@ public class CustomerHistoryController {
      */
     @GetMapping("/detail/{orderId}")
     public String getOrderDetail(@PathVariable Integer orderId, Model model) {
-        Long userId = SecurityUtils.getCurrentUserId();
+        Integer userId = SecurityUtils.getCurrentUserId().intValue();
         log.info("Getting order detail for user: {}, orderId: {}", userId, orderId);
 
         OrderResponse order = historyService.getOrderDetail(orderId, userId);

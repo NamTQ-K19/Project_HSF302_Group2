@@ -5,6 +5,8 @@ import hsf302.se2033jv.project_hsf302_group2.common.entity.*;
 import hsf302.se2033jv.project_hsf302_group2.common.enums.*;
 import hsf302.se2033jv.project_hsf302_group2.common.exception.BusinessException;
 import hsf302.se2033jv.project_hsf302_group2.common.exception.ResourceNotFoundException;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.OrderRepository;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.UserRepository;
 import hsf302.se2033jv.project_hsf302_group2.customer.repository.*;
 import hsf302.se2033jv.project_hsf302_group2.customer.dto.request.PlaceOrderRequest;
 import hsf302.se2033jv.project_hsf302_group2.customer.dto.response.OrderConfirmationResponse;
@@ -45,7 +47,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
 
     @Override
     @Transactional
-    public OrderConfirmationResponse placeOnlineOrder(Long userId, PlaceOrderRequest request) {
+    public OrderConfirmationResponse placeOnlineOrder(Integer userId, PlaceOrderRequest request) {
         log.info("Placing online order for user: {}", userId);
 
         // 1. Validate user
@@ -232,7 +234,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
     }
 
     @Override
-    public OrderResponse getOrderDetails(Integer orderId, Long userId) {
+    public OrderResponse getOrderDetails(Integer orderId, Integer userId) {
         log.info("Getting order details: orderId={}, userId={}", orderId, userId);
 
         Order order = orderRepository.findById(orderId)
@@ -250,7 +252,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
 
     @Override
     @Transactional
-    public OrderResponse cancelOrder(Integer orderId, Long userId, String reason) {
+    public OrderResponse cancelOrder(Integer orderId, Integer userId, String reason) {
         log.info("Cancelling order: orderId={}, userId={}, reason={}", orderId, userId, reason);
 
         Order order = orderRepository.findById(orderId)
@@ -289,7 +291,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
 
     // ==================== PRIVATE METHODS ====================
 
-    private User validateCustomer(Long userId) {
+    private User validateCustomer(Integer userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
@@ -308,7 +310,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         return amount.divide(new BigDecimal("10000"), 0, RoundingMode.FLOOR).intValue();
     }
 
-    private Integer getCurrentPoints(Long customerId) {
+    private Integer getCurrentPoints(Integer customerId) {
         Integer points = loyaltyPointRepository.getTotalPointsByCustomerId(customerId);
         return points != null ? points : 0;
     }
@@ -344,7 +346,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         boolean fullyReviewed = false;
         if (order.getOrderStatus() == OrderStatus.COMPLETED) {
             boolean allReviewed = true;
-            Long userId = Long.valueOf(order.getUser().getUserId());
+            Integer userId = order.getUser().getUserId();
             for (OrderDetail detail : details) {
                 boolean reviewed = reviewRepository.existsByCustomer_UserIdAndOrder_OrderIdAndProduct_ProductId(
                         userId, order.getOrderId(), detail.getProduct().getProductId());
@@ -372,7 +374,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
 
                     // Kiểm tra sản phẩm đã được đánh giá chưa
                     boolean reviewed = reviewRepository.existsByCustomer_UserIdAndOrder_OrderIdAndProduct_ProductId(
-                            Long.valueOf(order.getUser().getUserId()), order.getOrderId(), detail.getProduct().getProductId());
+                            order.getUser().getUserId(), order.getOrderId(), detail.getProduct().getProductId());
                     item.setReviewed(reviewed);
 
                     String imageUrl = DEFAULT_IMAGE;

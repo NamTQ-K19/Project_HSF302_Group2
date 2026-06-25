@@ -8,6 +8,7 @@ import hsf302.se2033jv.project_hsf302_group2.common.entity.CustomerAddress;
 import hsf302.se2033jv.project_hsf302_group2.common.enums.OrderStatus;
 import hsf302.se2033jv.project_hsf302_group2.common.exception.BusinessException;
 import hsf302.se2033jv.project_hsf302_group2.common.exception.ResourceNotFoundException;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.OrderRepository;
 import hsf302.se2033jv.project_hsf302_group2.customer.repository.*;
 import hsf302.se2033jv.project_hsf302_group2.customer.dto.response.OrderResponse;
 import hsf302.se2033jv.project_hsf302_group2.customer.service.interfaces.CustomerHistoryService;
@@ -36,7 +37,7 @@ public class CustomerHistoryServiceImpl implements CustomerHistoryService {
     private static final String DEFAULT_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Crect width='60' height='60' fill='%23f8f9fa'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='30' fill='%23dee2e6'%3E☕%3C/text%3E%3C/svg%3E";
 
     @Override
-    public Page<OrderResponse> getOrderHistory(Long userId, OrderStatus status, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+    public Page<OrderResponse> getOrderHistory(Integer userId, OrderStatus status, LocalDate startDate, LocalDate endDate, Pageable pageable) {
         log.info("Getting order history for user: {}, status: {}, startDate: {}, endDate: {}", userId, status, startDate, endDate);
 
         List<Order> orders = orderRepository.findByUser_UserIdOrderByCreatedAtDesc(userId);
@@ -71,7 +72,7 @@ public class CustomerHistoryServiceImpl implements CustomerHistoryService {
     }
 
     @Override
-    public OrderResponse getOrderDetail(Integer orderId, Long userId) {
+    public OrderResponse getOrderDetail(Integer orderId, Integer userId) {
         log.info("Getting order detail: orderId={}, userId={}", orderId, userId);
 
         Order order = orderRepository.findById(orderId)
@@ -109,7 +110,7 @@ public class CustomerHistoryServiceImpl implements CustomerHistoryService {
         boolean fullyReviewed = false;
         if (order.getOrderStatus() == OrderStatus.COMPLETED) {
             boolean allReviewed = true;
-            Long userId = Long.valueOf(order.getUser().getUserId());
+            Integer userId = order.getUser().getUserId();
             for (OrderDetail detail : details) {
                 boolean reviewed = reviewRepository.existsByCustomer_UserIdAndOrder_OrderIdAndProduct_ProductId(
                         userId, order.getOrderId(), detail.getProduct().getProductId());
@@ -137,7 +138,7 @@ public class CustomerHistoryServiceImpl implements CustomerHistoryService {
 
                     // Kiểm tra sản phẩm đã được đánh giá chưa
                     boolean reviewed = reviewRepository.existsByCustomer_UserIdAndOrder_OrderIdAndProduct_ProductId(
-                            Long.valueOf(order.getUser().getUserId()), order.getOrderId(), detail.getProduct().getProductId());
+                            order.getUser().getUserId(), order.getOrderId(), detail.getProduct().getProductId());
                     item.setReviewed(reviewed);
 
                     String imageUrl = DEFAULT_IMAGE;

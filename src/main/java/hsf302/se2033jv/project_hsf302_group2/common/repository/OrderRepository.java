@@ -1,6 +1,7 @@
 package hsf302.se2033jv.project_hsf302_group2.common.repository;
 
 import hsf302.se2033jv.project_hsf302_group2.common.entity.Order;
+import hsf302.se2033jv.project_hsf302_group2.common.enums.OrderStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -50,4 +51,8 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
             "GROUP BY FORMAT(o.created_at, 'yyyy-MM-dd') " +
             "ORDER BY date", nativeQuery = true)
     List<Object[]> getDailySalesStats(@Param("startDate") LocalDateTime startDate);
+
+    List<Order> findByUser_UserIdOrderByCreatedAtDesc(Integer userId);
+
+    List<Order> findByUser_UserIdAndOrderStatus(Integer userId, OrderStatus status);
 }

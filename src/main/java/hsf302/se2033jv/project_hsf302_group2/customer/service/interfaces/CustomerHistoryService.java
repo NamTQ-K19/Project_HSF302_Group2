@@ -13,10 +13,10 @@ public interface CustomerHistoryService {
     /**
      * Lấy lịch sử đơn hàng với bộ lọc
      */
-    Page<OrderResponse> getOrderHistory(Long userId, OrderStatus status, LocalDate startDate, LocalDate endDate, Pageable pageable);
+    Page<OrderResponse> getOrderHistory(Integer userId, OrderStatus status, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
     /**
      * Lấy chi tiết đơn hàng
      */
-    OrderResponse getOrderDetail(Integer orderId, Long userId);
+    OrderResponse getOrderDetail(Integer orderId, Integer userId);
 }

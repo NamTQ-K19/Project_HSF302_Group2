@@ -7,7 +7,7 @@ import hsf302.se2033jv.project_hsf302_group2.customer.dto.response.OrderResponse
 
 public interface CustomerOrderService {
 
-    OrderConfirmationResponse placeOnlineOrder(Long userId, PlaceOrderRequest request);
-    OrderResponse cancelOrder(Integer orderId, Long userId, String reason);
-    OrderResponse getOrderDetails(Integer orderId, Long userId);
+    OrderConfirmationResponse placeOnlineOrder(Integer userId, PlaceOrderRequest request);
+    OrderResponse cancelOrder(Integer orderId, Integer userId, String reason);
+    OrderResponse getOrderDetails(Integer orderId, Integer userId);
 }

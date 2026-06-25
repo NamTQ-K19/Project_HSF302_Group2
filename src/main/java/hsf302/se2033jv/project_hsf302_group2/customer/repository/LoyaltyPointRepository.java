@@ -16,15 +16,15 @@ import java.util.List;
 public interface LoyaltyPointRepository extends JpaRepository<LoyaltyPoint, Integer> {
 
     @Query("SELECT COALESCE(SUM(lp.points), 0) FROM LoyaltyPoint lp WHERE lp.customer.userId = :customerId")
-    Integer getTotalPointsByCustomerId(@Param("customerId") Long customerId);
+    Integer getTotalPointsByCustomerId(@Param("customerId") Integer customerId);
     // Derived query: lấy bản ghi mới nhất (sắp xếp giảm dần), dùng Pageable để giới hạn 1
     List<LoyaltyPoint> findTopByCustomerUserIdOrderByCreatedAtDescPointIdDesc(Integer customerId, Pageable pageable);
 
-    List<LoyaltyPoint> findByCustomer_UserIdOrderByCreatedAtDesc(Long userId);
+    List<LoyaltyPoint> findByCustomer_UserIdOrderByCreatedAtDesc(Integer userId);
     // Lấy lịch sử (trả về Page để hỗ trợ phân trang)
     Page<LoyaltyPoint> findByCustomerUserIdOrderByCreatedAtDesc(Integer customerId, Pageable pageable);
 
-    List<LoyaltyPoint> findByCustomer_UserIdAndTransactionType(Long userId, TransactionType transactionType);
+    List<LoyaltyPoint> findByCustomer_UserIdAndTransactionType(Integer userId, TransactionType transactionType);
     // Query động cho bộ lọc (type, date range) — trả về Page
     @Query("SELECT lp FROM LoyaltyPoint lp " +
            "WHERE lp.customer.userId = :customerId " +

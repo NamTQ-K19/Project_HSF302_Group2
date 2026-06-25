@@ -18,7 +18,7 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
     /**
      * Lấy danh sách đánh giá của một khách hàng (sắp xếp mới nhất)
      */
-    List<Review> findByCustomer_UserIdOrderByCreatedAtDesc(Long userId);
+    List<Review> findByCustomer_UserIdOrderByCreatedAtDesc(Integer userId);
 
     /**
      * Lấy danh sách đánh giá theo đơn hàng
@@ -33,13 +33,13 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
     /**
      * Lấy danh sách đánh giá của khách hàng theo đơn hàng
      */
-    List<Review> findByCustomer_UserIdAndOrder_OrderId(Long userId, Integer orderId);
+    List<Review> findByCustomer_UserIdAndOrder_OrderId(Integer userId, Integer orderId);
 
     /**
      * Kiểm tra khách hàng đã đánh giá sản phẩm trong đơn hàng chưa
      */
     boolean existsByCustomer_UserIdAndOrder_OrderIdAndProduct_ProductId(
-            Long userId, Integer orderId, Integer productId);
+            Integer userId, Integer orderId, Integer productId);
 
     /**
      * Lấy danh sách đánh giá hiển thị (is_visible = true)
@@ -59,7 +59,7 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
     /**
      * Lấy đánh giá theo ID và khách hàng (kiểm tra quyền)
      */
-    Optional<Review> findByReviewIdAndCustomer_UserId(Integer reviewId, Long userId);
+    Optional<Review> findByReviewIdAndCustomer_UserId(Integer reviewId, Integer userId);
 
     /**
      * Cập nhật trạng thái hiển thị của đánh giá
