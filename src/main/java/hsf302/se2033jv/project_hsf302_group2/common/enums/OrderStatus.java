@@ -4,12 +4,12 @@ package hsf302.se2033jv.project_hsf302_group2.common.enums;
  * Enum đại diện cho trạng thái của order
  */
 public enum OrderStatus {
-    PENDING("pending"),
-    CONFIRMED("confirmed"),
-    PREPARING("preparing"),
-    READY("ready"),
-    COMPLETED("completed"),
-    CANCELLED("cancelled");
+    PENDING("PENDING"),
+    CONFIRMED("CONFIRMED"),
+    PREPARING("PREPARING"),
+    READY("READY"),
+    COMPLETED("COMPLETED"),
+    CANCELLED("CANCELLED");
 
     private final String value;
 

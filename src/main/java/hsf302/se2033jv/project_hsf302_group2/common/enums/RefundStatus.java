@@ -4,9 +4,9 @@ package hsf302.se2033jv.project_hsf302_group2.common.enums;
  * Enum đại diện cho trạng thái refund của deposit
  */
 public enum RefundStatus {
-    NONE("none"),
-    PARTIAL("partial"),
-    FULL("full");
+    NONE("NONE"),
+    PARTIAL("PARTIAL"),
+    FULL("FULL");
 
     private final String value;
 

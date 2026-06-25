@@ -4,12 +4,12 @@ package hsf302.se2033jv.project_hsf302_group2.common.enums;
  * Enum đại diện cho trạng thái reservation
  */
 public enum ReservationStatus {
-    PENDING("pending"),
-    CONFIRMED("confirmed"),
-    ARRIVED("arrived"),
-    COMPLETED("completed"),
-    CANCELLED("cancelled"),
-    NO_SHOW("no_show");
+    PENDING("PENDING"),
+    CONFIRMED("CONFIRMED"),
+    ARRIVED("ARRIVED"),
+    COMPLETED("COMPLETED"),
+    CANCELLED("CANCELLED"),
+    NO_SHOW("NO_SHOW");
 
     private final String value;
 

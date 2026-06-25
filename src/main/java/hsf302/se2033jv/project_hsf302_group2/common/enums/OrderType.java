@@ -4,8 +4,8 @@ package hsf302.se2033jv.project_hsf302_group2.common.enums;
  * Enum đại diện cho loại order
  */
 public enum OrderType {
-    ONLINE("online"),
-    COUNTER("counter");
+    ONLINE("ONLINE"),
+    COUNTER("COUNTER");
 
     private final String value;
 

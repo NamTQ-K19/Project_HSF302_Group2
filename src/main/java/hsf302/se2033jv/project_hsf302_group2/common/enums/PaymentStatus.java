@@ -4,10 +4,10 @@ package hsf302.se2033jv.project_hsf302_group2.common.enums;
  * Enum đại diện cho trạng thái thanh toán
  */
 public enum PaymentStatus {
-    PENDING("pending"),
-    SUCCESS("success"),
-    FAILED("failed"),
-    REFUNDED("refunded");
+    PENDING("PENDING"),
+    SUCCESS("SUCCESS"),
+    FAILED("FAILED"),
+    REFUNDED("REFUNDED");
 
     private final String value;
 

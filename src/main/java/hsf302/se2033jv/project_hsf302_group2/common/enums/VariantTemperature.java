@@ -4,9 +4,9 @@ package hsf302.se2033jv.project_hsf302_group2.common.enums;
  * Enum đại diện cho nhiệt độ của product variant
  */
 public enum VariantTemperature {
-    HOT("hot"),
-    COLD("cold"),
-    ROOM("room");
+    HOT("HOT"),
+    COLD("COLD"),
+    ROOM("ROOM");
 
     private final String value;
 

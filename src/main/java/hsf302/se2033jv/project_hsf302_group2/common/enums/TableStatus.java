@@ -4,10 +4,10 @@ package hsf302.se2033jv.project_hsf302_group2.common.enums;
  * Enum đại diện cho status của một bàn/table
  */
 public enum TableStatus {
-    AVAILABLE("available"),
-    OCCUPIED("occupied"),
-    RESERVED("reserved"),
-    MAINTENANCE("maintenance");
+    AVAILABLE("AVAILABLE"),
+    OCCUPIED("OCCUPIED"),
+    RESERVED("RESERVED"),
+    MAINTENANCE("MAINTENANCE");
 
     private final String value;
 

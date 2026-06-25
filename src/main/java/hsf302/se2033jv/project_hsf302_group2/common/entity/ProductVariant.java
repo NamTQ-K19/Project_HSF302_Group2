@@ -5,8 +5,9 @@ import hsf302.se2033jv.project_hsf302_group2.common.enums.VariantTemperature;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -16,7 +17,8 @@ import java.util.List;
  */
 @Entity
 @Table(name = "product_variants")
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

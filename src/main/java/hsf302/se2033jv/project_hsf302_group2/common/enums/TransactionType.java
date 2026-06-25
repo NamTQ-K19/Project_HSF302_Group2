@@ -4,9 +4,8 @@ package hsf302.se2033jv.project_hsf302_group2.common.enums;
  * Enum đại diện cho loại giao dịch điểm
  */
 public enum TransactionType {
-    EARN("earn"),
-    REDEEM("redeem"),
-    ADJUST("adjust");
+    EARN("EARN"),
+    REDEEM("REDEEM");
 
     private final String value;
 
