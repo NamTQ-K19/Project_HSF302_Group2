@@ -11,7 +11,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class AccountResponse {
     private Integer userId;
+    private String username;
     private String fullName;
+    private String firstName;
+    private String lastName;
     private String email;
     private String role;
     private String status;

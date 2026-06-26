@@ -6,51 +6,14 @@
     <title th:text="${pageTitle} + ' - BrewMaster'">BrewMaster - Xác thực OTP</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="/css/admin/sidebar.css" />
     <link rel="stylesheet" href="/css/admin/verify-otp.css" />
 </head>
 <body>
 <div class="dashboard-grid">
     <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="logo">
-            <div class="logo-icon"><i class="fas fa-mug-hot"></i></div>
-            <span class="logo-text">BrewMaster</span>
-        </div>
+    <th:block th:replace="~{admin/fragments/sidebar :: sidebar(currentPage='accounts')}"></th:block>
 
-        <nav>
-            <div class="nav-label">CHÍNH</div>
-            <a th:href="@{/admin/dashboard}" class="nav-item" th:classappend="${currentPage == 'dashboard'} ? 'active' : ''">
-                <span class="nav-icon"><i class="fas fa-chart-pie"></i></span>
-                Tổng quan
-            </a>
-            <a th:href="@{/admin/accounts}" class="nav-item" th:classappend="${currentPage == 'accounts'} ? 'active' : ''">
-                <span class="nav-icon"><i class="fas fa-users"></i></span>
-                Người dùng
-            </a>
-
-            <div class="nav-divider"></div>
-
-            <div class="nav-label">HỆ THỐNG</div>
-            <a href="#" class="nav-item">
-                <span class="nav-icon"><i class="fas fa-history"></i></span>
-                Nhật ký hệ thống
-            </a>
-            <a href="#" class="nav-item">
-                <span class="nav-icon"><i class="fas fa-cog"></i></span>
-                Cấu hình hệ thống
-            </a>
-
-            <!-- ===== LOGOUT BUTTON ===== -->
-            <div class="nav-divider"></div>
-
-            <form th:action="@{/logout}" method="post" class="logout-form">
-                <button type="submit" class="nav-item logout-btn">
-                    <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
-                    Đăng xuất
-                </button>
-            </form>
-        </nav>
-    </aside>
     <!-- Main Content -->
     <main class="main-content">
         <!-- Top Bar -->

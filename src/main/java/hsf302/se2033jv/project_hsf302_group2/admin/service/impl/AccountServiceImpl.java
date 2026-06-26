@@ -22,8 +22,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -258,10 +260,80 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
+    @Override
+    public AccountResponse getAccountByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new BusinessException("Không tìm thấy người dùng với username: " + username));
+        return convertToResponse(user);
+    }
+
+    // ===== UPDATE PROFILE =====
+    @Override
+    @Transactional
+    public void updateProfile(String username, String firstName, String lastName, String phone) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new BusinessException("Không tìm thấy người dùng với username: " + username));
+
+        if (phone != null && !phone.isEmpty()) {
+            boolean existsPhone = userRepository.existsByPhoneAndUserIdNot(phone, user.getUserId());
+            if (existsPhone) {
+                throw new BusinessException("Số điện thoại đã được sử dụng bởi tài khoản khác");
+            }
+        }
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setPhone(phone);
+        user.setUpdatedAt(LocalDateTime.now());
+
+        userRepository.save(user);
+    }
+
+    // ===== CHANGE PASSWORD =====
+    @Override
+    @Transactional
+    public void changePassword(String username, String currentPassword, String newPassword) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new BusinessException("Không tìm thấy người dùng với username: " + username));
+
+        // Kiểm tra mật khẩu hiện tại
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            throw new BusinessException("Mật khẩu hiện tại không đúng");
+        }
+
+        // Kiểm tra độ dài mật khẩu mới
+        if (newPassword.length() < 8) {
+            throw new BusinessException("Mật khẩu mới phải có ít nhất 8 ký tự");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setUpdatedAt(LocalDateTime.now());
+
+        userRepository.save(user);
+    }
+
+    // ===== UPLOAD AVATAR =====
+    @Override
+    @Transactional
+    public void updateAvatar(String username, String fileName) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new BusinessException("Không tìm thấy người dùng với username: " + username));
+
+        user.setAvatarUrl(fileName);
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        log.info("✅ Avatar updated for user: {}", username);
+    }
+
+    // Trong AccountServiceImpl.java - convertToResponse
+
     private AccountResponse convertToResponse(User user) {
         return AccountResponse.builder()
                 .userId(user.getUserId())
+                .username(user.getUsername())
                 .fullName(user.getFirstName() + " " + user.getLastName())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
                 .email(user.getEmail())
                 .role(user.getRole() != null ? user.getRole().getRoleName() : null)
                 .status(user.getStatus() ? "ACTIVE" : "LOCKED")

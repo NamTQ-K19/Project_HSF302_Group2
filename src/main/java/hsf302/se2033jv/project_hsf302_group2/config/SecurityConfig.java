@@ -58,6 +58,7 @@ public class SecurityConfig {
                                 "/resend-otp", "/verify-email", "/register", "/home", "/login", "/uploads/**",
                                 "/api/banners", "/favicon.ico", "/webjars/**", "/search", "/loyalty-policy")
                         .permitAll()
+                        .requestMatchers("/admin/**").authenticated()
                         .requestMatchers("/customer/profile/**").authenticated()
                         .requestMatchers("/customer/points/**").authenticated()
                         .requestMatchers("/customer/reservations/**").authenticated()

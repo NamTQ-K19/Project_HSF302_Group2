@@ -1,64 +1,31 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title th:text="${pageTitle} + ' - BrewMaster'">BrewMaster - Tổng quan</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="/css/admin/sidebar.css" />
     <link rel="stylesheet" href="/css/admin/dashboard.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 <div class="dashboard-grid">
     <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="logo">
-            <div class="logo-icon"><i class="fas fa-mug-hot"></i></div>
-            <span class="logo-text">BrewMaster</span>
-        </div>
-
-        <nav>
-            <div class="nav-label">CHÍNH</div>
-            <a th:href="@{/admin/dashboard}" class="nav-item" th:classappend="${currentPage == 'dashboard'} ? 'active' : ''">
-                <span class="nav-icon"><i class="fas fa-chart-pie"></i></span>
-                Tổng quan
-            </a>
-            <a th:href="@{/admin/accounts}" class="nav-item" th:classappend="${currentPage == 'accounts'} ? 'active' : ''">
-                <span class="nav-icon"><i class="fas fa-users"></i></span>
-                Người dùng
-            </a>
-
-            <div class="nav-divider"></div>
-
-            <div class="nav-label">HỆ THỐNG</div>
-            <a href="#" class="nav-item">
-                <span class="nav-icon"><i class="fas fa-history"></i></span>
-                Nhật ký hệ thống
-            </a>
-            <a href="#" class="nav-item">
-                <span class="nav-icon"><i class="fas fa-cog"></i></span>
-                Cấu hình hệ thống
-            </a>
-
-            <!-- ===== LOGOUT BUTTON ===== -->
-            <div class="nav-divider"></div>
-
-            <form th:action="@{/logout}" method="post" class="logout-form">
-                <button type="submit" class="nav-item logout-btn">
-                    <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
-                    Đăng xuất
-                </button>
-            </form>
-        </nav>
-    </aside>
+    <th:block th:replace="~{admin/fragments/sidebar :: sidebar(currentPage='dashboard')}"></th:block>
 
     <!-- Main Content -->
     <main class="main-content">
         <!-- Top Bar -->
         <header class="topbar">
             <div>
-                <h1 th:text="${greeting}">Chào buổi chiều, John! ☀️</h1>
+                <h1>
+                    <span th:text="${greeting}">Chào buổi chiều</span>,
+                    <span th:text="${displayName}" style="color: #4a2c1b; font-weight: 600;">Admin</span>
+                    <i th:class="'fas' + ' ' + ${greetingIcon}" th:style="'color: ' + ${iconColor} + '; margin-left: 4px;'"></i>
+                </h1>
                 <div style="font-size: 14px; color: #64748b; margin-top: 4px;">
                     Đây là những gì đang diễn ra tại quán cà phê của bạn hôm nay.
                 </div>
@@ -69,7 +36,17 @@
                     <span>Hệ thống hoạt động bình thường</span>
                 </div>
                 <span class="date" th:text="${currentDate}">22 Tháng 6, 2026</span>
-                <div class="avatar"><i class="fas fa-user-circle" style="font-size: 24px;"></i></div>
+                <div class="avatar">
+                    <!-- Nếu có avatar thì hiển thị ảnh, không thì hiển thị icon -->
+                    <th:block th:if="${avatarUrl != null and !avatarUrl.isEmpty()}">
+                        <img th:src="@{'/uploads/avatars/' + ${avatarUrl}}"
+                             alt="Avatar"
+                             class="avatar-image" />
+                    </th:block>
+                    <th:block th:unless="${avatarUrl != null and !avatarUrl.isEmpty()}">
+                        <i class="fas fa-user-circle" style="font-size: 28px; color: #c8a882;"></i>
+                    </th:block>
+                </div>
             </div>
         </header>
 

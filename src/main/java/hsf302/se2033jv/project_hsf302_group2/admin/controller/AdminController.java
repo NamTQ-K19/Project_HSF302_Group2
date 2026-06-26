@@ -9,6 +9,7 @@ import hsf302.se2033jv.project_hsf302_group2.admin.dto.response.DashboardStatsRe
 import hsf302.se2033jv.project_hsf302_group2.admin.dto.response.PageResponse;
 import hsf302.se2033jv.project_hsf302_group2.admin.service.interfaces.AccountService;
 import hsf302.se2033jv.project_hsf302_group2.admin.service.interfaces.DashboardService;
+import hsf302.se2033jv.project_hsf302_group2.common.entity.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +29,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Controller
@@ -41,7 +44,7 @@ public class AdminController {
     // ===================== VIEW PAGES =====================
 
     @GetMapping("/dashboard")
-    public String dashboard(Model model) {
+    public String dashboard(Model model, Authentication authentication) {
         log.info("Loading dashboard page");
 
         try {
@@ -49,15 +52,39 @@ public class AdminController {
             DashboardStatsResponse stats = dashboardService.getDashboardStats();
             ChartDataResponse chartData = dashboardService.getChartData();
 
+            String username = authentication != null ? authentication.getName() : "Admin";
+            String displayName = username;
+            if (authentication != null) {
+                AccountResponse user = accountService.getAccountByUsername(username);
+                if (user != null) {
+                    displayName = user.getFirstName() + " "  + user.getLastName();
+                }
+            }
+            model.addAttribute("displayName", displayName);
+
             String currentDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd 'Tháng' M, yyyy"));
             int hour = LocalDateTime.now().getHour();
             String greeting;
-            if (hour < 12) greeting = "Chào buổi sáng, John! ☀️";
-            else if (hour < 17) greeting = "Chào buổi chiều, John! ☀️";
-            else greeting = "Chào buổi tối, John! ☀️";
+            String greetingIcon;
+            String iconColor;
+
+            if (hour < 12) {
+                greeting = "Chào buổi sáng";
+                greetingIcon = "fa-sun";
+                iconColor = "#f59e0b";
+            } else if (hour < 17) {
+                greeting = "Chào buổi chiều";
+                greetingIcon = "fa-sun";
+                iconColor = "#f59e0b";
+            } else {
+                greeting = "Chào buổi tối";
+                greetingIcon = "fa-moon";
+                iconColor = "#6366f1";
+            }
 
             model.addAttribute("greeting", greeting);
-            model.addAttribute("currentDate", currentDate);
+            model.addAttribute("greetingIcon", greetingIcon);
+            model.addAttribute("iconColor", iconColor);
             model.addAttribute("pageTitle", "Tổng quan");
 
             // ===== 1. THỐNG KÊ NGƯỜI DÙNG =====
