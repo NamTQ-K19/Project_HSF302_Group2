@@ -6,16 +6,18 @@ import hsf302.se2033jv.project_hsf302_group2.common.entity.User;
 import hsf302.se2033jv.project_hsf302_group2.common.enums.DepositPaymentStatus;
 import hsf302.se2033jv.project_hsf302_group2.common.enums.ReservationStatus;
 import hsf302.se2033jv.project_hsf302_group2.common.repository.UserRepository;
+import hsf302.se2033jv.project_hsf302_group2.common.service.interfaces.EmailService;
 import hsf302.se2033jv.project_hsf302_group2.manager.dto.request.ReservationScheduleFilterRequest;
+import hsf302.se2033jv.project_hsf302_group2.manager.dto.response.ReservationDetailResponse;
 import hsf302.se2033jv.project_hsf302_group2.manager.dto.response.ReservationScheduleResponse;
 import hsf302.se2033jv.project_hsf302_group2.manager.dto.response.ReservationStatsResponse;
 import hsf302.se2033jv.project_hsf302_group2.common.repository.ReservationScheduleRepository;
-import hsf302.se2033jv.project_hsf302_group2.manager.service.interfaces.ManagerEmailService;
 import hsf302.se2033jv.project_hsf302_group2.manager.service.interfaces.ReservationScheduleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,35 +35,31 @@ public class ReservationScheduleServiceImpl implements ReservationScheduleServic
 
     private final ReservationScheduleRepository reservationRepository;
     private final UserRepository userRepository;
-    private final ManagerEmailService emailService;
+    private final EmailService emailService;
 
     @Override
     public Page<ReservationScheduleResponse> getSchedule(ReservationScheduleFilterRequest filter, int page, int size) {
-        Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size);
 
-        Page<Reservation> reservationPage;
-
-        // If no date filter, get all reservations
-        if (filter.getFromDate() == null || filter.getToDate() == null) {
-            reservationPage = reservationRepository.findAllByOrderByReservationDateDescReservationTimeAsc(pageable);
-        } else if (filter.getStatus() != null && !filter.getStatus().isBlank()) {
+        // 1. Chuyển đổi trạng thái từ String sang Enum (nếu có)
+        ReservationStatus statusEnum = null;
+        if (filter.getStatus() != null && !filter.getStatus().isBlank()) {
             try {
-                ReservationStatus status = ReservationStatus.fromValue(filter.getStatus());
-                reservationPage = reservationRepository
-                        .findByReservationDateBetweenAndStatusOrderByReservationTimeAsc(
-                                filter.getFromDate(), filter.getToDate(), status, pageable);
+                statusEnum = ReservationStatus.fromValue(filter.getStatus()); // Hoặc ReservationStatus.valueOf(...) tùy Enum của bạn
             } catch (IllegalArgumentException e) {
                 log.warn("Invalid status filter: " + filter.getStatus());
-                reservationPage = reservationRepository
-                        .findByReservationDateBetweenOrderByReservationTimeAsc(
-                                filter.getFromDate(), filter.getToDate(), pageable);
             }
-        } else {
-            reservationPage = reservationRepository
-                    .findByReservationDateBetweenOrderByReservationTimeAsc(
-                            filter.getFromDate(), filter.getToDate(), pageable);
         }
 
+        // 2. Gọi 1 hàm duy nhất, Database sẽ tự động lo việc lọc các biến null
+        Page<Reservation> reservationPage = reservationRepository.findWithDynamicFilter(
+                filter.getFromDate(),
+                filter.getToDate(),
+                statusEnum,
+                pageable
+        );
+
+        // 3. Map sang Response
         List<ReservationScheduleResponse> responseList = reservationPage.getContent()
                 .stream()
                 .map(this::mapToResponse)
@@ -108,17 +106,19 @@ public class ReservationScheduleServiceImpl implements ReservationScheduleServic
 
     @Override
     public ReservationStatsResponse getStats(LocalDate fromDate, LocalDate toDate) {
-        long totalReservations = reservationRepository.countByReservationDateBetween(fromDate, toDate);
+        // 1. Đếm tổng số theo ngày (Bỏ qua biến Trạng thái của form)
+        long totalReservations = reservationRepository.countWithDynamicDates(fromDate, toDate);
 
-        long pendingCount = reservationRepository.countByReservationDateBetweenAndStatus(fromDate, toDate, ReservationStatus.PENDING);
-        long confirmedCount = reservationRepository.countByReservationDateBetweenAndStatus(fromDate, toDate, ReservationStatus.CONFIRMED);
-        long arrivedCount = reservationRepository.countByReservationDateBetweenAndStatus(fromDate, toDate, ReservationStatus.ARRIVED);
-        long completedCount = reservationRepository.countByReservationDateBetweenAndStatus(fromDate, toDate, ReservationStatus.COMPLETED);
-        long cancelledCount = reservationRepository.countByReservationDateBetweenAndStatus(fromDate, toDate, ReservationStatus.CANCELLED);
-        long noShowCount = reservationRepository.countByReservationDateBetweenAndStatus(fromDate, toDate, ReservationStatus.NO_SHOW);
+        // 2. Đếm các trạng thái cụ thể theo ngày
+        long pendingCount = reservationRepository.countWithDynamicDatesAndStatus(fromDate, toDate, ReservationStatus.PENDING);
+        long confirmedCount = reservationRepository.countWithDynamicDatesAndStatus(fromDate, toDate, ReservationStatus.CONFIRMED);
+        long arrivedCount = reservationRepository.countWithDynamicDatesAndStatus(fromDate, toDate, ReservationStatus.ARRIVED);
+        long completedCount = reservationRepository.countWithDynamicDatesAndStatus(fromDate, toDate, ReservationStatus.COMPLETED);
+        long cancelledCount = reservationRepository.countWithDynamicDatesAndStatus(fromDate, toDate, ReservationStatus.CANCELLED);
+        long noShowCount = reservationRepository.countWithDynamicDatesAndStatus(fromDate, toDate, ReservationStatus.NO_SHOW);
 
-        // Tính tỷ lệ cọc thanh toán từ deposits
-        List<Reservation> allReservations = reservationRepository.findByReservationDateBetweenOrderByReservationTimeAsc(fromDate, toDate);
+        // 3. Tính tỷ lệ cọc thanh toán theo ngày
+        List<Reservation> allReservations = reservationRepository.findReservationsForStats(fromDate, toDate);
         long totalWithDeposit = allReservations.stream()
                 .filter(r -> r.getDeposits() != null && !r.getDeposits().isEmpty())
                 .count();
@@ -145,40 +145,70 @@ public class ReservationScheduleServiceImpl implements ReservationScheduleServic
     }
 
     @Override
-    public ReservationStatsResponse getStatsAll() {
-        long totalReservations = reservationRepository.count();
+    public ReservationDetailResponse getReservationDetail(Integer reservationId) {
+        Reservation r = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đặt bàn"));
 
-        long pendingCount = reservationRepository.countByStatus(ReservationStatus.PENDING);
-        long confirmedCount = reservationRepository.countByStatus(ReservationStatus.CONFIRMED);
-        long arrivedCount = reservationRepository.countByStatus(ReservationStatus.ARRIVED);
-        long completedCount = reservationRepository.countByStatus(ReservationStatus.COMPLETED);
-        long cancelledCount = reservationRepository.countByStatus(ReservationStatus.CANCELLED);
-        long noShowCount = reservationRepository.countByStatus(ReservationStatus.NO_SHOW);
+        // 1. Xử lý Bàn
+        List<ReservationDetailResponse.TableInfo> tableInfos = r.getTables().stream()
+                .map(t -> new ReservationDetailResponse.TableInfo(t.getTableId(), t.getCapacity()))
+                .toList();
 
-        // Tính tỷ lệ cọc thanh toán từ deposits (tất cả)
-        List<Reservation> allReservations = reservationRepository.findAll();
-        long totalWithDeposit = allReservations.stream()
-                .filter(r -> r.getDeposits() != null && !r.getDeposits().isEmpty())
-                .count();
+        // 2. Xử lý Tiền cọc
+        String depositStatus = "Chưa cọc";
+        BigDecimal depositAmount = null;
+        if (r.getDeposits() != null && !r.getDeposits().isEmpty()) {
+            var deposit = r.getDeposits().get(0);
+            depositAmount = deposit.getDepositAmount();
+            depositStatus = "PAID".equals(deposit.getPaymentStatus().name()) ? "Đã thanh toán" : "Đang chờ";
+        }
 
-        long paidDepositCount = allReservations.stream()
-                .flatMap(r -> r.getDeposits() != null ? r.getDeposits().stream() : java.util.stream.Stream.empty())
-                .filter(d -> DepositPaymentStatus.PAID.equals(d.getPaymentStatus()))
-                .count();
+        // 3. Xử lý Người hủy
+        String cancelledByName = null;
+        String cancelledByRole = null; // Biến mới
 
-        double depositPaymentRate = totalWithDeposit > 0 ? (double) paidDepositCount / totalWithDeposit * 100 : 0;
+        if (r.getCancelledBy() != null) {
+            cancelledByName = r.getCancelledBy().getFirstName() + " " + r.getCancelledBy().getLastName();
 
-        return ReservationStatsResponse.builder()
-                .totalReservations(totalReservations)
-                .pendingCount(pendingCount)
-                .confirmedCount(confirmedCount)
-                .arrivedCount(arrivedCount)
-                .completedCount(completedCount)
-                .cancelledCount(cancelledCount)
-                .noShowCount(noShowCount)
-                .paidDepositCount(paidDepositCount)
-                .totalWithDeposit(totalWithDeposit)
-                .depositPaymentRate(Math.round(depositPaymentRate * 100.0) / 100.0)
+            // Lấy Role và dịch sang tiếng Việt cho đẹp giao diện
+            if (r.getCancelledBy().getRole() != null) {
+                String roleCode = r.getCancelledBy().getRole().getRoleName().toUpperCase();
+                cancelledByRole = switch (roleCode) {
+                    case "ADMIN" -> "Quản trị viên";
+                    case "MANAGER" -> "Quản lý";
+                    case "STAFF" -> "Nhân viên";
+                    case "CUSTOMER", "USER" -> "Khách hàng";
+                    default -> roleCode;
+                };
+            } else {
+                cancelledByRole = "Khách hàng";
+            }
+        }
+
+        // 4. Map vào DTO
+        return ReservationDetailResponse.builder()
+                .reservationId(r.getReservationId())
+                .customerName(r.getCustomer().getFirstName() + " " + r.getCustomer().getLastName())
+                .customerPhone(r.getCustomer().getPhone())
+                .customerEmail(r.getCustomer().getEmail())
+                .username(r.getCustomer().getUsername())
+                .reservationDate(r.getReservationDate())
+                .reservationTime(r.getReservationTime())
+                .durationMinutes(r.getDurationMinutes())
+                .partySize(r.getPartySize())
+                .note(r.getNote())
+                .status(r.getStatus())
+                .statusLabel(getStatusLabel(r.getStatus()))
+                .depositStatus(depositStatus)
+                .depositAmount(depositAmount)
+                .assignedTables(tableInfos)
+                .createdAt(r.getCreatedAt())
+                .updatedAt(r.getUpdatedAt())
+                .cancelledByName(cancelledByName)
+                .cancelledByRole(cancelledByRole)
+                .cancellationReason(r.getCancellationReason())
+                .cancelledAt(r.getCancelledAt())
+                .orderId(r.getOrder() != null ? r.getOrder().getOrderId() : null)
                 .build();
     }
 

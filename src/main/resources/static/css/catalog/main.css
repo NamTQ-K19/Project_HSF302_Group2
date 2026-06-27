@@ -55,6 +55,42 @@ img { max-width: 100%; display: block; }
 .btn-xl  { padding: 1rem 2.5rem; font-size: 1.1rem; border-radius: var(--radius-lg); }
 .btn-sm  { padding: .4rem .9rem; font-size: .8rem; }
 .btn-full { width: 100%; }
+/* Container chính của giỏ hàng */
+.header-cart {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #e0d0c0; /* Màu cream nhạt giống chữ "Menu" */
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1rem;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+/* Hiệu ứng khi di chuột vào */
+.header-cart:hover {
+    color: #ffffff; /* Sáng lên */
+    background-color: rgba(255, 255, 255, 0.05); /* Nền mờ */
+}
+
+/* Icon */
+.header-cart i {
+    font-size: 1rem;
+}
+
+/* Badge (Số lượng sản phẩm) */
+.header-cart-badge {
+    background-color: #a0785a; /* Màu nâu đậm hơn để làm nổi bật số lượng */
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    min-width: 20px;
+    text-align: center;
+}
 
 /* ── Navbar ─────────────────────────────────────────────────── */
 .navbar {
@@ -67,7 +103,7 @@ img { max-width: 100%; display: block; }
 }
 .navbar-brand { display: flex; align-items: center; gap: .5rem; color: var(--cream); font-size: 1.25rem; font-weight: 700; white-space: nowrap; }
 .navbar-brand:hover { text-decoration: none; color: var(--gold); }
-.brand-icon { font-size: 1.5rem; }
+.brand-icon { font-size: 1.5rem; padding: 0 0 7px 0}
 .search-form { flex: 1; display: flex; max-width: 420px; }
 .search-input {
     flex: 1; padding: .5rem 1rem; border: none; border-radius: var(--radius) 0 0 var(--radius);
@@ -346,6 +382,119 @@ dropdown:focus-within .dropdown-menu { display: block; }
 .error-page h1 { font-size: 1.8rem; font-weight: 800; color: var(--brown-dark); margin-bottom: .75rem; }
 .error-page p { color: var(--text-light); margin-bottom: 2rem; }
 .error-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+/* ═══════════════════════════════════════════════
+   User Dropdown Menu (Navbar)
+═══════════════════════════════════════════════ */
+
+/* Wrapper bao toàn bộ dropdown */
+.user-dropdown {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* Nút toggle (tên user + mũi tên) */
+.user-dropdown-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    color: inherit;          /* kế thừa màu chữ từ navbar */
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.user-dropdown-toggle:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* Mũi tên xoay khi menu mở */
+.dropdown-arrow {
+    font-size: 12px;
+    transition: transform 0.2s;
+    display: inline-block;
+}
+
+.dropdown-arrow.open {
+    transform: rotate(180deg);
+}
+
+/* Danh sách điều hướng — ẩn mặc định */
+.user-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    background: #ffffff;
+    border: 1px solid #ddc5a8;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(59, 31, 14, 0.18);
+    min-width: 210px;
+    z-index: 999;
+    overflow: hidden;
+    /* Animation */
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+/* Khi đang hiện */
+.user-dropdown-menu.visible {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Từng item */
+.user-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 16px;
+    color: #2c1a0e;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.15s;
+}
+
+.user-dropdown-item:hover {
+    background: #f5e6d3;      /* coffee-pale */
+    color: #6f3d1f;           /* coffee-main */
+    text-decoration: none;
+}
+
+.item-icon {
+    font-size: 16px;
+    width: 22px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+/* Style cho nút giống thẻ a */
+.btn-as-link {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    /* color: inherit;  <-- XÓA DÒNG NÀY HOẶC COMMENT NÓ LẠI */
+    cursor: pointer;
+    outline: none;
+    width: 100%;
+    text-align: left;
+}
+
+/* (Tùy chọn) Thêm hiệu ứng hover giống các mục khác */
+.btn-as-link:hover {
+    color: #000; /* Thay đổi màu chữ hoặc thêm gạch chân tùy theo design của bạn */
+}
 
 /* ── Responsive ─────────────────────────────────────────────── */
 @media (max-width: 900px) {

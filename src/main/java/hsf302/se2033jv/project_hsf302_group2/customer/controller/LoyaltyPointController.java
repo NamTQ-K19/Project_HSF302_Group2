@@ -7,6 +7,7 @@ import hsf302.se2033jv.project_hsf302_group2.customer.service.interfaces.Loyalty
 import hsf302.se2033jv.project_hsf302_group2.customer.service.interfaces.ProfileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 @RequestMapping("/customer/points")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('CUSTOMER')")
 public class LoyaltyPointController {
 
     private static final int PAGE_SIZE = 10;

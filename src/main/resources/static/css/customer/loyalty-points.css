@@ -40,3 +40,55 @@
 .btn-sm { padding:6px 10px; font-size:13px; }
 .btn.disabled, .btn[disabled] { opacity:0.5; pointer-events:none; }
 .pagination-info { font-size:13px; color:var(--text-muted); margin-left:8px; }
+
+.field-error{
+    color: var(--danger);
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+/* =========================================
+   CỐ ĐỊNH GIAO DIỆN (CHỐNG CO DÃN BẢNG)
+   ========================================= */
+
+/* 1. ĐÂY LÀ DÒNG QUAN TRỌNG NHẤT: Bắt buộc cột 1fr không được phình ra theo nội dung */
+.profile-main {
+    min-width: 0 !important;
+}
+
+/* 2. Đảm bảo form bên ngoài luôn chiếm đủ 100% không gian sẵn có */
+.page-wrapper {
+    width: 100%;
+}
+
+/* 3. Cho phép bảng có thanh cuộn ngang bên trong Card nếu màn hình quá nhỏ,
+      tuyệt đối không đẩy Card giãn ra */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* 4. Ép bảng tuân thủ chiều rộng của Card */
+.transactions-table {
+    width: 100%;
+    table-layout: fixed; /* Thuộc tính ép các cột không được tự ý co giãn */
+    min-width: 750px;    /* Đảm bảo bảng không bị bóp méo khi màn hình thu nhỏ */
+}
+
+/* 5. Cắt bớt chữ và thêm dấu "..." nếu nội dung ghi chú quá dài */
+.transactions-table th, .transactions-table td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 5. Chia tỷ lệ cố định cho 7 cột (Tổng = 100%) */
+.transactions-table th:nth-child(1) { width: 6%;  } /* STT */
+.transactions-table th:nth-child(2) { width: 16%; } /* Ngày giờ */
+.transactions-table th:nth-child(3) { width: 14%; } /* Loại giao dịch */
+.transactions-table th:nth-child(4) { width: 7%; } /* Điểm */
+.transactions-table th:nth-child(5) { width: 14%; } /* Số dư sau GD */
+.transactions-table th:nth-child(6) { width: 17%; } /* Chi tiết giao dịch */
+.transactions-table th:nth-child(7) { width: 26%; } /* Ghi chú */
+
+

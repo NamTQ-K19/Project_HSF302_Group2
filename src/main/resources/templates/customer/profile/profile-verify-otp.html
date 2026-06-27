@@ -4,13 +4,14 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Xác nhận mã OTP – Cafe Shop</title>
+    <link rel="stylesheet" th:href="@{/css/catalog/main.css}" />
     <link th:href="@{/css/customer/profile.css}" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 </head>
 <body>
 
-<nav class="navbar">
-    <a class="navbar-brand" th:href="@{/static}">☕ <span>Cafe</span>Shop</a>
-</nav>
+<div th:replace="~{catalog/navbar :: navbar}"></div></nav>
 
 <div class="verify-wrap">
     <div class="verify-card">
@@ -87,7 +88,7 @@
         </div>
 
         <div style="text-align:center; margin-top:12px;">
-            <a th:href="@{/templates/customer/profile}"
+            <a th:href="@{/customer/profile}"
                style="font-size:13px; color:var(--text-muted);">
                 ← Quay lại Hồ sơ
             </a>
@@ -95,6 +96,10 @@
 
     </div>
 </div>
+
+<div th:replace="~{catalog/footer :: footer}"></div>
+
+<script th:src="@{/js/catalog/slider.js}"></script>
 
 </body>
 </html>

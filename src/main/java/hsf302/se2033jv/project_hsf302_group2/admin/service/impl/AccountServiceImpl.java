@@ -6,7 +6,7 @@ import hsf302.se2033jv.project_hsf302_group2.admin.dto.request.OtpVerificationRe
 import hsf302.se2033jv.project_hsf302_group2.admin.dto.response.AccountResponse;
 import hsf302.se2033jv.project_hsf302_group2.admin.dto.response.PageResponse;
 import hsf302.se2033jv.project_hsf302_group2.admin.service.interfaces.AccountService;
-import hsf302.se2033jv.project_hsf302_group2.admin.service.interfaces.EmailService;
+import hsf302.se2033jv.project_hsf302_group2.common.service.interfaces.EmailService;
 import hsf302.se2033jv.project_hsf302_group2.common.entity.Role;
 import hsf302.se2033jv.project_hsf302_group2.common.entity.User;
 import hsf302.se2033jv.project_hsf302_group2.common.exception.BusinessException;
@@ -18,14 +18,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Slf4j
 @Service

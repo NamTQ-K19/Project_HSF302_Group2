@@ -1,6 +1,7 @@
 package hsf302.se2033jv.project_hsf302_group2.customer.controller;
 
 import hsf302.se2033jv.project_hsf302_group2.common.entity.User;
+import hsf302.se2033jv.project_hsf302_group2.common.service.interfaces.EmailService;
 import hsf302.se2033jv.project_hsf302_group2.common.util.AvatarStorageUtil;
 import hsf302.se2033jv.project_hsf302_group2.customer.dto.request.AddressRequest;
 import hsf302.se2033jv.project_hsf302_group2.customer.dto.request.OtpVerifyRequest;
@@ -35,6 +36,7 @@ public class ProfileController {
 
     private final ProfileService profileService;
     private final EmailOtpService emailOtpService;
+    private final EmailService emailService;
     private final AvatarStorageUtil avatarStorageUtil;
     private final UserDetailsService userDetailsService;
     private final SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
@@ -70,38 +72,26 @@ public class ProfileController {
 
         User user = profileService.getCurrentUser(auth.getName());
 
-        // 1. Kiểm tra Bean Validation
-        if (bindingResult.hasErrors()) {
-            model.addAttribute("user", user);
-            model.addAttribute("profileForm", request);
-            model.addAttribute("addresses", profileService.getAddresses(user.getUserId()));
-            model.addAttribute("addressForm", new AddressRequest());
-            return "customer/profile/profile";
-        }
-
-        // 2. Kiểm tra phone trùng
+        // 1. Kiểm tra phone trùng
         if (profileService.isPhoneTakenByOtherUser(request.getPhone(), user.getUserId())) {
-            bindingResult.rejectValue("phone", "duplicate", "Số điện thoại này đã được sử dụng bởi tài khoản khác.");
-            model.addAttribute("user", user);
-            model.addAttribute("profileForm", request);
-            model.addAttribute("addresses", profileService.getAddresses(user.getUserId()));
-            model.addAttribute("addressForm", new AddressRequest());
-            return "customer/profile/profile";
+            bindingResult.rejectValue("phone", "duplicate",
+                    "Số điện thoại này đã được sử dụng bởi tài khoản khác.");;
         }
 
-        // 3. Kiểm tra username trùng
+        // 2. Kiểm tra username trùng
         if (profileService.isUsernameTakenByOtherUser(request.getUsername(), user.getUserId())) {
-            bindingResult.rejectValue("username", "duplicate", "Tên người dùng này đã tồn tại.");
-            model.addAttribute("user", user);
-            model.addAttribute("profileForm", request);
-            model.addAttribute("addresses", profileService.getAddresses(user.getUserId()));
-            model.addAttribute("addressForm", new AddressRequest());
-            return "customer/profile/profile";
+            bindingResult.rejectValue("username", "duplicate",
+                    "Tên người dùng này đã tồn tại.");
         }
 
-        // 4. Kiểm tra email trùng khi thay đổi
+        // 3. Kiểm tra email trùng khi thay đổi
         if (!request.getEmail().equalsIgnoreCase(user.getEmail()) && profileService.isEmailTakenByOtherUser(request.getEmail(), user.getUserId())) {
-            bindingResult.rejectValue("email", "duplicate", "Email này đã được sử dụng bởi tài khoản khác.");
+            bindingResult.rejectValue("email", "duplicate",
+                    "Email này đã được sử dụng bởi tài khoản khác.");
+        }
+
+        // 4. Kiểm tra Bean Validation
+        if (bindingResult.hasErrors()) {
             model.addAttribute("user", user);
             model.addAttribute("profileForm", request);
             model.addAttribute("addresses", profileService.getAddresses(user.getUserId()));
@@ -152,18 +142,14 @@ public class ProfileController {
         // Lấy user hiện tại
         User user = profileService.getCurrentUser(auth.getName());
 
-        // Kiểm tra validation
-        if (bindingResult.hasErrors()) {
-            model.addAttribute("user", user);
-            model.addAttribute("newEmail", newEmail);
-            model.addAttribute("profileData", buildProfileData(firstName, lastName, phone, newEmail));
-            model.addAttribute("username", username);
-            return "customer/profile/profile-verify-password";
-        }
-
         // Kiểm tra mật khẩu
         if (!profileService.verifyCurrentPassword(user, request.getCurrentPassword())) {
-            model.addAttribute("errorMessage", "Mật khẩu không chính xác. Vui lòng thử lại.");
+            bindingResult.rejectValue("currentPassword", "error.currentPassword",
+                    "Mật khẩu không chính xác. Vui lòng thử lại.");
+        }
+
+        // Kiểm tra validation
+        if (bindingResult.hasErrors()) {
             model.addAttribute("user", user);
             model.addAttribute("newEmail", newEmail);
             model.addAttribute("profileData", buildProfileData(firstName, lastName, phone, newEmail));
@@ -172,7 +158,7 @@ public class ProfileController {
             return "customer/profile/profile-verify-password";
         }
 
-        emailOtpService.generateAndSendOtp(user, newEmail);
+        emailService.generateAndSendOtp(user, newEmail);
 
         model.addAttribute("user", user);
         model.addAttribute("newEmail", newEmail);
@@ -203,6 +189,12 @@ public class ProfileController {
 
         User user = profileService.getCurrentUser(auth.getName());
 
+        boolean otpValid = emailOtpService.verifyOtp(user, newEmail, request.getOtpCode());
+        if (!otpValid) {
+            bindingResult.rejectValue("otpCode", "error.otpCode",
+                    "Mã OTP không hợp lệ hoặc đã hết hạn. Vui lòng thử lại hoặc yêu cầu gửi lại mã.");
+        }
+
         if (bindingResult.hasErrors()) {
             model.addAttribute("user", user);
             model.addAttribute("newEmail", newEmail);
@@ -211,19 +203,6 @@ public class ProfileController {
             model.addAttribute("phone", phone);
             model.addAttribute("username", username);
             model.addAttribute("otpForm", request);
-            return "customer/profile/profile-verify-otp";
-        }
-
-        boolean otpValid = emailOtpService.verifyOtp(user, newEmail, request.getOtpCode());
-        if (!otpValid) {
-            model.addAttribute("user", user);
-            model.addAttribute("newEmail", newEmail);
-            model.addAttribute("firstName", firstName);
-            model.addAttribute("lastName", lastName);
-            model.addAttribute("phone", phone);
-            model.addAttribute("username", username);
-            model.addAttribute("otpForm", request);
-            model.addAttribute("errorMessage", "Mã OTP không hợp lệ hoặc đã hết hạn. Vui lòng thử lại hoặc yêu cầu gửi lại mã.");
             return "customer/profile/profile-verify-otp";
         }
 
@@ -261,7 +240,7 @@ public class ProfileController {
 
         User user = profileService.getCurrentUser(auth.getName());
 
-        emailOtpService.generateAndSendOtp(user, newEmail);
+        emailService.generateAndSendOtp(user, newEmail);
 
         model.addAttribute("user", user);
         model.addAttribute("newEmail", newEmail);
@@ -310,6 +289,11 @@ public class ProfileController {
 
         User user = profileService.getCurrentUser(auth.getName());
 
+        if (profileService.isRecipientPhoneTaken(user.getUserId(), request.getRecipientPhone())) {
+            bindingResult.rejectValue("recipientPhone", "error.recipientPhone",
+                    "Đã có địa chỉ sử dụng số điện thoại này.");
+        }
+
         if (bindingResult.hasErrors()) {
             ProfileUpdateRequest form = new ProfileUpdateRequest();
             form.setFirstName(user.getFirstName());
@@ -319,18 +303,7 @@ public class ProfileController {
             form.setUsername(user.getUsername());
 
             model.addAttribute("user", user);
-            model.addAttribute("profileForm", new ProfileUpdateRequest());
-            model.addAttribute("addresses", profileService.getAddresses(user.getUserId()));
-            model.addAttribute("addressForm", request);
-            model.addAttribute("showAddressForm", true);
-            return "customer/profile/profile";
-        }
-
-        if (profileService.isRecipientPhoneTaken(user.getUserId(), request.getRecipientPhone())) {
-            bindingResult.rejectValue("recipientPhone", "error.recipientPhone", "Đã có địa chỉ sử dụng số điện thoại này.");
-
-            model.addAttribute("user", user);
-            model.addAttribute("profileForm", new ProfileUpdateRequest());
+            model.addAttribute("profileForm", form);
             model.addAttribute("addresses", profileService.getAddresses(user.getUserId()));
             model.addAttribute("addressForm", request);
             model.addAttribute("showAddressForm", true);
@@ -353,11 +326,27 @@ public class ProfileController {
 
         User user = profileService.getCurrentUser(auth.getName());
 
+        if (profileService.isRecipientPhoneTakenByOtherUser(user.getUserId(), request.getRecipientPhone(), addressId)) {
+            bindingResult.rejectValue("recipientPhone", "error.recipientPhone",
+                    "Đã có địa chỉ sử dụng số điện thoại này.");
+        }
+
         if (bindingResult.hasErrors()) {
+            ProfileUpdateRequest form = new ProfileUpdateRequest();
+            form.setFirstName(user.getFirstName());
+            form.setLastName(user.getLastName());
+            form.setPhone(user.getPhone());
+            form.setEmail(user.getEmail());
+            form.setUsername(user.getUsername());
+
             model.addAttribute("user", user);
-            model.addAttribute("profileForm", new ProfileUpdateRequest());
+            model.addAttribute("profileForm", form);
             model.addAttribute("addresses", profileService.getAddresses(user.getUserId()));
             model.addAttribute("addressForm", new AddressRequest());
+
+            if (bindingResult.hasFieldErrors("recipientPhone")) {
+                model.addAttribute("editPhoneError", bindingResult.getFieldError("recipientPhone").getDefaultMessage());
+            }
 
             // Prepare model to re-open the Edit Address modal with submitted values and show errors there
             model.addAttribute("openEditModal", true);
@@ -368,29 +357,6 @@ public class ProfileController {
             model.addAttribute("editRecipientPhone", request.getRecipientPhone());
             model.addAttribute("editAddressForm", request);
             model.addAttribute("editHasValidationErrors", true);
-            return "customer/profile/profile";
-        }
-
-        if (profileService.isRecipientPhoneTakenByOtherUser(user.getUserId(), request.getRecipientPhone(), addressId)) {
-            bindingResult.rejectValue("recipientPhone", "error.recipientPhone", "Đã có địa chỉ sử dụng số điện thoại này.");
-
-            // Prepare model to re-open the Edit Address modal with submitted values and show errors there
-            model.addAttribute("user", user);
-            model.addAttribute("profileForm", new ProfileUpdateRequest());
-            model.addAttribute("addresses", profileService.getAddresses(user.getUserId()));
-            model.addAttribute("addressForm", new AddressRequest());
-
-            // Provide the edit modal fields so template can pre-fill them
-            model.addAttribute("openEditModal", true);
-            model.addAttribute("editAddressId", addressId);
-            model.addAttribute("editLabel", request.getLabel());
-            model.addAttribute("editFullAddress", request.getFullAddress());
-            model.addAttribute("editRecipientName", request.getRecipientName());
-            model.addAttribute("editRecipientPhone", request.getRecipientPhone());
-
-            // Also include the BindingResult errors for the address form under the key 'editAddressForm'
-            model.addAttribute("editAddressForm", request);
-            model.addAttribute("editPhoneError", "Đã có địa chỉ sử dụng số điện thoại này.");
             return "customer/profile/profile";
         }
 

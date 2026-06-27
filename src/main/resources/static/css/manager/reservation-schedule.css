@@ -2,8 +2,6 @@
    Reservation Schedule CSS (Manager)
 ═══════════════════════════════════════════ */
 
-@import url('../customer/customer-profile-layout.css');
-
 /* ── Page title ──────────────────────────── */
 .page-title {
     margin-bottom: 24px;

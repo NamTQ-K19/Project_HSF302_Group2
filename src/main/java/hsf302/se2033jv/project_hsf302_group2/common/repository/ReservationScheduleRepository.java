@@ -5,6 +5,8 @@ import hsf302.se2033jv.project_hsf302_group2.common.enums.ReservationStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -42,6 +44,35 @@ public interface ReservationScheduleRepository extends JpaRepository<Reservation
 
     // Count by date range and status
     long countByReservationDateBetweenAndStatus(LocalDate fromDate, LocalDate toDate, ReservationStatus status);
+
+    @Query("SELECT r FROM Reservation r WHERE " +
+            "(:fromDate IS NULL OR r.reservationDate >= :fromDate) AND " +
+            "(:toDate IS NULL OR r.reservationDate <= :toDate) AND " +
+            "(:status IS NULL OR r.status = :status) " +
+            "ORDER BY r.reservationDate DESC, r.reservationTime ASC")
+    Page<Reservation> findWithDynamicFilter(
+            @Param("fromDate") LocalDate fromDate,
+            @Param("toDate") LocalDate toDate,
+            @Param("status") ReservationStatus status,
+            Pageable pageable);
+
+    @Query("SELECT COUNT(r) FROM Reservation r WHERE " +
+            "(:fromDate IS NULL OR r.reservationDate >= :fromDate) AND " +
+            "(:toDate IS NULL OR r.reservationDate <= :toDate)")
+    long countWithDynamicDates(@Param("fromDate") LocalDate fromDate, @Param("toDate") LocalDate toDate);
+
+    // 2. Đếm số lượng của 1 trạng thái cụ thể trong khoảng thời gian
+    @Query("SELECT COUNT(r) FROM Reservation r WHERE " +
+            "(:fromDate IS NULL OR r.reservationDate >= :fromDate) AND " +
+            "(:toDate IS NULL OR r.reservationDate <= :toDate) AND " +
+            "r.status = :status")
+    long countWithDynamicDatesAndStatus(@Param("fromDate") LocalDate fromDate, @Param("toDate") LocalDate toDate, @Param("status") ReservationStatus status);
+
+    // 3. Lấy danh sách để tính tỷ lệ cọc
+    @Query("SELECT r FROM Reservation r WHERE " +
+            "(:fromDate IS NULL OR r.reservationDate >= :fromDate) AND " +
+            "(:toDate IS NULL OR r.reservationDate <= :toDate)")
+    List<Reservation> findReservationsForStats(@Param("fromDate") LocalDate fromDate, @Param("toDate") LocalDate toDate);
 }
 
 

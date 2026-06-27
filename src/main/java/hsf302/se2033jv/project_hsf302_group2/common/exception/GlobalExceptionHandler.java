@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
-@RestControllerAdvice
+@RestControllerAdvice(basePackages = "hsf302.se2033jv.project_hsf302_group2.admin")
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)

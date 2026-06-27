@@ -5,9 +5,14 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Hồ sơ của tôi – Cafe Shop</title>
+    <link rel="stylesheet" th:href="@{/css/catalog/main.css}" />
     <link th:href="@{/css/customer/profile.css}" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 </head>
 <body>
+
+<div th:replace="~{catalog/navbar :: navbar}"></div>
 
 <div class="page-wrapper">
 
@@ -56,7 +61,7 @@
                        onchange="document.getElementById('avatarForm').submit()"/>
             </form>
 
-            <div class="avatar-hint">Định dạng JPG, PNG hoặc WEBP · Dung lượng tối đa 5MB</div>
+            <div class="avatar-hint">Định dạng JPG, PNG hoặc WEBP · Dung lượng tối đa 10MB</div>
 
             <br>
 
@@ -152,7 +157,7 @@
                                        th:field="*{email}"
                                        class="form-control"
                                        th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
-                                        required/>
+                                       required/>
                                 <div th:if="${#fields.hasErrors('email')}"
                                      class="form-error"
                                      th:errors="*{email}"></div>
@@ -165,9 +170,9 @@
 
                         <div style="display:flex; gap:10px; margin-top:8px;">
                             <button type="submit" class="btn btn-primary">
-                                💾 Lưu thay đổi
+                                Lưu thay đổi
                             </button>
-                            <a th:href="@{/templates/customer/profile}"
+                            <a th:href="@{/customer/profile}"
                                class="btn btn-secondary">Hủy</a>
                         </div>
 
@@ -244,9 +249,9 @@
                     <!-- Toggle add form -->
                     <div style="margin-top:16px;">
                         <button type="button"
-                            class="add-address-toggle"
-                            id="toggleAddBtn"
-                            onclick="toggleAddForm()">
+                                class="add-address-toggle"
+                                id="toggleAddBtn"
+                                onclick="toggleAddForm()">
                             + Thêm địa chỉ mới
                         </button>
 
@@ -297,7 +302,7 @@
                                                th:field="*{recipientName}"
                                                class="form-control"
                                                th:classappend="${#fields.hasErrors('recipientName')} ? 'is-invalid'"
-                                                required />
+                                               required />
                                         <div th:if="${#fields.hasErrors('recipientName')}"
                                              class="form-error"
                                              th:errors="*{recipientName}"></div>
@@ -310,8 +315,8 @@
                                                th:field="*{fullAddress}"
                                                class="form-control"
                                                th:classappend="${#fields.hasErrors('fullAddress')} ? 'is-invalid'"
-                                                placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành"
-                                                required/>
+                                               placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành"
+                                               required/>
                                         <div th:if="${#fields.hasErrors('fullAddress')}"
                                              class="form-error"
                                              th:errors="*{fullAddress}"></div>
@@ -321,7 +326,7 @@
                                 <div style="display:flex; gap:10px;">
                                     <button type="submit"
                                             class="btn btn-primary btn-sm">
-                                        💾 Lưu địa chỉ
+                                        Lưu địa chỉ
                                     </button>
                                     <button type="button"
                                             class="btn btn-secondary btn-sm"
@@ -351,12 +356,12 @@
              background:rgba(0,0,0,.45); z-index:200;
              flex-direction:column;
              align-items:center; justify-content:center;">
-    <div style="background:var(--white); border-radius:var(--radius-lg);
-                padding:28px 28px 20px; width:100%; max-width:480px;
-                box-shadow:var(--shadow-lg); margin:20px;">
+    <div style="background:#fff; border-radius:var(--radius-lg);
+            padding:28px 28px 20px; width:100%; max-width:480px;
+            box-shadow:var(--shadow-lg); margin:20px; z-index:1000;">
 
-        <div style="font-size:17px; font-weight:700;
-                    color:var(--coffee-dark); margin-bottom:20px;">
+        <div style="font-size:1.1rem; font-weight:700;
+                color:var(--brown-dark); margin-bottom:20px;">
             ✏ Sửa địa chỉ
         </div>
 
@@ -465,6 +470,8 @@
     </script>
 </div>
 
+<div th:replace="~{catalog/footer :: footer}"></div>
+
 <script th:inline="javascript">
     // ── Add address form toggle ────────────────────────────────
     function toggleAddForm() {
@@ -527,5 +534,8 @@
             if (e.target === this) closeEditModal();
         });
 </script>
+
+<script th:src="@{/js/catalog/slider.js}"></script>
+
 </body>
 </html>

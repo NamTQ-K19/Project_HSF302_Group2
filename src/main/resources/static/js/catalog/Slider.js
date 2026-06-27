@@ -54,3 +54,35 @@
         }
     });
 }());
+
+/* ═══════════════════════════════════════════════
+   User Dropdown Toggle
+═══════════════════════════════════════════════ */
+
+function toggleUserMenu() {
+    const menu  = document.getElementById('userDropdownMenu');
+    const arrow = document.getElementById('userDropdownArrow');
+
+    if (!menu) return;
+
+    const isOpen = menu.classList.contains('visible');
+
+    if (isOpen) {
+        menu.classList.remove('visible');
+        arrow.classList.remove('open');
+    } else {
+        menu.classList.add('visible');
+        arrow.classList.add('open');
+    }
+}
+
+/* Bấm ra ngoài → đóng menu */
+document.addEventListener('click', function (e) {
+    const dropdown = document.getElementById('userDropdown');
+    if (dropdown && !dropdown.contains(e.target)) {
+        const menu  = document.getElementById('userDropdownMenu');
+        const arrow = document.getElementById('userDropdownArrow');
+        if (menu)  menu.classList.remove('visible');
+        if (arrow) arrow.classList.remove('open');
+    }
+});

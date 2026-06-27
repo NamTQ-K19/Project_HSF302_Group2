@@ -65,7 +65,7 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
                     redirectUrl = "/admin/dashboard";
                     break label;
                 case "ROLE_MANAGER":
-                    redirectUrl = "/dashboard";
+                    redirectUrl = "/manager/reservations";
                     break label;
                 case "ROLE_CASHIER":
                     redirectUrl = "/order/create";

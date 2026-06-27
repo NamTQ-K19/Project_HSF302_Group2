@@ -7,6 +7,7 @@ import hsf302.se2033jv.project_hsf302_group2.reservation.dto.response.Reservatio
 import hsf302.se2033jv.project_hsf302_group2.reservation.service.interfaces.ReservationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,6 +20,7 @@ import java.util.List;
 @Controller
 @RequestMapping("/customer/reservations")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('CUSTOMER')")
 public class CustomerReservationController {
 
     private final ReservationService reservationService;
@@ -75,8 +77,6 @@ public class CustomerReservationController {
             Authentication auth,
             Model model,
             RedirectAttributes redirectAttributes) {
-
-        if (auth == null || !auth.isAuthenticated()) return "redirect:/login";
 
         User user = profileService.getCurrentUser(auth.getName());
 

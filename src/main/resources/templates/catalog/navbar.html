@@ -11,9 +11,10 @@
 
         <!-- Logo / Home Link (Field #1 – UC_01 screen def) -->
         <a th:href="@{/}" class="navbar-brand">
-            <span class="brand-icon">☕</span>
-            <span class="brand-name">Café Aroma</span>
+            <span class="brand-icon"><i class="fas fa-mug-hot"></i></span>
+            <span class="brand-name">BrewMaster</span>
         </a>
+
 
         <!-- Search Bar (Field #2 – UC_01 screen def, max 50 chars) -->
         <form th:action="@{/search}" method="get" class="search-form">
@@ -59,18 +60,52 @@
 
             <!-- Logged-in user menu -->
             <div sec:authorize="isAuthenticated()" class="user-menu">
-                <a href="/customer/cart" class="header-cart">
+                <a href="/customer/cart" class="header-cart" style="text-decoration: none">
                     <i class="fas fa-shopping-cart"></i><span>Giỏ hàng</span>
                     <span class="header-cart-badge" id="cartBadge"><span id="cartCount">0</span></span>
                 </a>
-                <span sec:authentication="name" class="user-name"></span>
-                <form th:action="@{/logout}" method="post">
-                    <button type="submit" class="btn btn-outline">Đăng xuất</button>
-                </form>
+
+                <!-- User dropdown menu -->
+                <div class="user-dropdown" id="userDropdown">
+
+                    <!-- Toggle button: tên user + mũi tên -->
+                    <button class="user-dropdown-toggle"
+                            id="userDropdownToggle"
+                            onclick="toggleUserMenu()"
+                            type="button">
+                        <span sec:authentication="name" class="user-name"></span>
+                        <span class="dropdown-arrow" id="userDropdownArrow">▾</span>
+                    </button>
+
+                    <!-- Danh sách điều hướng (ẩn mặc định) -->
+                    <div class="user-dropdown-menu" id="userDropdownMenu">
+                        <a th:href="@{/customer/profile}" class="user-dropdown-item">
+                            <span class="material-symbols-outlined item-icon">account_circle</span> Thông tin tài khoản
+                        </a>
+
+                        <a th:href="@{/customer/points}" class="user-dropdown-item">
+                            <span class="material-symbols-outlined item-icon">stars</span> Lịch sử điểm tích lũy
+                        </a>
+
+                        <a th:href="@{/customer/reservations}" class="user-dropdown-item">
+                            <span class="material-symbols-outlined item-icon">calendar_month</span> Đặt bàn
+                        </a>
+
+                        <form th:action="@{/logout}" method="post">
+                            <button type="submit" class="btn-as-link">
+                                <div class="user-dropdown-item">
+                                    <span class="material-symbols-outlined item-icon">logout</span> Đăng xuất
+                                </div>
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+
             </div>
         </div>
 
     </div>
 </nav>
 
-</html>
+</html>x
