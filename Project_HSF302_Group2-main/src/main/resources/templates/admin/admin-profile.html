@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${pageTitle} + ' - BrewMaster'">BrewMaster - Hồ sơ của tôi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="/css/admin/sidebar.css" />
+    <link rel="stylesheet" href="/css/admin/admin-profile.css" />
+</head>
+<body>
+<div class="dashboard-grid">
+    <!-- Sidebar Fragment -->
+    <th:block th:replace="~{admin/fragments/sidebar :: sidebar(currentPage='profile')}"></th:block>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div>
+                <h1>Hồ sơ của tôi</h1>
+                <div style="font-size: 14px; color: #64748b; margin-top: 4px;">
+                    Quản lý thông tin cá nhân của bạn
+                </div>
+            </div>
+            <div class="topbar-actions">
+                <span class="date" th:text="${currentDate}">22 Tháng 6, 2026</span>
+                <a th:href="@{/admin/dashboard}" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </a>
+            </div>
+        </header>
+
+        <!-- ===== BỐ CỤC 3 - 7 ===== -->
+        <div class="profile-layout">
+
+            <!-- ===== CỘT TRÁI (3/10) ===== -->
+            <div class="profile-left">
+                <!-- Avatar -->
+                <div class="avatar-section">
+                    <div class="avatar-upload">
+                        <th:block th:if="${user.avatarUrl != null and !user.avatarUrl.isEmpty()}">
+                            <img th:src="${#strings.startsWith(user.avatarUrl, '/uploads/avatars/') ? user.avatarUrl : '/uploads/avatars/' + user.avatarUrl}"
+                                 alt="Avatar"
+                                 class="avatar-preview"
+                                 id="avatarPreview" />
+                        </th:block>
+                        <th:block th:unless="${user.avatarUrl != null and !user.avatarUrl.isEmpty()}">
+                            <div class="avatar-placeholder" id="avatarPlaceholder">
+                                <span th:text="${#strings.substring(user.fullName, 0, 1)}">A</span>
+                            </div>
+                        </th:block>
+
+                        <form th:action="@{/admin/profile/avatar}"
+                              method="post"
+                              enctype="multipart/form-data"
+                              id="avatarForm">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                            <label class="upload-btn" for="avatarFile" title="Đổi ảnh đại diện">
+                                <i class="fas fa-camera"></i>
+                            </label>
+                            <input type="file"
+                                   id="avatarFile"
+                                   name="avatar"
+                                   accept="image/jpeg,image/png,image/gif,image/webp"
+                                   style="display:none"
+                                   onchange="document.getElementById('avatarForm').submit()"/>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Fullname & Role -->
+                <div class="user-info">
+                    <h2 class="user-fullname" th:text="${user.fullName}">Nguyễn Văn A</h2>
+                    <span class="user-role" th:text="${user.role}">ADMIN</span>
+                    <span class="user-email" th:text="${user.email}">admin@brewmaster.com</span>
+                </div>
+            </div>
+
+            <!-- ===== CỘT PHẢI (7/10) ===== -->
+            <div class="profile-right">
+                <!-- Profile Form -->
+                <div class="profile-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-user-edit" style="color: #c8a882;"></i> Thông tin cá nhân</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="profileForm" th:action="@{/admin/profile/update}" method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="firstName">Họ <span class="required">*</span></label>
+                                    <input type="text" id="firstName" name="firstName"
+                                           th:value="${user.firstName}"
+                                           placeholder="Nhập họ" maxlength="100" required />
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="lastName">Tên <span class="required">*</span></label>
+                                    <input type="text" id="lastName" name="lastName"
+                                           th:value="${user.lastName}"
+                                           placeholder="Nhập tên" maxlength="100" required />
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="username">Tên đăng nhập</label>
+                                    <input type="text" id="username" name="username"
+                                           th:value="${user.username}"
+                                           disabled />
+                                    <span class="hint">Không thể thay đổi tên đăng nhập</span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="email">Email</label>
+                                    <input type="email" id="email" name="email"
+                                           th:value="${user.email}"
+                                           disabled />
+                                    <span class="hint">Không thể thay đổi email</span>
+                                </div>
+
+                                <div class="form-group full-width">
+                                    <label for="phone">Số điện thoại <span class="required">*</span></label>
+                                    <input type="tel" id="phone" name="phone"
+                                           th:value="${user.phone}"
+                                           placeholder="Nhập số điện thoại" maxlength="20" required />
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Lưu thay đổi
+                                </button>
+                                <button type="reset" class="btn btn-secondary">
+                                    <i class="fas fa-undo"></i> Đặt lại
+                                </button>
+                                <button type="button" class="btn btn-success" onclick="window.openPasswordModal()">
+                                    <i class="fas fa-key"></i> Đổi mật khẩu
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- /profile-layout -->
+    </main>
+</div>
+
+<!-- ===== MODAL ĐỔI MẬT KHẨU ===== -->
+<div id="passwordModal" class="modal-overlay" style="display:none;">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3><i class="fas fa-key" style="color: #c8a882;"></i> Đổi mật khẩu</h3>
+            <button class="modal-close" onclick="window.closePasswordModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div th:if="${passwordError != null}" class="alert alert-error" style="margin-bottom: 16px;">
+                <i class="fas fa-exclamation-circle"></i>
+                <span th:text="${passwordError}"></span>
+            </div>
+
+            <form id="passwordForm" th:action="@{/admin/profile/change-password}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <div class="form-group">
+                    <label for="currentPassword">Mật khẩu hiện tại <span class="required">*</span></label>
+                    <input type="password" id="currentPassword" name="currentPassword"
+                           placeholder="Nhập mật khẩu hiện tại" required />
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">Mật khẩu mới <span class="required">*</span></label>
+                    <input type="password" id="newPassword" name="newPassword"
+                           placeholder="Nhập mật khẩu mới" required />
+                    <span class="hint">Mật khẩu phải có ít nhất 8 ký tự</span>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Xác nhận mật khẩu <span class="required">*</span></label>
+                    <input type="password" id="confirmPassword" name="confirmPassword"
+                           placeholder="Nhập lại mật khẩu mới" required />
+                </div>
+                <div class="form-actions" style="border-top: none; padding-top: 12px; margin-top: 0;">
+                    <button type="button" class="btn btn-secondary" onclick="window.closePasswordModal()">Hủy</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-key"></i> Xác nhận đổi mật khẩu
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="toast" style="display:none;">
+    <span id="toastMessage"></span>
+    <button id="toastClose">&times;</button>
+</div>
+
+<!-- Server Message -->
+<div id="serverMessage"
+     th:if="${message != null}"
+     th:data-message="${message}"
+     th:data-type="${messageType != null ? messageType : 'info'}"
+     style="display:none;"></div>
+
+<!-- Hidden flag để JS biết mở modal -->
+<div id="openModalFlag" th:if="${openPasswordModal != null and openPasswordModal}"
+     data-open="true" style="display:none;"></div>
+
+<script src="/js/admin/admin-profile.js"></script>
+</body>
+</html>

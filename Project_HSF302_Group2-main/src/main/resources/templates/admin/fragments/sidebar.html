@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head></head>
+<body>
+<!-- Sidebar Fragment -->
+<aside class="sidebar" th:fragment="sidebar(currentPage)">
+    <div class="logo">
+        <div class="logo-icon"><i class="fas fa-mug-hot"></i></div>
+        <span class="logo-text">BrewMaster</span>
+    </div>
+
+    <nav>
+        <div class="nav-label">CHÍNH</div>
+        <a th:href="@{/admin/dashboard}" class="nav-item" th:classappend="${currentPage == 'dashboard'} ? 'active' : ''">
+            <span class="nav-icon"><i class="fas fa-chart-pie"></i></span>
+            Tổng quan
+        </a>
+        <a th:href="@{/admin/accounts}" class="nav-item" th:classappend="${currentPage == 'accounts'} ? 'active' : ''">
+            <span class="nav-icon"><i class="fas fa-users"></i></span>
+            Người dùng
+        </a>
+
+        <div class="nav-divider"></div>
+
+        <div class="nav-label">HỆ THỐNG</div>
+        <a href="#" class="nav-item">
+            <span class="nav-icon"><i class="fas fa-history"></i></span>
+            Nhật ký hệ thống
+        </a>
+        <a href="#" class="nav-item">
+            <span class="nav-icon"><i class="fas fa-cog"></i></span>
+            Cấu hình hệ thống
+        </a>
+
+        <div class="nav-divider"></div>
+
+        <div class="nav-label">TÀI KHOẢN</div>
+        <a th:href="@{/admin/profile}" class="nav-item">
+            <span class="nav-icon"><i class="fas fa-user-circle"></i></span>
+            Hồ sơ
+        </a>
+
+        <form th:action="@{/logout}" method="post" class="logout-form">
+            <button type="submit" class="logout-btn">
+                <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
+                <span>Đăng xuất</span>
+            </button>
+        </form>
+    </nav>
+</aside>
+</body>
+</html>

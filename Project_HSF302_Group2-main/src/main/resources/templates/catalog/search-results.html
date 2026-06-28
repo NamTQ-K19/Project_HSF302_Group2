@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title th:text="'Tìm kiếm: ' + ${keyword} + ' – Café Aroma'">Tìm kiếm – BrewMaster</title>
+  <link rel="stylesheet" th:href="@{/css/catalog/main.css}" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+<body>
+
+<div th:replace="~{catalog/navbar :: navbar}"></div>
+
+<main class="page-main">
+  <div class="section-container">
+
+    <!-- ============================================================
+         Search Header (Fields #1, #2, #3 – UC_02 screen def)
+         ============================================================ -->
+    <div class="search-page-header">
+      <h1 class="page-title">
+        <!-- Field #3: "Showing results for: [keyword]" -->
+        <span th:if="${searchMode == 'keyword'}"
+              th:text="'Kết quả tìm kiếm: &quot;' + ${keyword} + '&quot;'">
+                    Kết quả tìm kiếm
+                </span>
+        <span th:if="${searchMode == 'category'}">
+                    Danh mục:
+                    <span th:each="cat : ${categories}"
+                          th:if="${cat.categoryId == selectedCategoryId}"
+                          th:text="${cat.name}">Category</span>
+                </span>
+        <span th:if="${searchMode == 'all'}">Tất cả sản phẩm</span>
+      </h1>
+
+      <!-- Inline search bar (Field #1 retains keyword) -->
+      <form th:action="@{/search}" method="get" class="search-inline-form">
+        <input type="text"
+               name="keyword"
+               th:value="${keyword}"
+               placeholder="Tìm kiếm đồ uống..."
+               maxlength="50"
+               class="search-input-lg"
+               aria-label="Search products"/>
+        <!-- Field #2: Search Button -->
+        <button type="submit" class="btn btn-primary">🔍 Tìm</button>
+      </form>
+    </div>
+
+    <!-- Category pills -->
+    <div class="category-bar-inline">
+      <a th:href="@{/search}"
+         th:class="${selectedCategoryId == null} ? 'category-pill active' : 'category-pill'">
+        Tất cả
+      </a>
+      <a th:each="cat : ${categories}"
+         th:href="@{/search(categoryId=${cat.categoryId})}"
+         th:text="${cat.name}"
+         th:class="${cat.categoryId == selectedCategoryId} ? 'category-pill active' : 'category-pill'">
+      </a>
+    </div>
+
+    <!-- Result count -->
+    <p class="result-count"
+       th:unless="${#lists.isEmpty(products)}"
+       th:text="${#lists.size(products)} + ' sản phẩm'">
+    </p>
+
+    <!-- ============================================================
+         Product Grid (Field #4 – UC_02 screen def: Image, Name, Price)
+         ============================================================ -->
+    <div class="product-grid" th:if="${not #lists.isEmpty(products)}">
+      <div th:each="product : ${products}" class="product-card">
+        <a th:href="@{/products/{id}(id=${product.productId})}" class="product-card-link">
+          <div class="product-img-wrap">
+            <img th:src="@{${product.primaryImageUrl}}"
+                 th:alt="${product.name}"
+                 class="product-img"
+                 loading="lazy"
+                 onerror="this.onerror=null; this.style.visibility='hidden'"/>
+            <span class="category-badge" th:text="${product.categoryName}">Danh mục</span>
+          </div>
+          <div class="product-card-body">
+            <h3 class="product-name" th:text="${product.name}">Tên sản phẩm</h3>
+            <div class="rating-row" th:if="${product.reviewCount > 0}">
+              <div class="stars">
+                        <span th:each="i : ${#numbers.sequence(1,5)}"
+                              th:class="${i <= product.averageRating} ? 'star filled' : 'star'">★</span>
+              </div>
+              <span class="review-count"
+                    th:text="'(' + ${product.reviewCount} + ' đánh giá)'"></span>
+            </div>
+            <div class="price-row">
+                    <span class="price"
+                          th:if="${product.minPrice == product.maxPrice}"
+                          th:text="${#numbers.formatDecimal(product.minPrice,0,'COMMA',0,'POINT')} + ' ₫'">
+                    </span>
+              <span class="price"
+                    th:unless="${product.minPrice == product.maxPrice}"
+                    th:text="${#numbers.formatDecimal(product.minPrice,0,'COMMA',0,'POINT')}
+                                   + ' – '
+                                   + ${#numbers.formatDecimal(product.maxPrice,0,'COMMA',0,'POINT')}
+                                   + ' ₫'">
+                    </span>
+            </div>
+          </div>
+        </a>
+        <div class="product-card-footer">
+          <a th:href="@{/products/{id}(id=${product.productId})}"
+             class="btn btn-primary btn-sm">Xem chi tiết</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- AT1: No products found (UC_02 alternative flow) -->
+    <div class="empty-search-state" th:if="${#lists.isEmpty(products)}">
+      <div class="empty-icon">☕</div>
+      <h2>Không tìm thấy sản phẩm</h2>
+      <p th:if="${searchMode == 'keyword'}"
+         th:text="'Không có sản phẩm phù hợp với từ khóa &quot;' + ${keyword} + '&quot;. Thử từ khóa khác nhé!'">
+      </p>
+      <p th:if="${searchMode == 'category'}">Danh mục này chưa có sản phẩm.</p>
+      <a th:href="@{/search}" class="btn btn-primary">Xem tất cả sản phẩm</a>
+    </div>
+
+  </div>
+</main>
+
+<div th:replace="~{catalog/footer :: footer}"></div>
+
+
+</body>
+</html>

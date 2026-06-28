@@ -1,0 +1,31 @@
+<aside th:fragment="sidebar(activePage)" class="manager-sidebar">
+    <div class="sidebar-brand">
+        <span class="brand-icon">☕</span>
+        <div>
+            <div class="brand-name">CafeShop</div>
+            <div class="brand-role">Quản lý</div>
+        </div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <a th:href="@{/manager/dashboard}" th:classappend="${activePage == 'dashboard'} ? ' active'" class="sidebar-nav-item">
+            <span class="nav-icon">📊</span><span>Tổng quan</span>
+        </a>
+        <a th:href="@{/manager/reservations}" th:classappend="${activePage == 'reservations'} ? ' active'" class="sidebar-nav-item">
+            <span class="nav-icon">📅</span><span>Lịch đặt bàn</span>
+        </a>
+        <a th:href="@{/manager/products}" th:classappend="${activePage == 'products'} ? ' active'" class="sidebar-nav-item">
+            <span class="nav-icon">☕</span><span>Sản phẩm</span>
+        </a>
+        <a th:href="@{/manager/reports}" th:classappend="${activePage == 'reports'} ? ' active'" class="sidebar-nav-item">
+            <span class="nav-icon">📈</span><span>Báo cáo</span>
+        </a>
+    </nav>
+
+    <div class="sidebar-footer">
+        <form th:action="@{/logout}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="btn-sidebar-logout"><span>🚪</span> Đăng xuất</button>
+        </form>
+    </div>
+</aside>

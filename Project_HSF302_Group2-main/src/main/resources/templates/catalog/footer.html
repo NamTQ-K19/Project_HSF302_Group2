@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<th:block th:fragment="footer">
+  <footer class="site-footer">
+    <div class="footer-container">
+
+      <div class="footer-brand">
+        <a th:href="@{/}" class="footer-logo">
+          <span class="brand-icon"><i class="fas fa-mug-hot"></i></span>
+          <span class="brand-name">BrewMaster</span>
+        </a>
+        <p class="footer-tagline">Mỗi tách cà phê – một câu chuyện.</p>
+        <a th:href="@{/loyalty-policy}" class="footer-policy-link">Xem chính sách tích điểm →</a>
+      </div>
+
+      <div class="footer-links">
+        <h4>Khám phá</h4>
+        <ul>
+          <li><a th:href="@{/}">Trang chủ</a></li>
+          <li><a th:href="@{/search}">Thực đơn</a></li>
+          <li><a th:href="@{/loyalty-policy}">Chính sách tích điểm</a></li>
+          <li><a th:href="@{/reservations}">Đặt bàn</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-contact">
+        <h4>Liên hệ</h4>
+        <p>📍 123 Đường Cà Phê, Quận 1, TP.HCM</p>
+        <p>📞 0901 234 567</p>
+        <p>✉️ hello@cafearoma.vn</p>
+      </div>
+
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Café Aroma. Mọi quyền được bảo lưu.</p>
+    </div>
+  </footer>
+</th:block>
+
+</html>

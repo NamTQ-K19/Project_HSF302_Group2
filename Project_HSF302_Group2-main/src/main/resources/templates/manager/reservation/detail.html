@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title th:text="|Chi tiết đặt bàn #${res.reservationId} – CafeShop Manager|">Chi tiết Đặt bàn</title>
+
+    <link th:href="@{/css/manager/manager-layout.css}" rel="stylesheet"/>
+    <link th:href="@{/css/manager/reservation-schedule.css}" rel="stylesheet"/>
+
+    <style>
+        .detail-wrapper { max-width: 1000px; margin: 0 auto; }
+        .back-link { display: inline-flex; align-items: center; gap: 5px; color: var(--text-light); margin-bottom: 15px; font-weight: 600; text-decoration: none; }
+        .back-link:hover { color: var(--accent); }
+        .detail-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .detail-header h1 { margin: 0; color: var(--brown-dark); }
+        .detail-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; align-items: start; }
+        @media(max-width: 768px) { .detail-grid { grid-template-columns: 1fr; } }
+        .info-list { list-style: none; padding: 0; margin: 0; }
+        .info-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--border); }
+        .info-item:last-child { border-bottom: none; }
+        .info-label { color: var(--text-light); font-size: 0.9rem; font-weight: 600; }
+        .info-value { color: var(--text-dark); font-weight: 700; text-align: right; }
+        .note-box { background: var(--cream); padding: 15px; border-radius: var(--radius); border-left: 4px solid var(--accent); margin-top: 10px; font-size: 0.9rem; }
+        .cancel-box { background: #fdf0ee; border-left: 4px solid var(--danger); }
+        .table-chip { display: inline-block; background: var(--cream-mid); color: var(--brown-dark); border-radius: 20px; font-weight: 700; font-size: 0.85rem; border: 1px solid var(--border); }
+    </style>
+</head>
+<body class="manager-body">
+
+<div class="manager-app">
+
+    <div th:replace="~{manager/reservation/manager-layout :: sidebar('reservations')}"></div>
+
+    <main class="manager-main">
+        <div class="detail-wrapper">
+            <a th:href="@{/manager/reservations}" class="back-link">← Quay lại danh sách</a>
+
+            <div class="detail-header">
+                <h1>Chi tiết Đặt bàn #<span th:text="${res.reservationId}"></span></h1>
+                <span class="status-badge" th:classappend="${res.status != null ? 'status-' + res.status.name().toLowerCase() : ''}" th:text="${res.statusLabel}"></span>
+            </div>
+
+            <div class="detail-grid">
+                <div class="left-col">
+                    <div class="card" style="margin-bottom: 20px;">
+                        <div class="card-header"><span>👤</span><h2>Thông tin khách hàng</h2></div>
+                        <div class="card-body">
+                            <ul class="info-list">
+                                <li class="info-item"><span class="info-label">Tên:</span><span class="info-value" th:text="${res.customerName}"></span></li>
+                                <li class="info-item"><span class="info-label">SĐT:</span><span class="info-value" th:text="${res.customerPhone}"></span></li>
+                                <li class="info-item"><span class="info-label">Tài khoản:</span><span class="info-value" th:text="'@' + ${res.username}"></span></li>
+                                <li class="info-item"><span class="info-label">Email:</span><span class="info-value" th:text="${res.customerEmail}"></span></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div th:if="${res.status != null and res.status.name() == 'CANCELLED'}" class="card cancel-box">
+                        <div class="card-body">
+                            <h3 style="color: var(--danger); margin-top:0; font-size: 1rem;">🚫 Thông tin hủy</h3>
+                            <ul class="info-list">
+
+                                <li class="info-item">
+                                    <span class="info-label">Người hủy:</span>
+                                    <span class="info-value" th:text="${res.cancelledByName != null ? res.cancelledByName : 'Khách hàng'}"></span>
+                                </li>
+
+                                <li class="info-item">
+                                    <span class="info-label">Vai trò:</span>
+                                    <span class="info-value" style="color: var(--brown-dark); font-weight: 700;"
+                                          th:text="${res.cancelledByRole != null ? res.cancelledByRole : 'Khách hàng'}"></span>
+                                </li>
+
+                                <li class="info-item">
+                                    <span class="info-label">Thời gian:</span>
+                                    <span class="info-value" th:text="${#temporals.format(res.cancelledAt, 'dd/MM/yyyy HH:mm')}"></span>
+                                </li>
+                            </ul>
+
+                            <div style="margin-top: 10px; font-size: 0.9rem;">
+                                <strong>Lý do:</strong> <span th:text="${res.cancellationReason}"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="right-col">
+                    <div class="card" style="margin-bottom: 20px;">
+                        <div class="card-header"><span>📅</span><h2>Thông tin đặt bàn</h2></div>
+                        <div class="card-body">
+                            <ul class="info-list">
+                                <li class="info-item"><span class="info-label">Ngày đến:</span><span class="info-value" th:text="${#temporals.format(res.reservationDate, 'dd/MM/yyyy')}"></span></li>
+                                <li class="info-item"><span class="info-label">Giờ đến:</span><span class="info-value" th:text="${#temporals.format(res.reservationTime, 'HH:mm')}"></span></li>
+                                <li class="info-item"><span class="info-label">Số khách:</span><span class="info-value" th:text="${res.partySize} + ' người'"></span></li>
+                                <li class="info-item"><span class="info-label">Thời gian ngồi:</span><span class="info-value" th:text="${res.durationMinutes} + ' phút'"></span></li>
+                                <li class="info-item">
+                                    <span class="info-label">Bàn được xếp:</span>
+                                    <div style="text-align: right; max-width: 60%;">
+                                        <span th:if="${#lists.isEmpty(res.assignedTables)}" class="info-value">Chưa xếp bàn</span>
+                                        <span th:each="t : ${res.assignedTables}" class="table-chip info-value" th:text="'Bàn ' + ${t.tableId} + ' (' + ${t.capacity} + ' chỗ)'"></span>
+                                    </div>
+                                </li>
+                                <li class="info-item"><span class="info-label">Trạng thái cọc:</span><span class="info-value" th:text="${res.depositStatus}"></span></li>
+                                <li class="info-item" th:if="${res.depositAmount != null}"><span class="info-label">Số tiền cọc:</span><span class="info-value" th:text="${#numbers.formatDecimal(res.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span></li>
+                                <li class="info-item" th:if="${res.orderId != null}"><span class="info-label">Mã đơn hàng:</span><span class="info-value" style="color:var(--accent);">#[[${res.orderId}]]</span></li>
+                            </ul>
+
+                            <div th:if="${res.note != null and !res.note.isBlank()}" class="note-box">
+                                <strong>Ghi chú của khách:</strong><br>
+                                <span th:text="${res.note}"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+</div>
+</body>
+</html>

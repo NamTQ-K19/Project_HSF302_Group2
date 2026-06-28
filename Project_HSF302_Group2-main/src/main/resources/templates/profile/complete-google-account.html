@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Complete Google Account - Bean & Brew</title>
+    
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link rel="stylesheet" th:href="@{/css/auth-theme.css}">
+    <link rel="stylesheet" th:href="@{/css/mark_password.css}">
+</head>
+<body>
+
+<div class="auth-layout">
+  <!-- Left Pane - Branding & Graphic -->
+  <div class="auth-left-pane">
+    <div class="auth-brand">
+      Bean & Brew
+    </div>
+    <div class="auth-illustration-container">
+      <div class="auth-illustration-wrapper">
+        <img 
+          src="https://images.unsplash.com/photo-1605187151664-9d89904d62d0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZXN0aGV0aWMlMjBjb2ZmZWUlMjBsYXR0ZSUyMGFydHxlbnwxfHx8fDE3ODIxODU3NjF8MA&ixlib=rb-4.1.0&q=80&w=1080" 
+          alt="Aesthetic coffee latte art"
+          class="auth-illustration-image"
+        />
+      </div>
+      <h2 class="auth-tagline">
+        Sip, Smile, Repeat.
+      </h2>
+    </div>
+    <div class="auth-blob-tr"></div>
+    <div class="auth-blob-bl"></div>
+  </div>
+
+  <!-- Right Pane - Form -->
+  <div class="auth-right-pane" style="overflow-y: auto;">
+    <div class="auth-form-container" style="max-width: 500px;">
+      
+      <div class="auth-header">
+        <h1 class="auth-title">Complete Account</h1>
+        <p class="auth-subtitle">Add the remaining information to use this account normally.</p>
+      </div>
+
+      <!-- Messages -->
+      <div th:if="${reminder}" class="auth-alert-info">
+          <i data-feather="info" class="auth-icon-small"></i>
+          <span th:text="${reminder}"></span>
+      </div>
+      <div th:if="${errorMessage}" class="auth-alert-error">
+          <i data-feather="alert-circle" class="auth-icon-small"></i>
+          <span th:text="${errorMessage}"></span>
+      </div>
+
+      <!-- Form -->
+      <form th:action="@{/profile/complete-google-account}" method="post" class="auth-form" id="completeAccountForm">
+        
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <input type="hidden" name="userId" th:value="${user.userId}"/>
+
+        <!-- Email (Disabled) -->
+        <div class="space-y-1">
+            <label for="email" class="auth-label" style="display: block; font-size: 0.875rem; font-weight: 500; color: #44403c;">Email Address</label>
+            <div class="auth-input-group">
+              <div class="auth-input-icon-left">
+                <i data-feather="mail" class="h-4 w-4 text-stone-400"></i>
+              </div>
+              <input id="email" th:value="${user.email}" type="email" disabled
+                class="auth-input-readonly" />
+            </div>
+        </div>
+
+        <div class="auth-grid-2">
+            <!-- Username -->
+            <div class="space-y-1">
+                <label for="username" class="auth-label" style="display: block; font-size: 0.875rem; font-weight: 500; color: #44403c;">Username</label>
+                <div class="auth-input-group">
+                  <div class="auth-input-icon-left">
+                    <i data-feather="at-sign" class="h-4 w-4 text-stone-400"></i>
+                  </div>
+                  <input id="username" name="username" th:value="${user.username}" required type="text"
+                    class="auth-input" />
+                </div>
+            </div>
+            
+            <!-- Phone -->
+            <div class="space-y-1">
+                <label for="phoneNumber" class="auth-label" style="display: block; font-size: 0.875rem; font-weight: 500; color: #44403c;">Phone Number</label>
+                <div class="auth-input-group">
+                  <div class="auth-input-icon-left">
+                    <i data-feather="phone" class="h-4 w-4 text-stone-400"></i>
+                  </div>
+                  <input id="phoneNumber" name="phoneNumber" th:value="${user.phone}" required type="tel"
+                    class="auth-input" />
+                </div>
+            </div>
+        </div>
+
+        <div class="auth-grid-2">
+            <!-- Password -->
+            <div class="space-y-1">
+                <label for="newPassword" class="auth-label" style="display: block; font-size: 0.875rem; font-weight: 500; color: #44403c;">Password</label>
+                <div class="auth-input-group">
+                  <div class="auth-input-icon-left">
+                    <i data-feather="lock" class="h-4 w-4 text-stone-400"></i>
+                  </div>
+                  <input id="newPassword" name="newPassword" required type="password"
+                    class="auth-input-password" />
+                  <button type="button" onclick="togglePassword('newPassword', 'eye-icon-1')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-stone-400 hover:text-stone-600 focus:outline-none">
+                    <i id="eye-icon-1" data-feather="eye" class="h-4 w-4"></i>
+                  </button>
+                </div>
+                <!-- Password Strength Meter -->
+                <div id="password-strength-box" style="display:none; margin-top: 10px; margin-bottom: 15px;">
+                    <div style="display:flex; gap:4px; margin-bottom:8px;">
+                        <div id="bar-1" class="pw-bar"></div>
+                        <div id="bar-2" class="pw-bar"></div>
+                        <div id="bar-3" class="pw-bar"></div>
+                        <div id="bar-4" class="pw-bar"></div>
+                        <div id="bar-5" class="pw-bar"></div>
+                    </div>
+                    <div id="strength-label" style="font-size:0.75rem; font-weight:600; margin-bottom:8px; color:#888;"></div>
+                    <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:4px;">
+                        <li id="check-length"  class="pw-check"><span class="pw-dot">●</span> Ít nhất 8 ký tự</li>
+                        <li id="check-upper"   class="pw-check"><span class="pw-dot">●</span> Có chữ hoa (A-Z)</li>
+                        <li id="check-lower"   class="pw-check"><span class="pw-dot">●</span> Có chữ thường (a-z)</li>
+                        <li id="check-number"  class="pw-check"><span class="pw-dot">●</span> Có chữ số (0-9)</li>
+                        <li id="check-special" class="pw-check"><span class="pw-dot">●</span> Có ký tự đặc biệt (@$!%*?&amp;...)</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Confirm Password -->
+            <div class="space-y-1">
+                <label for="confirmPassword" class="auth-label" style="display: block; font-size: 0.875rem; font-weight: 500; color: #44403c;">Confirm Password</label>
+                <div class="auth-input-group">
+                  <div class="auth-input-icon-left">
+                    <i data-feather="lock" class="h-4 w-4 text-stone-400"></i>
+                  </div>
+                  <input id="confirmPassword" name="confirmPassword" required type="password"
+                    class="auth-input-password" />
+                  <button type="button" onclick="togglePassword('confirmPassword', 'eye-icon-2')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-stone-400 hover:text-stone-600 focus:outline-none">
+                    <i id="eye-icon-2" data-feather="eye" class="h-4 w-4"></i>
+                  </button>
+                </div>
+                <div id="passwordError" class="auth-error-msg hidden">Passwords do not match!</div>
+            </div>
+        </div>
+
+        <button type="submit" class="auth-btn-primary mt-4">
+            Complete Account
+        </button>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<script th:src="@{/js/mark_password.js}"></script>
+<script>
+    feather.replace();
+
+    function togglePassword(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (input.type === "password") {
+        input.type = "text";
+        icon.setAttribute('data-feather', 'eye-off');
+      } else {
+        input.type = "password";
+        icon.setAttribute('data-feather', 'eye');
+      }
+      feather.replace();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const form = document.getElementById("completeAccountForm");
+        const passwordField = document.getElementById("newPassword");
+        const confirmPasswordField = document.getElementById("confirmPassword");
+        const passwordError = document.getElementById("passwordError");
+
+        function validatePasswordMatch() {
+            if (!passwordField || !confirmPasswordField) return true;
+            const passwordValue = passwordField.value;
+            const confirmValue = confirmPasswordField.value;
+
+            if (confirmValue.trim() === "") {
+                passwordError.classList.add("hidden");
+                return true;
+            }
+
+            if (passwordValue === confirmValue) {
+                passwordError.classList.add("hidden");
+                return true;
+            } else {
+                passwordError.classList.remove("hidden");
+                return false;
+            }
+        }
+
+        if (passwordField && confirmPasswordField) {
+            passwordField.addEventListener("input", validatePasswordMatch);
+            confirmPasswordField.addEventListener("input", validatePasswordMatch);
+        }
+
+        if (form) {
+            form.addEventListener("submit", function (e) {
+                const match = validatePasswordMatch();
+                if (!match) {
+                    e.preventDefault();
+                    confirmPasswordField.focus();
+                }
+            });
+        }
+    });
+</script>
+
+</body>
+</html>

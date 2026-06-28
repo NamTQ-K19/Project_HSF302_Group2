@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${pageTitle} + ' - BrewMaster'">BrewMaster - Tổng quan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="/css/admin/sidebar.css" />
+    <link rel="stylesheet" href="/css/admin/dashboard.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="dashboard-grid">
+    <!-- Sidebar -->
+    <th:block th:replace="~{admin/fragments/sidebar :: sidebar(currentPage='dashboard')}"></th:block>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div>
+                <h1>
+                    <span th:text="${greeting}">Chào buổi chiều</span>,
+                    <span th:text="${displayName}" style="color: #4a2c1b; font-weight: 600;">Admin</span>
+                    <i th:class="'fas' + ' ' + ${greetingIcon}" th:style="'color: ' + ${iconColor} + '; margin-left: 4px;'"></i>
+                </h1>
+                <div style="font-size: 14px; color: #64748b; margin-top: 4px;">
+                    Đây là những gì đang diễn ra tại quán cà phê của bạn hôm nay.
+                </div>
+            </div>
+            <div class="topbar-actions">
+                <div class="system-status">
+                    <span class="status-dot"></span>
+                    <span>Hệ thống hoạt động bình thường</span>
+                </div>
+                <span class="date" th:text="${currentDate}">22 Tháng 6, 2026</span>
+                <div class="avatar">
+                    <!-- Nếu có avatar thì hiển thị ảnh, không thì hiển thị icon -->
+                    <th:block th:if="${avatarUrl != null and !avatarUrl.isEmpty()}">
+                        <img th:src="@{'/uploads/avatars/' + ${avatarUrl}}"
+                             alt="Avatar"
+                             class="avatar-image" />
+                    </th:block>
+                    <th:block th:unless="${avatarUrl != null and !avatarUrl.isEmpty()}">
+                        <i class="fas fa-user-circle" style="font-size: 28px; color: #c8a882;"></i>
+                    </th:block>
+                </div>
+            </div>
+        </header>
+
+        <!-- ===== 1, 2, 3. THỐNG KÊ NGƯỜI DÙNG ===== -->
+        <section class="stats-grid">
+            <div class="stat-card" style="border-left-color: #3b82f6;">
+                <div class="stat-label"><i class="fas fa-users" style="margin-right: 6px; color: #3b82f6;"></i> Tổng tài khoản</div>
+                <div class="stat-value" th:text="${totalUsers != null ? totalUsers : '0'}">0</div>
+                <div class="stat-change" style="color: #64748b;"><i class="fas fa-database" style="margin-right: 4px;"></i>Trong hệ thống</div>
+            </div>
+            <div class="stat-card" style="border-left-color: #22c55e;">
+                <div class="stat-label"><i class="fas fa-user-plus" style="margin-right: 6px; color: #22c55e;"></i> Tài khoản mới hôm nay</div>
+                <div class="stat-value" th:text="${newUsersToday != null ? newUsersToday : '0'}">0</div>
+                <div class="stat-change" style="color: #22c55e;"><i class="fas fa-arrow-up" style="margin-right: 4px;"></i>Đã đăng ký</div>
+            </div>
+            <div class="stat-card" style="border-left-color: #22c55e;">
+                <div class="stat-label"><i class="fas fa-user-check" style="margin-right: 6px; color: #22c55e;"></i> Đang hoạt động</div>
+                <div class="stat-value" th:text="${activeUsers != null ? activeUsers : '0'}">0</div>
+                <div class="stat-change" style="color: #22c55e;"><i class="fas fa-circle" style="margin-right: 4px; font-size: 10px;"></i>Đang hoạt động</div>
+            </div>
+            <div class="stat-card" style="border-left-color: #ef4444;">
+                <div class="stat-label"><i class="fas fa-user-lock" style="margin-right: 6px; color: #ef4444;"></i> Đã khóa</div>
+                <div class="stat-value" th:text="${lockedUsers != null ? lockedUsers : '0'}">0</div>
+                <div class="stat-change" style="color: #ef4444;"><i class="fas fa-lock" style="margin-right: 4px;"></i>Đã khóa</div>
+            </div>
+        </section>
+
+        <!-- ===== 5. PHÂN BỐ THEO VAI TRÒ ===== -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-chart-pie" style="color: #c8a882; margin-right: 8px;"></i> Phân bố theo vai trò</h3>
+                <span style="font-size:13px; color:#64748b;">Tổng: <strong th:text="${totalUsers}">0</strong> tài khoản</span>
+            </div>
+            <div class="role-distribution">
+                <div th:if="${roleStats != null and !roleStats.isEmpty()}">
+                    <div class="role-item" th:each="role : ${roleStats}">
+                        <div class="role-info">
+                            <span class="role-name" th:text="${role.roleName}">Admin</span>
+                            <span class="role-count" th:text="${role.count} + ' (' + ${role.percentage} + '%)'">2 (20%)</span>
+                        </div>
+                        <div class="role-bar">
+                            <div class="role-bar-fill"
+                                 th:style="'width: ' + ${role.percentage} + '%;'"
+                                 th:class="'role-bar-fill role-' + ${#strings.toLowerCase(role.roleName)}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${roleStats == null or roleStats.isEmpty()}">
+                    <div style="text-align:center; color:#94a3b8; padding:20px;">Chưa có dữ liệu</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 6. HOẠT ĐỘNG GẦN ĐÂY ===== -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-clock" style="color: #c8a882; margin-right: 8px;"></i> Hoạt động gần đây</h3>
+                <a href="#" class="link">Xem tất cả →</a>
+            </div>
+            <div class="activity-list">
+                <div th:if="${recentLogs != null and !recentLogs.isEmpty()}">
+                    <div class="activity-item" th:each="log : ${recentLogs}">
+                        <div class="activity-icon" th:class="'activity-icon activity-' + ${#strings.toLowerCase(log.actionType)}">
+                            <i th:switch="${log.actionType}">
+                                <i th:case="'LOGIN'" class="fas fa-sign-in-alt"></i>
+                                <i th:case="'LOCK'" class="fas fa-lock"></i>
+                                <i th:case="'UNLOCK'" class="fas fa-unlock"></i>
+                                <i th:case="'CREATE'" class="fas fa-user-plus"></i>
+                                <i th:case="'UPDATE'" class="fas fa-edit"></i>
+                                <i th:case="*" class="fas fa-info-circle"></i>
+                            </i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-text" th:text="${log.description}">Mô tả hành động</div>
+                            <div class="activity-meta">
+                                <span class="activity-user"><i class="fas fa-user-circle" style="margin-right: 4px;"></i><span th:text="${log.userName}">Admin</span></span>
+                                <span class="activity-time"><i class="far fa-clock" style="margin-right: 4px;"></i><span th:text="${log.createdAt}">10:30</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${recentLogs == null or recentLogs.isEmpty()}">
+                    <div style="text-align:center; color:#94a3b8; padding:30px;">
+                        <i class="fas fa-inbox" style="font-size: 30px; display:block; margin-bottom:10px;"></i>
+                        Chưa có hoạt động nào
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script th:inline="javascript">
+    var chartLabels = /*[[${chartLabels}]]*/ null;
+    var chartSalesData = /*[[${chartSalesData}]]*/ null;
+    var chartOrderCounts = /*[[${chartOrderCounts}]]*/ null;
+</script>
+
+<script src="/js/admin/dashboard.js"></script>
+</body>
+</html>

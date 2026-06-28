@@ -1,0 +1,66 @@
+<!-- src/main/resources/templates/customer/layout/customer_layout.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrewMaster - <span th:text="${pageTitle}">Coffee Shop</span></title>
+
+    <link th:href="@{/webjars/bootstrap/5.3.2/css/bootstrap.min.css}" rel="stylesheet">
+    <link th:href="@{/webjars/font-awesome/6.5.1/css/all.min.css}" rel="stylesheet">
+    <link th:href="@{/css/customer.css}" rel="stylesheet">
+</head>
+<body>
+<!-- Header -->
+<nav class="header-nav">
+    <a href="/" class="header-logo">
+        <div class="header-logo-icon">
+            <i class="fas fa-mug-hot"></i>
+        </div>
+        <span class="header-logo-text">BrewMaster</span>
+    </a>
+
+    <ul class="header-nav-list">
+        <li>
+            <a th:href="@{/menu}" th:classappend="${pageTitle == 'Menu' ? 'active' : ''}">
+                <i class="fas fa-utensils"></i>
+                <span>Menu</span>
+            </a>
+        </li>
+        <li>
+            <a th:href="@{/customer/cart}" th:classappend="${pageTitle == 'Giỏ hàng' ? 'active' : ''}" class="header-cart-wrapper">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Giỏ hàng</span>
+                <span id="cartBadge" class="header-cart-badge" th:if="${cartCount != null and cartCount > 0}">
+                        <span th:text="${cartCount}">0</span>
+                    </span>
+            </a>
+        </li>
+        <li>
+            <a th:href="@{/customer/orders/history}" th:classappend="${pageTitle == 'Lịch sử' ? 'active' : ''}">
+                <i class="fas fa-history"></i>
+                <span>Lịch sử</span>
+            </a>
+        </li>
+        <li>
+            <div class="header-user-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+        </li>
+    </ul>
+</nav>
+
+<!-- Main Content -->
+<main class="main-content">
+    <div class="container-fluid" style="padding: 30px; max-width: 1400px; margin: 0 auto;">
+        <div th:replace="${content}"></div>
+    </div>
+</main>
+
+<script th:src="@{/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/webjars/jquery/3.7.1/jquery.min.js}"></script>
+<script th:src="@{/webjars/sweetalert2/11.10.5/dist/sweetalert2.min.js}"></script>
+<script th:src="@{/js/customer.js}"></script>
+<th:block th:replace="${scripts} :: scripts" />
+</body>
+</html>

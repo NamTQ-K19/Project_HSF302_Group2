@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>BrewMaster – Trang chủ</title>
+    <link rel="stylesheet" th:href="@{/css/catalog/main.css}" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+
+<!-- Navbar fragment (Field #1 Search Bar, Logo – UC_01 screen def) -->
+<div th:replace="~{catalog/navbar :: navbar}"></div>
+<main class="page-main">
+<!-- ============================================================
+     Promotional Banner (Field #3 – UC_01 screen def)
+     ============================================================ -->
+<section class="hero-banner">
+    <div class="hero-slider" id="heroSlider">
+        <div class="slide slide-active">
+            <div class="slide-content">
+                <span class="slide-tag">🔥 Ưu đãi tháng 6</span>
+                <h1>Giảm 20% tất cả đồ uống mỗi thứ Ba</h1>
+                <p>Dành cho khách hàng thành viên tích lũy điểm tại Café Aroma.</p>
+                <a th:href="@{/search}" class="btn btn-primary btn-lg">Đặt ngay</a>
+            </div>
+            <div class="slide-badge">20%<br/>OFF</div>
+        </div>
+        <div class="slide">
+            <div class="slide-content">
+                <span class="slide-tag">✨ Mới ra mắt</span>
+                <h1>Matcha Đá Xay – Phiên bản Hè 2026</h1>
+                <p>Bột trà xanh Nhật Bản, đá xay mịn, thêm kem cheese béo ngậy.</p>
+                <a th:href="@{/products/7}" class="btn btn-primary btn-lg">Khám phá</a>
+            </div>
+            <div class="slide-badge">NEW</div>
+        </div>
+        <div class="slide">
+            <div class="slide-content">
+                <span class="slide-tag">🎁 Tích điểm</span>
+                <h1>Mỗi 100.000₫ – nhận 10 điểm thưởng</h1>
+                <p>Đổi điểm lấy đồ uống miễn phí hoặc giảm giá cho hóa đơn tiếp theo.</p>
+                <a th:href="@{/loyalty-policy}" class="btn btn-outline btn-lg">Xem chính sách</a>
+            </div>
+            <div class="slide-badge">🏆</div>
+        </div>
+    </div>
+    <!-- Slider controls -->
+    <button class="slider-prev" onclick="changeSlide(-1)" aria-label="Previous slide">‹</button>
+    <button class="slider-next" onclick="changeSlide(1)" aria-label="Next slide">›</button>
+    <div class="slider-dots">
+        <span class="dot active" onclick="goToSlide(0)"></span>
+        <span class="dot" onclick="goToSlide(1)"></span>
+        <span class="dot" onclick="goToSlide(2)"></span>
+    </div>
+</section>
+
+<!-- ============================================================
+     Product Category Filter Bar (Field #4 – UC_01 screen def)
+     ============================================================ -->
+<section class="category-bar">
+    <div class="section-container">
+        <h2 class="section-subtitle">Danh mục</h2>
+        <div class="category-list">
+            <a th:href="@{/search}" class="category-pill active">Tất cả</a>
+            <a th:each="cat : ${categories}"
+               th:href="@{/search(categoryId=${cat.categoryId})}"
+               th:text="${cat.name}"
+               class="category-pill">Category</a>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     Best Seller Grid (Field #5 – UC_01 screen def)
+     Shows Image, Name, Price as specified
+     ============================================================ -->
+<section class="best-sellers">
+    <div class="section-container">
+        <div class="section-header">
+            <h2 class="section-title">☕ Bán chạy nhất</h2>
+            <a th:href="@{/search}" class="view-all-link">Xem tất cả →</a>
+        </div>
+
+        <div class="product-grid" th:if="${not #lists.isEmpty(bestSellers)}">
+            <div th:each="product : ${bestSellers}" class="product-card">
+                <a th:href="@{/products/{id}(id=${product.productId})}" class="product-card-link">
+                    <div class="product-img-wrap">
+                        <img th:src="@{${product.primaryImageUrl}}"
+                             th:alt="${product.name}"
+                             class="product-img"
+                             loading="lazy"
+                             onerror="this.onerror=null; this.style.visibility='hidden'"/>
+                        <span class="category-badge" th:text="${product.categoryName}">Danh mục</span>
+                    </div>
+                    <div class="product-card-body">
+                        <h3 class="product-name" th:text="${product.name}">Tên sản phẩm</h3>
+                        <div class="rating-row" th:if="${product.reviewCount > 0}">
+                            <div class="stars">
+                        <span th:each="i : ${#numbers.sequence(1,5)}"
+                              th:class="${i <= product.averageRating} ? 'star filled' : 'star'">★</span>
+                            </div>
+                            <span class="review-count"
+                                  th:text="'(' + ${product.reviewCount} + ' đánh giá)'"></span>
+                        </div>
+                        <div class="price-row">
+                    <span class="price"
+                          th:if="${product.minPrice == product.maxPrice}"
+                          th:text="${#numbers.formatDecimal(product.minPrice,0,'COMMA',0,'POINT')} + ' ₫'">
+                    </span>
+                            <span class="price"
+                                  th:unless="${product.minPrice == product.maxPrice}"
+                                  th:text="${#numbers.formatDecimal(product.minPrice,0,'COMMA',0,'POINT')}
+                                   + ' – '
+                                   + ${#numbers.formatDecimal(product.maxPrice,0,'COMMA',0,'POINT')}
+                                   + ' ₫'">
+                    </span>
+                        </div>
+                    </div>
+                </a>
+                <div class="product-card-footer">
+                    <a th:href="@{/products/{id}(id=${product.productId})}"
+                       class="btn btn-primary btn-sm" style="flex:1">Xem chi tiết</a>
+
+                    <!-- Đã login thì hiện nút giỏ hàng -->
+                    <button sec:authorize="isAuthenticated()"
+                            class="btn-cart"
+                            th:onclick="'quickAddToCart(' + ${product.productId} + ')'"
+                            title="Thêm vào giỏ">
+                        <i class="fas fa-shopping-cart"></i>
+                    </button>
+
+                    <!-- Chưa login thì redirect -->
+                    <a sec:authorize="isAnonymous()"
+                       th:href="@{/auth/login}"
+                       class="btn-cart"
+                       title="Đăng nhập để mua">
+                        <i class="fas fa-shopping-cart"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty state (shouldn't happen post-seed, defensive) -->
+        <div class="empty-state" th:if="${#lists.isEmpty(bestSellers)}">
+            <p>Đang cập nhật thực đơn. Vui lòng quay lại sau!</p>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     Why Join Us – loyalty teaser (leads to UC_04)
+     ============================================================ -->
+
+
+</main>
+<!-- Footer with Reward Policy link (triggers UC_04) -->
+<div th:replace="~{catalog/footer :: footer}"></div>
+
+<script th:src="@{/js/catalog/slider.js}"></script>
+
+</body>
+</html>

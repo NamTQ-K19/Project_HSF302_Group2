@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Đặt Bàn Của Tôi – Cafe Shop</title>
+    <link rel="stylesheet" th:href="@{/css/catalog/main.css}" />
+    <link th:href="@{/css/customer/profile.css}"      rel="stylesheet"/>
+    <link th:href="@{/css/reservation/reservation.css}" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="../../static/css/catalog/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+
+<div th:replace="~{catalog/navbar :: navbar}"></div>
+
+<div class="page-wrapper">
+
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}"   class="alert alert-error"   th:text="${errorMessage}"></div>
+
+    <div class="reservation-layout">
+
+        <!-- ══ LEFT SIDEBAR ════════════════════════════════════ -->
+        <aside class="res-sidebar">
+            <!-- Avatar display -->
+            <div class="avatar-img-wrap">
+                <img th:if="${user.avatarUrl != null and !user.avatarUrl.isEmpty()}"
+                     th:src="${user.avatarUrl}"
+                     class="avatar-img" alt="Avatar"/>
+                <div th:unless="${user.avatarUrl != null and !user.avatarUrl.isEmpty()}"
+                     class="avatar-placeholder">👤</div>
+            </div>
+
+            <div class="avatar-name"
+                 th:text="${user.firstName + ' ' + user.lastName}"></div>
+            <div class="avatar-username"
+                 th:text="${'@' + user.username}"></div>
+
+            <div class="res-stat-box">
+                <div class="res-stat-label">Tổng đặt bàn</div>
+                <div class="res-stat-value" th:text="${#lists.size(reservations)}">0</div>
+            </div>
+
+            <div class="res-stat-box">
+                <div class="res-stat-label">Chờ xác nhận</div>
+                <div class="res-stat-value"
+                     th:text="${#lists.size(reservations.?[status.name() == 'PENDING'])}">0</div>
+            </div>
+        </aside>
+
+        <!-- ══ RIGHT: Main content ══════════════════════════════ -->
+        <div class="profile-main">
+            <div class="card">
+                <div class="card-header">
+                    <span>📋</span>
+                    <h2>Danh Sách Đặt Bàn</h2>
+                    <div style="margin-left:auto;">
+                        <a href="/customer/reservations/new" class="btn btn-primary btn-sm">
+                            + Đặt bàn mới
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+
+                    <!-- Empty state -->
+                    <div th:if="${#lists.isEmpty(reservations)}" class="empty-state">
+                        <div class="empty-icon">🪑</div>
+                        <p>Bạn chưa có đặt bàn nào.</p>
+                        <a href="/customer/reservations/new"
+                           class="btn btn-primary" style="margin-top:14px;">
+                            Đặt bàn ngay
+                        </a>
+                    </div>
+
+                    <!-- Table -->
+                    <div th:unless="${#lists.isEmpty(reservations)}" class="table-responsive">
+                        <table class="res-table">
+                            <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Ngày</th>
+                                <th>Giờ đến</th>
+                                <th>Số khách</th>
+                                <th>Thời gian</th>
+                                <th>Bàn số</th>
+                                <th>Trạng thái</th>
+                                <th>Đặt cọc</th>
+                                <th>Trạng thái cọc</th>
+                                <th>Hành động</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="r, rStat : ${reservations}">
+                                <td style="text-align:center; font-weight:600;
+                                               color:var(--text-muted);"
+                                    th:text="${rStat.count}"></td>
+
+                                <td style="white-space:nowrap;"
+                                    th:text="${#temporals.format(r.reservationDate,'dd/MM/yyyy')}"></td>
+
+                                <td th:text="${#temporals.format(r.reservationTime,'HH:mm')}"></td>
+
+                                <td style="text-align:center;"
+                                    th:text="${r.partySize}"></td>
+
+                                <td th:text="${r.durationMinutes + ' phút'}"></td>
+
+                                <td th:text="${r.tableIds != null and not #lists.isEmpty(r.tableIds)
+                                                  ? #strings.listJoin(r.tableIds, ', ') : '—'}"></td>
+
+                                <td>
+                                        <span th:text="${r.statusVi}"
+                                              th:class="${'badge badge-' + r.status.name().toLowerCase()}">
+                                        </span>
+                                </td>
+
+                                <td th:text="${r.depositAmount != null ?
+                                                  #numbers.formatDecimal(r.depositAmount,0,'COMMA',0,'POINT') + ' đ'
+                                                  : '—'}"></td>
+
+                                <td th:text="${r.depositStatusVi != null ? r.depositStatusVi : '—'}"></td>
+
+                                <td>
+                                    <a th:if="${r.canCancel}"
+                                       th:href="@{/customer/reservations/{id}/cancel(id=${r.reservationId})}"
+                                       class="btn btn-danger btn-sm">
+                                        🗑 Hủy
+                                    </a>
+                                    <span th:unless="${r.canCancel}"
+                                          style="color:var(--text-muted); font-size:13px;">—</span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div th:replace="~{catalog/footer :: footer}"></div>
+
+<script th:src="@{/js/reservation/reservation.js}"></script>
+<script th:src="@{/js/catalog/slider.js}"></script>
+
+</body>
+</html>

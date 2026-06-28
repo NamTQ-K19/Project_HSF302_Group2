@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Điểm tích lũy – Cafe Shop</title>
+    <link rel="stylesheet" th:href="@{/css/catalog/main.css}" />
+    <link th:href="@{/css/customer/profile.css}" rel="stylesheet"/>
+    <link th:href="@{/css/customer/loyalty-points.css}" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+
+<div th:replace="~{catalog/navbar :: navbar}"></div>
+
+<div class="page-wrapper">
+
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}"   class="alert alert-error"   th:text="${errorMessage}"></div>
+
+    <div class="profile-layout">
+
+        <aside class="avatar-sidebar">
+            <!-- Avatar display -->
+            <div class="avatar-img-wrap">
+                <img th:if="${user.avatarUrl != null}"
+                     th:src="${user.avatarUrl}"
+                     class="avatar-img" alt="Avatar"/>
+                <div th:unless="${user.avatarUrl != null}"
+                     class="avatar-placeholder">👤</div>
+            </div>
+
+            <div class="avatar-name"
+                 th:text="${user.firstName + ' ' + user.lastName}"></div>
+            <div class="avatar-username"
+                 th:text="${'@' + user.username}"></div>
+
+            <div class="balance-sidebar">
+                <div class="balance-label">Điểm tích lũy hiện tại</div>
+                <div class="balance-value" th:text="${currentBalance}">0</div>
+                <div class="balance-unit">điểm</div>
+            </div>
+        </aside>
+
+        <div class="profile-main">
+
+            <div class="card">
+                <div class="card-header">
+                    <span>🔍</span>
+                    <h2>Bộ lọc lịch sử</h2>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/customer/points/filter}" method="post" id="filterForm">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <input type="hidden" name="page" th:value="0" id="filterPage"/>
+
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label class="form-label">Loại giao dịch</label>
+                                <select name="transactionType" class="form-control">
+                                    <option value="">Tất cả</option>
+                                    <option value="EARN"   th:selected="${filter.transactionType == 'EARN'}">Tích điểm</option>
+                                    <option value="REDEEM" th:selected="${filter.transactionType == 'REDEEM'}">Đổi điểm</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Từ ngày</label>
+                                <input type="date" name="fromDate" class="form-control"
+                                       th:value="${filter.fromDate}"/>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Đến ngày</label>
+                                <input type="date" name="toDate" class="form-control"
+                                       th:value="${filter.toDate}"
+                                       th:classappend="${dateError != null} ? ' is-invalid' : ''"/>
+                                <div th:if="${dateError != null}" class="field-error" th:text="${dateError}"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions" style="margin-top:16px;">
+                            <button type="submit" class="btn btn-primary">🔍 Lọc</button>
+                            <a th:href="@{/customer/points}" class="btn btn-secondary">✕ Xóa lọc</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:20px;">
+                <div class="card-header">
+                    <span>📋</span>
+                    <h2>Lịch sử giao dịch</h2>
+                </div>
+                <div class="card-body">
+
+                    <div th:if="${#lists.isEmpty(transactions)}" class="empty-state">
+                        <div class="empty-icon">📭</div>
+                        <p>Bạn chưa có giao dịch điểm nào.</p>
+                    </div>
+
+                    <div th:unless="${#lists.isEmpty(transactions)}" class="table-responsive">
+                        <table class="transactions-table">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Ngày giờ</th>
+                                    <th>Loại giao dịch</th>
+                                    <th>Điểm</th>
+                                    <th>Số dư sau GD</th>
+                                    <th>Chi tiết giao dịch</th>
+                                    <th>Ghi chú</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="tx, stat : ${transactions}">
+                                    <td class="row-number" th:text="${currentPage * pageSize + stat.count}"></td>
+                                    <td class="row-date"   th:text="${#temporals.format(tx.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+                                    <td class="row-type" th:switch="${tx.transactionType.value}">
+                                        <span th:case="'EARN'"   class="badge badge-earn">Tích điểm</span>
+                                        <span th:case="'REDEEM'" class="badge badge-redeem">Đổi điểm</span>
+                                    </td>
+                                    <td class="row-points">
+                                        <span th:if="${tx.points >= 0}"   class="points-positive" th:text="'+' + ${tx.points}"></span>
+                                        <span th:unless="${tx.points >= 0}" class="points-negative" th:text="${tx.points}"></span>
+                                    </td>
+                                    <td class="row-balance" th:text="${tx.balanceAfter}"></td>
+                                    <td class="row-details" th:switch="${tx.referenceType.value}">
+
+                                        <span th:case="'ORDER'" th:text="'Đơn hàng #' + ${tx.referenceId}"></span>
+
+                                        <span th:case="'REVIEW'" th:text="'Đánh giá #' + ${tx.referenceId}"></span>
+
+                                        <span th:case="*" th:text="'-'"></span>
+
+                                    </td>
+                                    <td class="row-note"    th:text="${tx.note != null ? tx.note : '-'}"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div th:if="${transactionPage.totalPages > 1}" class="pagination-wrap">
+
+                            <button type="button" class="btn btn-secondary btn-sm"
+                                    th:disabled="${currentPage == 0}"
+                                    th:classappend="${currentPage == 0} ? ' disabled' : ''"
+                                    th:onclick="|goToPage(${currentPage - 1})|">‹ Trước</button>
+
+                            <span th:each="i : ${#numbers.sequence(0, transactionPage.totalPages - 1)}">
+                                <button type="button"
+                                        th:classappend="${i == currentPage} ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm'"
+                                        th:text="${i + 1}"
+                                        th:onclick="'goToPage(' + ${i} + ')'"></button>
+                            </span>
+
+                            <button type="button" class="btn btn-secondary btn-sm"
+                                    th:disabled="${currentPage >= transactionPage.totalPages - 1}"
+                                    th:classappend="${currentPage >= transactionPage.totalPages - 1} ? ' disabled' : ''"
+                                    th:onclick="|goToPage(${currentPage + 1})|">Sau ›</button>
+
+                            <span class="pagination-info">
+                                Trang <strong th:text="${currentPage + 1}"></strong>
+                                / <strong th:text="${transactionPage.totalPages}"></strong>
+                                &nbsp;(tổng <strong th:text="${transactionPage.totalElements}"></strong> giao dịch)
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{catalog/footer :: footer}"></div>
+
+<script>
+function goToPage(page) {
+    document.getElementById('filterPage').value = page;
+    document.getElementById('filterForm').submit();
+}
+</script>
+
+<script th:src="@{/js/catalog/slider.js}"></script>
+
+</body>
+</html>
+

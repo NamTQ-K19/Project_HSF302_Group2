@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Lịch đặt bàn – CafeShop Manager</title>
+    <link th:href="@{/css/manager/manager-layout.css}" rel="stylesheet"/>
+    <link th:href="@{/css/manager/reservation-schedule.css}" rel="stylesheet"/>
+</head>
+<body class="manager-body">
+
+<div class="manager-app">
+
+    <div th:replace="~{manager/reservation/manager-layout :: sidebar('reservations')}"></div>
+
+    <main class="manager-main">
+
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}"   class="alert alert-error"   th:text="${errorMessage}"></div>
+
+        <div class="page-title">
+            <h1>📅 Lịch đặt bàn</h1>
+            <p>Quản lý và theo dõi tất cả đặt bàn của khách hàng</p>
+        </div>
+
+        <div class="card" style="margin-bottom:20px;">
+            <div class="card-header">
+                <span>🔍</span><h2>Bộ lọc lịch đặt bàn</h2>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/manager/reservations/filter}" method="post" id="filterForm">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <input type="hidden" name="page" value="0" id="filterPage"/>
+
+                    <div class="filter-grid">
+                        <div class="form-group">
+                            <label class="form-label">Từ ngày</label>
+                            <input type="date" name="fromDate" class="form-control" th:value="${filter.fromDate}"/>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Đến ngày</label>
+                            <input type="date" name="toDate" class="form-control" th:value="${filter.toDate}" th:classappend="${dateError != null} ? 'is-invalid' : ''"/>
+                            <div th:if="${dateError != null}" class="form-error" th:text="${dateError}"></div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Trạng thái</label>
+                            <select name="status" class="form-control">
+                                <option value="">Tất cả</option>
+                                <option value="PENDING"   th:selected="${filter.status == 'PENDING'}">Chờ xác nhận</option>
+                                <option value="CONFIRMED" th:selected="${filter.status == 'CONFIRMED'}">Đã xác nhận</option>
+                                <option value="ARRIVED"   th:selected="${filter.status == 'ARRIVED'}">Đã đến</option>
+                                <option value="COMPLETED" th:selected="${filter.status == 'COMPLETED'}">Hoàn thành</option>
+                                <option value="CANCELLED" th:selected="${filter.status == 'CANCELLED'}">Đã hủy</option>
+                                <option value="NO_SHOW"   th:selected="${filter.status == 'NO_SHOW'}">Không đến</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:12px; display:flex; gap:10px;">
+                        <button type="submit" class="btn btn-primary">🔍 Lọc</button>
+                        <a th:href="@{/manager/reservations/clear-filter}" class="btn btn-secondary">✕ Xóa lọc</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="stats-grid" style="margin-bottom:20px;">
+            <div class="stat-card">
+                <div class="stat-number" th:text="${stats.totalReservations}">0</div>
+                <div class="stat-label">Tổng số đặt bàn</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" th:text="${stats.confirmedCount}">0</div>
+                <div class="stat-label">Đã xác nhận</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" th:text="${stats.cancelledCount}">0</div>
+                <div class="stat-label">Đã hủy</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" th:text="${stats != null ? #numbers.formatDecimal(stats.depositPaymentRate, 1, 'COMMA', 0, 'POINT') + '%' : '0%'}">0%</div>
+                <div class="stat-label">Tỷ lệ cọc thanh toán</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span>📋</span><h2>Danh sách đặt bàn</h2>
+                <span class="record-count" th:text="'(' + ${reservationPage != null ? reservationPage.totalElements : 0} + ' bản ghi)'"></span>
+            </div>
+            <div class="card-body">
+
+                <div th:if="${#lists.isEmpty(reservations)}" class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <p>Không có đặt bàn nào trong khoảng thời gian này.</p>
+                </div>
+
+                <div th:unless="${#lists.isEmpty(reservations)}" class="table-responsive">
+                    <table class="schedule-table">
+                        <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Ngày đặt</th>
+                            <th>Giờ</th>
+                            <th>Khách hàng</th>
+                            <th>SĐT</th>
+                            <th>Số người</th>
+                            <th>Bàn</th>
+                            <th>Trạng thái</th>
+                            <th>Cọc</th>
+                            <th>Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="res, stat : ${reservations}"
+                            style="cursor: pointer;"
+                            th:data-url="@{/manager/reservations/{id}(id=${res.reservationId})}"
+                            onclick="window.location.href=this.getAttribute('data-url')">
+
+                            <td th:text="${(currentPage != null ? currentPage : 0) * (pageSize != null ? pageSize : 10) + stat.count}"></td>
+                            <td th:text="${#temporals.format(res.reservationDate, 'dd/MM/yyyy')}"></td>
+                            <td th:text="${#temporals.format(res.reservationTime, 'HH:mm')}"></td>
+                            <td th:text="${res.customerName}"></td>
+                            <td th:text="${res.customerPhone}"></td>
+                            <td th:text="${res.partySize + ' người'}"></td>
+                            <td><span class="badge badge-table" th:text="${res.tableNumbers}"></span></td>
+                            <td>
+                                <span class="status-badge" th:classappend="'status-' + ${#strings.toLowerCase(res.status)}" th:text="${res.statusLabel}"></span>
+                            </td>
+                            <td th:switch="${res.depositStatus}">
+                                <span th:case="'Đã cọc'" class="badge badge-deposit-paid" th:text="${#numbers.formatDecimal(res.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                                <span th:case="'Chưa cọc'" class="badge badge-deposit-pending">Chưa cọc</span>
+                                <span th:case="*" class="text-muted">Không</span>
+                            </td>
+                            <td>
+                                <button th:if="${#strings.toString(res.status) == 'PENDING' or #strings.toString(res.status) == 'CONFIRMED'}"
+                                        type="button"
+                                        class="btn btn-danger btn-sm"
+                                        th:data-id="${res.reservationId}"
+                                        th:data-name="${res.customerName}"
+                                        onclick="event.stopPropagation(); openCancelModal(this.getAttribute('data-id'), this.getAttribute('data-name'))">
+                                    🚫 Hủy
+                                </button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <div th:if="${reservationPage != null and reservationPage.totalPages > 1}" class="pagination-wrap">
+                        <button type="button" class="btn btn-secondary btn-sm"
+                                th:disabled="${currentPage == 0}"
+                                th:classappend="${currentPage == 0} ? 'disabled' : ''"
+                                th:onclick="|goToPage(${currentPage - 1})|">‹ Trước</button>
+
+                        <span th:each="i : ${#numbers.sequence(0, reservationPage.totalPages - 1)}">
+                            <button type="button"
+                                    th:classappend="${i == currentPage} ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm'"
+                                    th:text="${i + 1}"
+                                    th:onclick="'goToPage(' + ${i} + ')'"></button>
+                        </span>
+
+                        <button type="button" class="btn btn-secondary btn-sm"
+                                th:disabled="${currentPage >= reservationPage.totalPages - 1}"
+                                th:classappend="${currentPage >= reservationPage.totalPages - 1} ? 'disabled' : ''"
+                                th:onclick="|goToPage(${currentPage + 1})|">Sau ›</button>
+
+                        <span class="pagination-info">
+                            Trang <strong th:text="${currentPage + 1}"></strong> / <strong th:text="${reservationPage.totalPages}"></strong>
+                            (tổng <strong th:text="${reservationPage.totalElements}"></strong> đặt bàn)
+                        </span>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<div id="cancelModal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-card-header">🚫 Xác nhận hủy đặt bàn</div>
+        <div class="modal-card-body">
+            <div id="cancelModalSubtitle" style="font-size:14px; color:var(--text-muted); margin-bottom:16px;"></div>
+            <form method="post" id="cancelForm">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <input type="hidden" name="cancellationReason" id="cancelReason"/>
+                <div class="form-group">
+                    <label class="form-label">Lý do hủy <span style="color:var(--danger);">*</span></label>
+                    <textarea id="cancelReasonText" class="form-control" rows="3" placeholder="Nhập lý do hủy đặt bàn..."></textarea>
+                    <div class="form-error" id="cancelError"></div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-card-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeCancelModal()">Đóng</button>
+            <button type="button" class="btn btn-danger" onclick="confirmCancel()">🚫 Xác nhận hủy</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function goToPage(page) {
+        document.getElementById('filterPage').value = page;
+        document.getElementById('filterForm').submit();
+    }
+    let currentReservationId = null;
+    function openCancelModal(reservationId, customerName) {
+        currentReservationId = reservationId;
+        document.getElementById('cancelModalSubtitle').textContent = 'Đặt bàn của khách: ' + customerName;
+        document.getElementById('cancelReasonText').value = '';
+        document.getElementById('cancelError').textContent = '';
+        document.getElementById('cancelModal').classList.add('visible');
+    }
+    function closeCancelModal() {
+        document.getElementById('cancelModal').classList.remove('visible');
+        currentReservationId = null;
+    }
+    function confirmCancel() {
+        const reason = document.getElementById('cancelReasonText').value.trim();
+        if (!reason) {
+            document.getElementById('cancelError').textContent = 'Vui lòng nhập lý do hủy';
+            return;
+        }
+        document.getElementById('cancelReason').value = reason;
+        const form = document.getElementById('cancelForm');
+        form.setAttribute('action', '/manager/reservations/' + currentReservationId + '/cancel');
+        form.submit();
+    }
+    document.getElementById('cancelModal').addEventListener('click', function(e) {
+        if (e.target === this) closeCancelModal();
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeCancelModal();
+    });
+</script>
+
+</body>
+</html>
