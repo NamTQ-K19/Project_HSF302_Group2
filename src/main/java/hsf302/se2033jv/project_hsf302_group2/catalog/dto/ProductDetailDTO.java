@@ -26,4 +26,5 @@ public class ProductDetailDTO {
     private Double averageRating;
     private Long reviewCount;
     private List<ReviewDTO> reviews;
+    private Integer categoryId;  
 }

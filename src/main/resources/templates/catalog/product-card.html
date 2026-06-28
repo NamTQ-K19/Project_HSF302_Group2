@@ -13,7 +13,7 @@
                  th:alt="${product.name}"
                  class="product-img"
                  loading="lazy"
-                 onerror="this.src='/img/products/placeholder.jpg'"/>
+                 onerror="this.onerror=null; this.style.visibility='hidden'"/>
             <span class="category-badge" th:text="${product.categoryName}">Category</span>
         </div>
 

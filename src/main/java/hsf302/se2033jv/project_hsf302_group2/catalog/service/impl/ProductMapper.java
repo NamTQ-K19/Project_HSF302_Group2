@@ -54,6 +54,7 @@ public class ProductMapper {
                 .productId(product.getProductId())
                 .name(product.getName())
                 .description(product.getDescription())
+                .categoryId(product.getCategory() != null ? product.getCategory().getCategoryId() : null)
                 .categoryName(product.getCategory() != null ? product.getCategory().getName() : "")
                 .primaryImageUrl(resolveImage(product.getImages()))
                 .allImageUrls(allImages)

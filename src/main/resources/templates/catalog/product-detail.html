@@ -4,8 +4,10 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title th:text="${product.name} + ' – Café Aroma'">Chi tiết sản phẩm – Café Aroma</title>
-    <link rel="stylesheet" th:href="@{/css/catalog/main.css}" />
+    <title th:text="${product.name} + '– BrewMaster'">Chi tiết sản phẩm – BrewMaster</title>
+    <link rel="stylesheet" th:href="@{/css/catalog/main.css}"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 </head>
 <body>
 
@@ -18,7 +20,7 @@
         <nav class="breadcrumb" aria-label="breadcrumb">
             <a th:href="@{/}">Trang chủ</a>
             <span class="breadcrumb-sep">›</span>
-            <a th:href="@{/search(categoryId=${product.productId})}"
+            <a th:href="@{/search(categoryId=${product.categoryId})}"
                th:text="${product.categoryName}">Category</a>
             <span class="breadcrumb-sep">›</span>
             <span th:text="${product.name}" aria-current="page">Product</span>
@@ -36,7 +38,7 @@
                          th:alt="${product.name}"
                          class="main-product-img"
                          id="mainImage"
-                         onerror="this.src='/img/products/placeholder.jpg'"/>
+                         onerror="this.onerror=null; this.style.visibility='hidden'"/>
                 </div>
 
                 <!-- Thumbnail gallery -->
@@ -47,7 +49,7 @@
                          class="thumbnail"
                          th:classappend="${imgUrlStat.first} ? ' active' : ''"
                          onclick="changeMainImage(this)"
-                         onerror="this.src='/img/products/placeholder.jpg'"/>
+                         onerror="this.onerror=null; this.style.visibility='hidden'"/>
                 </div>
             </div>
 
@@ -154,20 +156,27 @@
                      Redirects anonymous to Login (UC_03 screen def)
                      ============================================================ -->
                 <!-- For logged-in customers -->
-                <div sec:authorize="hasRole('Customer')">
+                <!-- Đã login -->
+                <div sec:authorize="isAuthenticated()" class="action-buttons">
                     <button type="button"
-                            class="btn btn-primary btn-lg btn-full add-to-cart-btn"
+                            class="btn btn-primary btn-lg"
                             onclick="addToCart()">
-                        🛒 Thêm vào giỏ hàng
+                        <i class="fas fa-shopping-cart"></i> Thêm vào giỏ
+                    </button>
+                    <button type="button"
+                            class="btn btn-outline btn-lg"
+                            onclick="buyNow()">
+                        ⚡ Mua ngay
                     </button>
                 </div>
 
-                <!-- For anonymous visitors: redirect to login (Field #6) -->
+                <!-- Chưa login -->
                 <div sec:authorize="isAnonymous()">
                     <a th:href="@{/auth/login}"
                        class="btn btn-primary btn-lg btn-full">
                         🔐 Đăng nhập để thêm vào giỏ
                     </a>
+                </div>
                     <p class="login-hint">
                         Chưa có tài khoản?
                         <a th:href="@{/auth/register}">Đăng ký ngay</a>

@@ -28,14 +28,17 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
      * Search products by name or description (case-insensitive).
      * Used for UC_02 Search Product.
      */
-    @Query("""
-        SELECT p FROM Product p
-        WHERE p.isActive = true
-          AND p.isAvailable = true
-          AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
-               OR LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%')))
-        """)
-    List<Product> searchByKeyword(@Param("keyword") String keyword);
+
+        @Query(value = """
+    SELECT * FROM products
+    WHERE is_active = 1
+    AND is_available = 1
+    AND (
+            name COLLATE Vietnamese_CI_AI LIKE N'%' + :keyword + N'%'
+                    OR description COLLATE Vietnamese_CI_AI LIKE N'%' + :keyword + N'%'
+    )
+    """, nativeQuery = true)
+List<Product> searchByKeyword(@Param("keyword") String keyword);
 
     /**
      * Find one active product by ID for the detail page (UC_03).
