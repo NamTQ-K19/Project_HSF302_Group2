@@ -265,6 +265,7 @@ a {
     box-shadow: 0 4px 12px rgba(26, 26, 26, 0.2);
     position: relative;
     overflow: hidden;
+    box-sizing: border-box;
 }
 
 .auth-btn-primary::after {
@@ -327,11 +328,34 @@ a {
     font-size: 1rem;
     cursor: pointer;
     transition: var(--transition-smooth);
+    box-sizing: border-box;
 }
 
 .auth-btn-google:hover {
     background: #f8f9fa;
     border-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Secondary Button (Clear / Cancel) */
+.auth-btn-secondary {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    color: var(--text-main);
+    padding: 1rem;
+    border: 1.5px solid rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    box-sizing: border-box;
+}
+
+.auth-btn-secondary:hover {
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
 }
 
 /* Alerts */
@@ -356,3 +380,49 @@ a {
 .text-sm { font-size: 0.875rem; }
 .text-stone-600 { color: var(--text-muted); }
 .font-semibold { font-weight: 600; }
+
+/* Grid layout dùng chung cho các trang auth (2 cột) */
+.auth-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+}
+
+@media (max-width: 640px) {
+    .auth-grid-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+.mt-6 {
+    margin-top: 1.5rem;
+}
+
+/* Footer link (Back to Login, Forgot password, ...) */
+.auth-footer-text {
+    text-align: center;
+    margin-top: 1.75rem;
+}
+
+.auth-footer-text .auth-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    padding: 0.5rem 0.25rem;
+}
+
+.auth-footer-text .auth-link:hover {
+    color: var(--primary-color);
+    gap: 0.6rem;
+}
+
+.auth-icon-small {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    transition: var(--transition-smooth);
+}

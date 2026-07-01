@@ -5,6 +5,8 @@
     <title>Bean & Brew</title>
     <link rel="stylesheet" th:href="@{/css/auth-theme.css}">
     <script src="https://unpkg.com/feather-icons"></script>
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
 </head>
 
 
@@ -70,7 +72,7 @@
           <div class="auth-input-icon-left">
             <i data-feather="key" class="auth-icon"></i>
           </div>
-          <input type="text" name="otp" id="otp" class="auth-input" placeholder="123456" required>
+          <input type="text" name="otp" id="otp" class="auth-input" placeholder="123456" required th:value="${otp}">
         </div>
 
         <!-- Submit Buttons -->
