@@ -1,159 +1,122 @@
-<!-- src/main/resources/templates/customer/review/create.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đánh giá sản phẩm - BrewMaster</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Tailwind CSS config -->
+    <div th:replace="~{catalog/tailwind-head :: tailwind-head}"></div>
+    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-    <link th:href="@{/css/customer/customer.css}" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        .rating-stars {
-            font-size: 32px;
-            cursor: pointer;
-            color: #dee2e6;
-            transition: var(--transition);
-        }
-        .rating-stars:hover,
-        .rating-stars.active {
-            color: #f5a623;
-        }
-        .product-select-card {
-            border: 2px solid var(--brown-beige);
-            border-radius: var(--radius-md);
-            padding: 12px 16px;
-            cursor: pointer;
-            transition: var(--transition);
-            margin-bottom: 10px;
-        }
-        .product-select-card:hover {
-            border-color: var(--brown-primary);
-        }
-        .product-select-card.selected {
-            border-color: var(--brown-primary);
-            background: var(--brown-cream);
-        }
-        .product-select-card input[type="radio"] {
-            display: none;
-        }
-        .product-select-card .thumb {
-            width: 50px;
-            height: 50px;
-            border-radius: var(--radius-sm);
-            overflow: hidden;
-            background: var(--bg-light);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        .product-select-card .thumb img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-    </style>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
 </head>
-<body>
-<header class="header">
-    <a href="/" class="header-logo">
-        <div class="header-logo-icon"><i class="fas fa-mug-hot"></i></div>
-        <span class="header-logo-text">Brew<span>Master</span></span>
-    </a>
-    <nav class="header-nav">
-        <a href="/menu"><i class="fas fa-utensils"></i><span>Menu</span></a>
-        <a href="/customer/cart" class="header-cart">
-            <i class="fas fa-shopping-cart"></i><span>Giỏ hàng</span>
-            <span class="header-cart-badge" id="cartBadge"><span id="cartCount">0</span></span>
-        </a>
-        <a href="/customer/orders/history"><i class="fas fa-history"></i><span>Lịch sử</span></a>
-        <a href="/customer/reviews" class="active"><i class="fas fa-star"></i><span>Đánh giá</span></a>
-        <div class="header-avatar"><i class="fas fa-user"></i></div>
-    </nav>
-</header>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed antialiased">
 
-<main class="main">
-    <div class="page-header">
-        <div class="page-header-left">
-            <h1><i class="fas fa-star" style="color: var(--brown-gold);"></i>Đánh giá sản phẩm</h1>
-            <p>Chia sẻ trải nghiệm của bạn về sản phẩm</p>
+<div th:replace="~{catalog/navbar :: navbar}"></div>
+
+<main class="max-w-max-width mx-auto px-margin-desktop py-12 min-h-[70vh]">
+
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div>
+            <h1 class="font-headline-lg text-primary m-0 mb-1 flex items-center gap-3">
+                <span class="material-symbols-outlined text-[32px] text-secondary">stars</span> 
+                Đánh giá sản phẩm
+            </h1>
+            <p class="text-on-surface-variant font-bold text-body-lg m-0">Chia sẻ trải nghiệm của bạn về sản phẩm</p>
         </div>
-        <a href="/customer/orders/history" class="btn-outline">
-            <i class="fas fa-arrow-left"></i> Quay lại
+        <a href="/customer/orders/history" class="inline-flex bg-surface-container border border-outline-variant text-on-surface-variant px-6 py-2.5 rounded-full font-bold text-body-sm hover:bg-surface-container-high transition-colors no-underline items-center gap-2">
+            <span class="material-symbols-outlined text-sm">arrow_back</span> Quay lại
         </a>
     </div>
 
-    <div class="row">
-        <div class="col-lg-8">
-            <div class="card-custom mb-4">
-                <h5 style="font-weight: 600; margin-bottom: 20px; color: var(--text-dark);">
-                    <i class="fas fa-shopping-bag" style="color: var(--brown-primary);"></i> Chọn sản phẩm cần đánh giá
+    <div class="flex flex-col lg:flex-row gap-8">
+        <!-- Main Form -->
+        <div class="flex-1">
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl overflow-hidden shadow-sm p-6 md:p-8">
+                
+                <h5 class="font-headline-sm text-primary m-0 mb-6 flex items-center gap-2">
+                    <span class="material-symbols-outlined">shopping_bag</span> Chọn sản phẩm cần đánh giá
                 </h5>
 
-                <div th:if="${products == null or products.isEmpty()}" class="text-center py-4">
-                    <i class="fas fa-check-circle" style="font-size: 40px; color: #28a745;"></i>
-                    <h5 style="color: var(--text-muted); margin-top: 12px;">Tất cả sản phẩm đã được đánh giá!</h5>
-                    <a href="/customer/orders/history" class="btn-primary" style="margin-top: 12px;">
-                        <i class="fas fa-history"></i> Xem lịch sử đơn hàng
+                <div th:if="${products == null or products.isEmpty()}" class="text-center py-12 border border-outline border-dashed rounded-2xl">
+                    <span class="material-symbols-outlined text-[64px] text-success mb-4 block">check_circle</span>
+                    <h5 class="font-bold text-body-lg text-on-surface mb-4">Tất cả sản phẩm đã được đánh giá!</h5>
+                    <a href="/customer/orders/history" class="inline-flex bg-primary text-white px-6 py-3 rounded-full font-bold text-body-sm hover:opacity-90 transition-opacity no-underline items-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">history</span> Xem lịch sử đơn hàng
                     </a>
                 </div>
 
                 <div th:if="${products != null and !products.isEmpty()}">
-                    <form id="reviewForm">
+                    <form id="reviewForm" class="flex flex-col gap-6">
                         <input type="hidden" name="orderId" th:value="${orderId}">
 
                         <!-- Product Selection -->
-                        <div th:each="product : ${products}" class="product-select-card"
-                             th:data-product-id="${product.productId}">
-                            <label class="d-flex align-items-center gap-3" style="cursor: pointer; width: 100%;">
-                                <input type="radio" name="productId" th:value="${product.productId}" required>
-                                <div class="thumb">
-                                    <img th:src="${product.productImage != null ? product.productImage : '/images/default-product.png'}"
-                                         alt="Product" onerror="this.style.display='none'">
-                                </div>
-                                <div>
-                                    <div style="font-weight: 600;" th:text="${product.productName}">Product Name</div>
-                                    <small class="text-muted">Đơn hàng #<span th:text="${orderId}">001</span></small>
-                                </div>
-                            </label>
+                        <div class="flex flex-col gap-3">
+                            <div th:each="product : ${products}" class="relative">
+                                <input type="radio" name="productId" th:value="${product.productId}" required class="peer sr-only" th:id="'product_' + ${product.productId}">
+                                <label th:for="'product_' + ${product.productId}" class="flex items-center gap-4 p-4 rounded-2xl border-2 border-outline-variant hover:border-primary/50 peer-checked:border-primary peer-checked:bg-primary-container/30 cursor-pointer transition-colors m-0">
+                                    <div class="w-14 h-14 rounded-xl overflow-hidden bg-surface-container border border-outline-variant shrink-0">
+                                        <img th:src="${product.productImage != null ? product.productImage : '/images/default-product.png'}"
+                                             alt="Product" class="w-full h-full object-cover" onerror="this.style.display='none'">
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="font-bold text-body-lg text-on-surface mb-1" th:text="${product.productName}">Product Name</div>
+                                        <div class="text-on-surface-variant text-body-sm">Đơn hàng #<span th:text="${orderId}">001</span></div>
+                                    </div>
+                                    <div class="w-6 h-6 rounded-full border-2 border-outline-variant flex items-center justify-center peer-checked:border-primary peer-checked:bg-primary shrink-0 transition-colors">
+                                        <span class="material-symbols-outlined text-white text-[16px] opacity-0 peer-checked:opacity-100">check</span>
+                                    </div>
+                                </label>
+                            </div>
                         </div>
 
+                        <hr class="border-t border-outline-variant border-dashed my-2">
+
                         <!-- Rating -->
-                        <div style="margin-top: 24px;">
-                            <label style="font-weight: 600; display: block; margin-bottom: 8px;">
-                                <i class="fas fa-star" style="color: var(--brown-gold);"></i> Đánh giá của bạn
+                        <div>
+                            <label class="block font-bold text-body-md text-on-surface mb-3 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-secondary">star</span> Đánh giá của bạn
                             </label>
-                            <div class="d-flex gap-2" id="ratingStars">
-                                <i class="fas fa-star rating-stars" data-rating="1"></i>
-                                <i class="fas fa-star rating-stars" data-rating="2"></i>
-                                <i class="fas fa-star rating-stars" data-rating="3"></i>
-                                <i class="fas fa-star rating-stars" data-rating="4"></i>
-                                <i class="fas fa-star rating-stars" data-rating="5"></i>
+                            <div class="flex gap-2 mb-2" id="ratingStars">
+                                <button type="button" class="rating-stars w-12 h-12 rounded-xl flex items-center justify-center bg-surface-container border-none text-outline-variant hover:text-secondary hover:bg-secondary-container/50 transition-colors cursor-pointer" data-rating="1">
+                                    <span class="material-symbols-outlined text-[32px] font-variation-fill">star</span>
+                                </button>
+                                <button type="button" class="rating-stars w-12 h-12 rounded-xl flex items-center justify-center bg-surface-container border-none text-outline-variant hover:text-secondary hover:bg-secondary-container/50 transition-colors cursor-pointer" data-rating="2">
+                                    <span class="material-symbols-outlined text-[32px] font-variation-fill">star</span>
+                                </button>
+                                <button type="button" class="rating-stars w-12 h-12 rounded-xl flex items-center justify-center bg-surface-container border-none text-outline-variant hover:text-secondary hover:bg-secondary-container/50 transition-colors cursor-pointer" data-rating="3">
+                                    <span class="material-symbols-outlined text-[32px] font-variation-fill">star</span>
+                                </button>
+                                <button type="button" class="rating-stars w-12 h-12 rounded-xl flex items-center justify-center bg-surface-container border-none text-outline-variant hover:text-secondary hover:bg-secondary-container/50 transition-colors cursor-pointer" data-rating="4">
+                                    <span class="material-symbols-outlined text-[32px] font-variation-fill">star</span>
+                                </button>
+                                <button type="button" class="rating-stars w-12 h-12 rounded-xl flex items-center justify-center bg-surface-container border-none text-outline-variant hover:text-secondary hover:bg-secondary-container/50 transition-colors cursor-pointer" data-rating="5">
+                                    <span class="material-symbols-outlined text-[32px] font-variation-fill">star</span>
+                                </button>
                             </div>
                             <input type="hidden" name="rating" id="ratingInput" required>
-                            <small class="text-muted" id="ratingText">Chọn số sao bạn muốn đánh giá</small>
+                            <div class="text-on-surface-variant font-medium text-body-sm" id="ratingText">Chọn số sao bạn muốn đánh giá</div>
                         </div>
 
                         <!-- Comment -->
-                        <div style="margin-top: 20px;">
-                            <label style="font-weight: 600; display: block; margin-bottom: 8px;">
-                                <i class="fas fa-pen" style="color: var(--brown-primary);"></i> Bình luận
+                        <div>
+                            <label class="block font-bold text-body-md text-on-surface mb-3 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary">edit</span> Bình luận
                             </label>
-                            <textarea class="form-control" name="comment" rows="4"
-                                      placeholder="Chia sẻ cảm nhận của bạn về sản phẩm..."
-                                      style="border-radius: var(--radius-md); border: 2px solid var(--brown-beige);"></textarea>
+                            <textarea name="comment" rows="4" placeholder="Chia sẻ cảm nhận của bạn về sản phẩm..." class="w-full bg-surface-container-lowest border border-outline rounded-xl p-4 text-body-md focus:border-primary outline-none transition-colors resize-y"></textarea>
                         </div>
 
                         <!-- Submit -->
-                        <div style="margin-top: 24px;">
-                            <button type="submit" class="btn-primary" id="submitReview" style="width: 100%; justify-content: center; padding: 14px; font-size: 16px;">
-                                <i class="fas fa-paper-plane"></i> Gửi đánh giá
+                        <div class="pt-4">
+                            <button type="submit" id="submitReview" class="w-full bg-primary text-white px-6 py-4 rounded-full font-bold text-body-lg hover:opacity-90 transition-opacity border-none cursor-pointer flex items-center justify-center gap-2 shadow-sm shadow-primary/20">
+                                <span class="material-symbols-outlined">send</span> Gửi đánh giá
                             </button>
-                            <div class="text-muted small mt-2 text-center">
-                                <i class="fas fa-gem" style="color: var(--brown-gold);"></i>
-                                Bạn sẽ nhận được <strong>5 điểm</strong> tích lũy cho mỗi đánh giá!
+                            <div class="text-on-surface-variant text-body-sm mt-4 text-center flex items-center justify-center gap-1.5">
+                                <span class="material-symbols-outlined text-secondary text-[18px]">workspace_premium</span>
+                                Bạn sẽ nhận được <strong class="text-secondary">5 điểm</strong> tích lũy cho mỗi đánh giá!
                             </div>
                         </div>
                     </form>
@@ -161,27 +124,28 @@
             </div>
         </div>
 
-        <div class="col-lg-4">
-            <div class="card-custom">
-                <h5 style="font-weight: 600; margin-bottom: 16px; color: var(--text-dark);">
-                    <i class="fas fa-info-circle" style="color: var(--brown-primary);"></i> Hướng dẫn
+        <!-- Sidebar Info -->
+        <div class="w-full lg:w-80 shrink-0">
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl p-8 sticky top-28 shadow-sm">
+                <h5 class="font-bold text-headline-sm text-primary mb-6 flex items-center gap-2 m-0">
+                    <span class="material-symbols-outlined">info</span> Hướng dẫn
                 </h5>
-                <ul style="list-style: none; padding: 0; margin: 0;">
-                    <li style="padding: 8px 0; border-bottom: 1px solid var(--brown-beige);">
-                        <i class="fas fa-check-circle" style="color: #28a745;"></i>
-                        <span style="margin-left: 10px;">Đánh giá sản phẩm bạn đã mua</span>
+                <ul class="flex flex-col gap-4 m-0 p-0 list-none">
+                    <li class="flex items-start gap-3 border-b border-outline-variant border-dashed pb-4">
+                        <span class="material-symbols-outlined text-success mt-0.5">check_circle</span>
+                        <span class="text-on-surface font-medium text-body-md leading-relaxed">Đánh giá sản phẩm bạn đã mua</span>
                     </li>
-                    <li style="padding: 8px 0; border-bottom: 1px solid var(--brown-beige);">
-                        <i class="fas fa-star" style="color: var(--brown-gold);"></i>
-                        <span style="margin-left: 10px;">Chọn số sao từ 1 đến 5</span>
+                    <li class="flex items-start gap-3 border-b border-outline-variant border-dashed pb-4">
+                        <span class="material-symbols-outlined text-secondary mt-0.5">star</span>
+                        <span class="text-on-surface font-medium text-body-md leading-relaxed">Chọn số sao từ 1 đến 5</span>
                     </li>
-                    <li style="padding: 8px 0; border-bottom: 1px solid var(--brown-beige);">
-                        <i class="fas fa-pen" style="color: var(--brown-primary);"></i>
-                        <span style="margin-left: 10px;">Viết bình luận chia sẻ trải nghiệm</span>
+                    <li class="flex items-start gap-3 border-b border-outline-variant border-dashed pb-4">
+                        <span class="material-symbols-outlined text-primary mt-0.5">edit</span>
+                        <span class="text-on-surface font-medium text-body-md leading-relaxed">Viết bình luận chia sẻ trải nghiệm</span>
                     </li>
-                    <li style="padding: 8px 0;">
-                        <i class="fas fa-gem" style="color: var(--brown-gold);"></i>
-                        <span style="margin-left: 10px;">Nhận <strong>5 điểm</strong> tích lũy</span>
+                    <li class="flex items-start gap-3">
+                        <span class="material-symbols-outlined text-secondary mt-0.5">workspace_premium</span>
+                        <span class="text-on-surface font-medium text-body-md leading-relaxed">Nhận <strong class="text-secondary">5 điểm</strong> tích lũy</span>
                     </li>
                 </ul>
             </div>
@@ -189,23 +153,17 @@
     </div>
 </main>
 
-<!-- TOAST BOTTOM RIGHT -->
-<div class="toast-container-bottom" id="toastContainer"></div>
+<div th:replace="~{catalog/footer :: footer}"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.5/dist/sweetalert2.all.min.js"></script>
 <script>
     $(document).ready(function() {
-        // Product selection
-        $('.product-select-card').click(function() {
-            $('.product-select-card').removeClass('selected');
-            $(this).addClass('selected');
-            $(this).find('input[type="radio"]').prop('checked', true);
-        });
+        // Product selection logic is handled by CSS peer-checked, but we can sync the UI if needed
+        // Since we are using standard radio inputs, we just need the rating logic
 
         // Rating stars
         let selectedRating = 0;
+        
         $('.rating-stars').hover(
             function() {
                 const rating = $(this).data('rating');
@@ -233,15 +191,15 @@
             $('.rating-stars').each(function() {
                 const starRating = $(this).data('rating');
                 if (starRating <= rating) {
-                    $(this).addClass('active');
+                    $(this).removeClass('text-outline-variant').addClass('text-secondary');
                 } else {
-                    $(this).removeClass('active');
+                    $(this).removeClass('text-secondary').addClass('text-outline-variant');
                 }
             });
         }
 
         function resetStars() {
-            $('.rating-stars').removeClass('active');
+            $('.rating-stars').removeClass('text-secondary').addClass('text-outline-variant');
             $('#ratingText').text('Chọn số sao bạn muốn đánh giá');
         }
 
@@ -266,12 +224,20 @@
 
             const btn = $('#submitReview');
             btn.prop('disabled', true);
-            btn.html('<i class="fas fa-spinner fa-spin"></i> Đang gửi...');
+            btn.html('<span class="material-symbols-outlined animate-spin">sync</span> Đang gửi...');
+
+            const token = $("meta[name='_csrf']").attr("content");
+            const header = $("meta[name='_csrf_header']").attr("content");
 
             $.ajax({
                 url: '/customer/reviews/create',
                 type: 'POST',
                 contentType: 'application/json',
+                beforeSend: function(xhr) {
+                    if (token && header) {
+                        xhr.setRequestHeader(header, token);
+                    }
+                },
                 data: JSON.stringify({
                     orderId: parseInt(orderId),
                     productId: parseInt(productId),
@@ -286,12 +252,12 @@
                             text: response.message || 'Cảm ơn bạn đã đánh giá!',
                             confirmButtonColor: '#6b4423'
                         }).then(() => {
-                            window.location.href = '/customer/orders/detail/' + orderId;
+                            window.location.href = '/customer/orders/detail/' + orderId + '?reviewed=true';
                         });
                     } else {
                         Swal.fire({ icon: 'error', title: 'Lỗi!', text: response.message || 'Không thể gửi đánh giá' });
                         btn.prop('disabled', false);
-                        btn.html('<i class="fas fa-paper-plane"></i> Gửi đánh giá');
+                        btn.html('<span class="material-symbols-outlined">send</span> Gửi đánh giá');
                     }
                 },
                 error: function(xhr) {
@@ -299,35 +265,10 @@
                     try { const response = JSON.parse(xhr.responseText); if (response.message) errorMsg = response.message; } catch(e) {}
                     Swal.fire({ icon: 'error', title: 'Lỗi!', text: errorMsg });
                     btn.prop('disabled', false);
-                    btn.html('<i class="fas fa-paper-plane"></i> Gửi đánh giá');
+                    btn.html('<span class="material-symbols-outlined">send</span> Gửi đánh giá');
                 }
             });
         });
-
-        function showToast(message, type) {
-            const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
-            const toast = $(`
-            <div class="toast-item-bottom ${type}">
-                <i class="fas ${icons[type] || 'fa-info-circle'} icon"></i>
-                <span class="msg">${message}</span>
-                <button class="close" onclick="this.parentElement.remove()">&times;</button>
-            </div>
-        `);
-            $('#toastContainer').append(toast);
-            setTimeout(() => toast.fadeOut(300, () => toast.remove()), 3500);
-        }
-
-        function updateCartBadge() {
-            $.ajax({
-                url: '/customer/cart/count',
-                type: 'GET',
-                success: function(count) {
-                    $('#cartCount').text(count || 0);
-                    count > 0 ? $('#cartBadge').css('display', 'flex') : $('#cartBadge').hide();
-                }
-            });
-        }
-        updateCartBadge();
     });
 </script>
 </body>

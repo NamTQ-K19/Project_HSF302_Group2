@@ -10,6 +10,7 @@ import hsf302.se2033jv.project_hsf302_group2.admin.dto.response.PageResponse;
 import hsf302.se2033jv.project_hsf302_group2.admin.service.interfaces.AccountService;
 import hsf302.se2033jv.project_hsf302_group2.admin.service.interfaces.DashboardService;
 import hsf302.se2033jv.project_hsf302_group2.common.entity.User;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -311,17 +312,18 @@ public class AdminController {
             @PathVariable Integer userId,
             @RequestParam boolean lock,
             @RequestParam(required = false) String reason,
-            RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes,
+            HttpServletRequest request) {
         log.info("Toggling account status for user: {}, lock: {}, reason: {}", userId, lock, reason);
 
         try {
             if (lock) {
                 accountService.lockAccount(userId, reason);
-                redirectAttributes.addFlashAttribute("message", "Tài khoản đã bị khóa");
+                redirectAttributes.addFlashAttribute("message", "Tài khoản đã bị khóa thành công!");
                 redirectAttributes.addFlashAttribute("messageType", "success");
             } else {
                 accountService.unlockAccount(userId, reason);
-                redirectAttributes.addFlashAttribute("message", "Tài khoản đã được mở khóa");
+                redirectAttributes.addFlashAttribute("message", "Tài khoản đã được mở khóa thành công!");
                 redirectAttributes.addFlashAttribute("messageType", "success");
             }
         } catch (Exception e) {
@@ -330,8 +332,10 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("messageType", "error");
         }
 
-        String referer = redirectAttributes.getAttribute("referer") != null ?
-                (String) redirectAttributes.getAttribute("referer") : "/admin/accounts";
+        String referer = request.getHeader("Referer");
+        if (referer == null || referer.trim().isEmpty()) {
+            referer = "/admin/accounts";
+        }
         return "redirect:" + referer;
     }
 

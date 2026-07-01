@@ -5,140 +5,185 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title th:text="${pageTitle} + ' - BrewMaster'">BrewMaster - Tổng quan</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    
+    <!-- Tailwind CSS config -->
+    <div th:replace="~{catalog/tailwind-head :: tailwind-head}"></div>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link rel="stylesheet" href="/css/admin/sidebar.css" />
-    <link rel="stylesheet" href="/css/admin/dashboard.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
 </head>
-<body>
-<div class="dashboard-grid">
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed antialiased flex h-screen overflow-hidden">
+
     <!-- Sidebar -->
     <th:block th:replace="~{admin/fragments/sidebar :: sidebar(currentPage='dashboard')}"></th:block>
 
     <!-- Main Content -->
-    <main class="main-content">
+    <main class="flex-1 flex flex-col overflow-y-auto">
         <!-- Top Bar -->
-        <header class="topbar">
+        <header class="sticky top-0 z-40 bg-surface-container-lowest/80 backdrop-blur-md border-b border-outline-variant px-8 py-5 flex items-center justify-between">
             <div>
-                <h1>
-                    <span th:text="${greeting}">Chào buổi chiều</span>,
-                    <span th:text="${displayName}" style="color: #4a2c1b; font-weight: 600;">Admin</span>
-                    <i th:class="'fas' + ' ' + ${greetingIcon}" th:style="'color: ' + ${iconColor} + '; margin-left: 4px;'"></i>
+                <h1 class="font-headline-sm text-on-surface m-0 font-bold flex items-center gap-2">
+                    <span th:text="${greeting}" class="text-on-surface-variant">Chào buổi chiều</span>,
+                    <span th:text="${displayName}" class="text-primary">Admin</span>
+                    <i th:class="'fas ' + ${greetingIcon}" th:style="'color: ' + ${iconColor} + ';'"></i>
                 </h1>
-                <div style="font-size: 14px; color: #64748b; margin-top: 4px;">
-                    Đây là những gì đang diễn ra tại quán cà phê của bạn hôm nay.
+                <div class="text-body-sm text-on-surface-variant mt-1">
+                    Đây là những gì đang diễn ra tại hệ thống của bạn hôm nay.
                 </div>
             </div>
-            <div class="topbar-actions">
-                <div class="system-status">
-                    <span class="status-dot"></span>
-                    <span>Hệ thống hoạt động bình thường</span>
+            
+            <div class="flex items-center gap-6">
+                <div class="hidden md:flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-body-sm font-medium">
+                    <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                    Hệ thống hoạt động bình thường
                 </div>
-                <span class="date" th:text="${currentDate}">22 Tháng 6, 2026</span>
-                <div class="avatar">
-                    <!-- Nếu có avatar thì hiển thị ảnh, không thì hiển thị icon -->
+                <div class="text-body-sm font-medium text-on-surface-variant" th:text="${currentDate}">22 Tháng 6, 2026</div>
+                <div class="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center overflow-hidden shrink-0">
                     <th:block th:if="${avatarUrl != null and !avatarUrl.isEmpty()}">
-                        <img th:src="@{'/uploads/avatars/' + ${avatarUrl}}"
-                             alt="Avatar"
-                             class="avatar-image" />
+                        <img th:src="${avatarUrl.startsWith('http') ? avatarUrl : '/uploads/avatars/' + avatarUrl}" alt="Avatar" class="w-full h-full object-cover" />
                     </th:block>
                     <th:block th:unless="${avatarUrl != null and !avatarUrl.isEmpty()}">
-                        <i class="fas fa-user-circle" style="font-size: 28px; color: #c8a882;"></i>
+                        <span class="material-symbols-outlined text-primary text-[24px]">account_circle</span>
                     </th:block>
                 </div>
             </div>
         </header>
 
-        <!-- ===== 1, 2, 3. THỐNG KÊ NGƯỜI DÙNG ===== -->
-        <section class="stats-grid">
-            <div class="stat-card" style="border-left-color: #3b82f6;">
-                <div class="stat-label"><i class="fas fa-users" style="margin-right: 6px; color: #3b82f6;"></i> Tổng tài khoản</div>
-                <div class="stat-value" th:text="${totalUsers != null ? totalUsers : '0'}">0</div>
-                <div class="stat-change" style="color: #64748b;"><i class="fas fa-database" style="margin-right: 4px;"></i>Trong hệ thống</div>
-            </div>
-            <div class="stat-card" style="border-left-color: #22c55e;">
-                <div class="stat-label"><i class="fas fa-user-plus" style="margin-right: 6px; color: #22c55e;"></i> Tài khoản mới hôm nay</div>
-                <div class="stat-value" th:text="${newUsersToday != null ? newUsersToday : '0'}">0</div>
-                <div class="stat-change" style="color: #22c55e;"><i class="fas fa-arrow-up" style="margin-right: 4px;"></i>Đã đăng ký</div>
-            </div>
-            <div class="stat-card" style="border-left-color: #22c55e;">
-                <div class="stat-label"><i class="fas fa-user-check" style="margin-right: 6px; color: #22c55e;"></i> Đang hoạt động</div>
-                <div class="stat-value" th:text="${activeUsers != null ? activeUsers : '0'}">0</div>
-                <div class="stat-change" style="color: #22c55e;"><i class="fas fa-circle" style="margin-right: 4px; font-size: 10px;"></i>Đang hoạt động</div>
-            </div>
-            <div class="stat-card" style="border-left-color: #ef4444;">
-                <div class="stat-label"><i class="fas fa-user-lock" style="margin-right: 6px; color: #ef4444;"></i> Đã khóa</div>
-                <div class="stat-value" th:text="${lockedUsers != null ? lockedUsers : '0'}">0</div>
-                <div class="stat-change" style="color: #ef4444;"><i class="fas fa-lock" style="margin-right: 4px;"></i>Đã khóa</div>
-            </div>
-        </section>
+        <div class="p-8 max-w-[1200px] w-full mx-auto flex flex-col gap-8">
+            <!-- Stats Grid -->
+            <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Total Accounts -->
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm flex flex-col relative overflow-hidden group">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-primary"></div>
+                    <div class="flex items-center gap-3 text-on-surface-variant mb-4">
+                        <span class="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-lg">group</span>
+                        <span class="font-bold text-body-sm uppercase tracking-wider">Tổng tài khoản</span>
+                    </div>
+                    <div class="text-display-sm font-bold text-on-surface mb-2" th:text="${totalUsers != null ? totalUsers : '0'}">0</div>
+                    <div class="text-body-sm text-on-surface-variant flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[16px]">database</span> Trong hệ thống
+                    </div>
+                </div>
 
-        <!-- ===== 5. PHÂN BỐ THEO VAI TRÒ ===== -->
-        <div class="card">
-            <div class="card-header">
-                <h3><i class="fas fa-chart-pie" style="color: #c8a882; margin-right: 8px;"></i> Phân bố theo vai trò</h3>
-                <span style="font-size:13px; color:#64748b;">Tổng: <strong th:text="${totalUsers}">0</strong> tài khoản</span>
-            </div>
-            <div class="role-distribution">
-                <div th:if="${roleStats != null and !roleStats.isEmpty()}">
-                    <div class="role-item" th:each="role : ${roleStats}">
-                        <div class="role-info">
-                            <span class="role-name" th:text="${role.roleName}">Admin</span>
-                            <span class="role-count" th:text="${role.count} + ' (' + ${role.percentage} + '%)'">2 (20%)</span>
-                        </div>
-                        <div class="role-bar">
-                            <div class="role-bar-fill"
-                                 th:style="'width: ' + ${role.percentage} + '%;'"
-                                 th:class="'role-bar-fill role-' + ${#strings.toLowerCase(role.roleName)}">
+                <!-- New Today -->
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm flex flex-col relative overflow-hidden group">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-[#22c55e]"></div>
+                    <div class="flex items-center gap-3 text-on-surface-variant mb-4">
+                        <span class="material-symbols-outlined text-[#22c55e] bg-[#22c55e]/10 p-2 rounded-lg">person_add</span>
+                        <span class="font-bold text-body-sm uppercase tracking-wider">Mới hôm nay</span>
+                    </div>
+                    <div class="text-display-sm font-bold text-on-surface mb-2" th:text="${newUsersToday != null ? newUsersToday : '0'}">0</div>
+                    <div class="text-body-sm text-[#22c55e] flex items-center gap-1 font-medium">
+                        <span class="material-symbols-outlined text-[16px]">trending_up</span> Đã đăng ký
+                    </div>
+                </div>
+
+                <!-- Active -->
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm flex flex-col relative overflow-hidden group">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-[#10b981]"></div>
+                    <div class="flex items-center gap-3 text-on-surface-variant mb-4">
+                        <span class="material-symbols-outlined text-[#10b981] bg-[#10b981]/10 p-2 rounded-lg">how_to_reg</span>
+                        <span class="font-bold text-body-sm uppercase tracking-wider">Đang hoạt động</span>
+                    </div>
+                    <div class="text-display-sm font-bold text-on-surface mb-2" th:text="${activeUsers != null ? activeUsers : '0'}">0</div>
+                    <div class="text-body-sm text-on-surface-variant flex items-center gap-1">
+                        <span class="w-2 h-2 rounded-full bg-[#10b981] mr-1"></span> Đang hoạt động
+                    </div>
+                </div>
+
+                <!-- Locked -->
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm flex flex-col relative overflow-hidden group">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-error"></div>
+                    <div class="flex items-center gap-3 text-on-surface-variant mb-4">
+                        <span class="material-symbols-outlined text-error bg-error/10 p-2 rounded-lg">lock</span>
+                        <span class="font-bold text-body-sm uppercase tracking-wider">Đã khóa</span>
+                    </div>
+                    <div class="text-display-sm font-bold text-on-surface mb-2" th:text="${lockedUsers != null ? lockedUsers : '0'}">0</div>
+                    <div class="text-body-sm text-error flex items-center gap-1 font-medium">
+                        <span class="material-symbols-outlined text-[16px]">lock_person</span> Đã khóa
+                    </div>
+                </div>
+            </section>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Role Distribution -->
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden shadow-sm flex flex-col">
+                    <div class="px-6 py-4 border-b border-outline-variant flex items-center justify-between bg-surface-container-low/30">
+                        <h3 class="font-bold text-body-lg text-on-surface m-0 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">pie_chart</span>
+                            Phân bố theo vai trò
+                        </h3>
+                        <span class="text-body-sm text-on-surface-variant">Tổng: <strong th:text="${totalUsers}" class="text-on-surface">0</strong></span>
+                    </div>
+                    <div class="p-6 flex-1">
+                        <div th:if="${roleStats != null and !roleStats.isEmpty()}" class="flex flex-col gap-6">
+                            <div th:each="role : ${roleStats}" class="flex flex-col gap-2">
+                                <div class="flex items-center justify-between text-body-sm">
+                                    <span class="font-bold text-on-surface" th:text="${role.roleName}">Admin</span>
+                                    <span class="text-on-surface-variant font-medium" th:text="${role.count} + ' (' + ${role.percentage} + '%)'">2 (20%)</span>
+                                </div>
+                                <div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden">
+                                    <div class="h-full rounded-full transition-all duration-500"
+                                         th:classappend="${role.roleName == 'ADMIN' ? 'bg-error' : (role.roleName == 'STAFF' ? 'bg-[#3b82f6]' : 'bg-primary')}"
+                                         th:style="'width: ' + ${role.percentage} + '%;'">
+                                    </div>
+                                </div>
                             </div>
+                        </div>
+                        <div th:if="${roleStats == null or roleStats.isEmpty()}" class="flex flex-col items-center justify-center py-10 text-on-surface-variant/50">
+                            <span class="material-symbols-outlined text-[48px] mb-2 opacity-50">data_alert</span>
+                            <span>Chưa có dữ liệu</span>
                         </div>
                     </div>
                 </div>
-                <div th:if="${roleStats == null or roleStats.isEmpty()}">
-                    <div style="text-align:center; color:#94a3b8; padding:20px;">Chưa có dữ liệu</div>
-                </div>
-            </div>
-        </div>
 
-        <!-- ===== 6. HOẠT ĐỘNG GẦN ĐÂY ===== -->
-        <div class="card">
-            <div class="card-header">
-                <h3><i class="fas fa-clock" style="color: #c8a882; margin-right: 8px;"></i> Hoạt động gần đây</h3>
-                <a href="#" class="link">Xem tất cả →</a>
-            </div>
-            <div class="activity-list">
-                <div th:if="${recentLogs != null and !recentLogs.isEmpty()}">
-                    <div class="activity-item" th:each="log : ${recentLogs}">
-                        <div class="activity-icon" th:class="'activity-icon activity-' + ${#strings.toLowerCase(log.actionType)}">
-                            <i th:switch="${log.actionType}">
-                                <i th:case="'LOGIN'" class="fas fa-sign-in-alt"></i>
-                                <i th:case="'LOCK'" class="fas fa-lock"></i>
-                                <i th:case="'UNLOCK'" class="fas fa-unlock"></i>
-                                <i th:case="'CREATE'" class="fas fa-user-plus"></i>
-                                <i th:case="'UPDATE'" class="fas fa-edit"></i>
-                                <i th:case="*" class="fas fa-info-circle"></i>
-                            </i>
-                        </div>
-                        <div class="activity-content">
-                            <div class="activity-text" th:text="${log.description}">Mô tả hành động</div>
-                            <div class="activity-meta">
-                                <span class="activity-user"><i class="fas fa-user-circle" style="margin-right: 4px;"></i><span th:text="${log.userName}">Admin</span></span>
-                                <span class="activity-time"><i class="far fa-clock" style="margin-right: 4px;"></i><span th:text="${log.createdAt}">10:30</span></span>
+                <!-- Recent Activity -->
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden shadow-sm flex flex-col">
+                    <div class="px-6 py-4 border-b border-outline-variant flex items-center justify-between bg-surface-container-low/30">
+                        <h3 class="font-bold text-body-lg text-on-surface m-0 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">history</span>
+                            Hoạt động gần đây
+                        </h3>
+                        <a href="#" class="text-body-sm text-primary font-medium hover:underline">Xem tất cả →</a>
+                    </div>
+                    <div class="flex-1 overflow-y-auto max-h-[400px]">
+                        <div th:if="${recentLogs != null and !recentLogs.isEmpty()}" class="flex flex-col">
+                            <div th:each="log, iterStat : ${recentLogs}" 
+                                 class="p-4 border-b border-outline-variant last:border-0 flex gap-4 hover:bg-surface-container-low/50 transition-colors">
+                                
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 mt-1"
+                                     th:classappend="${log.actionType == 'LOGIN' ? 'bg-[#3b82f6]/10 text-[#3b82f6]' : (log.actionType == 'LOCK' ? 'bg-error/10 text-error' : (log.actionType == 'CREATE' ? 'bg-[#22c55e]/10 text-[#22c55e]' : 'bg-primary/10 text-primary'))}">
+                                    <span class="material-symbols-outlined text-[20px]" th:switch="${log.actionType}">
+                                        <span th:case="'LOGIN'">login</span>
+                                        <span th:case="'LOCK'">lock</span>
+                                        <span th:case="'UNLOCK'">lock_open</span>
+                                        <span th:case="'CREATE'">person_add</span>
+                                        <span th:case="'UPDATE'">edit</span>
+                                        <span th:case="*">info</span>
+                                    </span>
+                                </div>
+                                
+                                <div>
+                                    <div class="text-body-sm text-on-surface mb-1 font-medium" th:text="${log.description}">Mô tả hành động</div>
+                                    <div class="flex items-center gap-4 text-[12px] text-on-surface-variant">
+                                        <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">account_circle</span> <span th:text="${log.userName}">Admin</span></span>
+                                        <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">schedule</span> <span th:text="${log.createdAt}">10:30</span></span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-                <div th:if="${recentLogs == null or recentLogs.isEmpty()}">
-                    <div style="text-align:center; color:#94a3b8; padding:30px;">
-                        <i class="fas fa-inbox" style="font-size: 30px; display:block; margin-bottom:10px;"></i>
-                        Chưa có hoạt động nào
+                        <div th:if="${recentLogs == null or recentLogs.isEmpty()}" class="flex flex-col items-center justify-center py-10 text-on-surface-variant/50 h-full">
+                            <span class="material-symbols-outlined text-[48px] mb-2 opacity-50">inbox</span>
+                            <span>Chưa có hoạt động nào</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </main>
-</div>
 
 <script th:inline="javascript">
     var chartLabels = /*[[${chartLabels}]]*/ null;

@@ -3,103 +3,90 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Xác nhận mã OTP – Cafe Shop</title>
-    <link rel="stylesheet" th:href="@{/css/catalog/main.css}" />
-    <link th:href="@{/css/customer/profile.css}" rel="stylesheet"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <title>Xác nhận mã OTP – BrewMaster</title>
+    
+    <!-- Tailwind CSS config -->
+    <div th:replace="~{catalog/tailwind-head :: tailwind-head}"></div>
+    
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
+    
+    <style>
+        .otp-input {
+            letter-spacing: 0.5em;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+    </style>
 </head>
-<body>
+<body class="bg-surface-container-lowest text-on-surface font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed antialiased min-h-screen flex flex-col">
 
-<div th:replace="~{catalog/navbar :: navbar}"></div></nav>
+<div th:replace="~{catalog/navbar :: navbar}"></div>
 
-<div class="verify-wrap">
-    <div class="verify-card">
+<main class="flex-1 flex items-center justify-center py-12 px-margin-desktop">
+    <div class="w-full max-w-md bg-white border border-outline-variant rounded-3xl p-8 sm:p-12 shadow-sm text-center">
 
-        <div class="verify-icon">✉️</div>
-        <div class="verify-title">Nhập mã OTP</div>
-        <div class="verify-subtitle">
+        <div class="w-16 h-16 rounded-full bg-secondary-container text-secondary flex items-center justify-center mx-auto mb-6">
+            <span class="material-symbols-outlined text-[32px]">mark_email_read</span>
+        </div>
+        
+        <h1 class="font-headline-sm text-primary mb-3">Nhập mã OTP</h1>
+        <div class="text-on-surface-variant text-body-md mb-8">
             Chúng tôi đã gửi mã 6 chữ số đến<br/>
-            <strong th:text="${newEmail}"></strong><br/>
+            <strong th:text="${newEmail}" class="text-on-surface"></strong><br/>
             Mã có hiệu lực trong 5 phút.
         </div>
 
-        <div th:if="${errorMessage}"
-             class="alert alert-error"
-             th:text="${errorMessage}"></div>
-        <div th:if="${successMessage}"
-             class="alert alert-success"
-             th:text="${successMessage}"></div>
+        <!-- Flash messages are now handled globally via toast fragment in footer -->
 
         <!-- OTP verify form -->
-        <form th:action="@{/customer/profile/verify-otp}"
-              th:object="${otpForm}"
-              method="post">
-
-            <input type="hidden" name="newEmail"   th:value="${newEmail}"/>
-            <input type="hidden" name="firstName"  th:value="${firstName}"/>
-            <input type="hidden" name="lastName"   th:value="${lastName}"/>
-            <input type="hidden" name="phone"      th:value="${phone}"/>
-            <input type="hidden" name="username"   th:value="${username}"/>
+        <form th:action="@{/customer/profile/verify-otp}" th:object="${otpForm}" method="post">
+            <input type="hidden" name="newEmail" th:value="${newEmail}"/>
+            <input type="hidden" name="firstName" th:value="${firstName}"/>
+            <input type="hidden" name="lastName" th:value="${lastName}"/>
+            <input type="hidden" name="phone" th:value="${phone}"/>
+            <input type="hidden" name="username" th:value="${username}"/>
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
-            <div class="form-group">
-                <label class="form-label" style="text-align:center; display:block;">
-                    Mã OTP <span class="required">*</span>
-                </label>
-                <input type="text"
-                       th:field="*{otpCode}"
-                       class="form-control otp-input"
-                       required
-                       pattern="^[0-9]{6}$"
-                       maxlength="6"
-                       minlength="6"
-                       placeholder="______"
-                       autofocus
-                       title="Vui lòng nhập đúng 6 chữ số"
-                       oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-                       autocomplete="one-time-code"
-                       th:classappend="${#fields.hasErrors('otpCode')} ? 'is-invalid'"/>
-                <div th:if="${#fields.hasErrors('otpCode')}"
-                     class="form-error"
-                     style="text-align:center"
-                     th:errors="*{otpCode}"></div>
+            <div class="mb-6">
+                <input type="text" th:field="*{otpCode}" required pattern="^[0-9]{6}$" maxlength="6" minlength="6" placeholder="------" autofocus autocomplete="one-time-code"
+                       class="otp-input w-full bg-surface-container-lowest border border-outline rounded-xl p-4 font-bold text-primary focus:border-primary focus:bg-primary-container/20 outline-none transition-colors"
+                       th:classappend="${#fields.hasErrors('otpCode')} ? 'border-error'"
+                       oninput="this.value = this.value.replace(/[^0-9]/g, '')"/>
+                <div th:if="${#fields.hasErrors('otpCode')}" class="text-error text-body-sm mt-2 font-bold" th:errors="*{otpCode}"></div>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-full">
-                ✅ Xác nhận &amp; Cập nhật hồ sơ
+            <button type="submit" class="w-full bg-primary text-white px-6 py-4 rounded-full font-bold text-body-lg hover:opacity-90 transition-opacity border-none cursor-pointer flex items-center justify-center gap-2 shadow-sm shadow-primary/20">
+                <span class="material-symbols-outlined text-[20px]">verified</span> Xác nhận
             </button>
         </form>
 
         <!-- Resend OTP -->
-        <div class="resend-row">
-            <span style="font-size:13px; color:var(--text-muted);">
-                Không nhận được mã?
-            </span>
-            <form th:action="@{/customer/profile/resend-otp}" method="post">
-                <input type="hidden" name="newEmail"  th:value="${newEmail}"/>
+        <div class="mt-6 pt-6 border-t border-outline-variant flex flex-col sm:flex-row items-center justify-center gap-2">
+            <span class="text-body-sm text-on-surface-variant">Không nhận được mã?</span>
+            <form th:action="@{/customer/profile/resend-otp}" method="post" class="m-0">
+                <input type="hidden" name="newEmail" th:value="${newEmail}"/>
                 <input type="hidden" name="firstName" th:value="${firstName}"/>
-                <input type="hidden" name="lastName"  th:value="${lastName}"/>
-                <input type="hidden" name="phone"     th:value="${phone}"/>
-                <input type="hidden" name="username"  th:value="${username}"/>
+                <input type="hidden" name="lastName" th:value="${lastName}"/>
+                <input type="hidden" name="phone" th:value="${phone}"/>
+                <input type="hidden" name="username" th:value="${username}"/>
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                <button type="submit" class="btn-link">Gửi lại mã OTP</button>
+                <button type="submit" class="bg-transparent border-none text-primary font-bold text-body-sm hover:underline cursor-pointer p-0">Gửi lại mã OTP</button>
             </form>
         </div>
 
-        <div style="text-align:center; margin-top:12px;">
-            <a th:href="@{/customer/profile}"
-               style="font-size:13px; color:var(--text-muted);">
-                ← Quay lại Hồ sơ
+        <div class="mt-6 pt-6 border-t border-outline-variant border-dashed">
+            <a th:href="@{/customer/profile}" class="inline-flex items-center gap-1.5 text-on-surface-variant hover:text-primary font-medium text-body-sm transition-colors no-underline">
+                <span class="material-symbols-outlined text-[16px]">arrow_back</span> Quay lại Hồ sơ
             </a>
         </div>
 
     </div>
-</div>
+</main>
 
 <div th:replace="~{catalog/footer :: footer}"></div>
-
-<script th:src="@{/js/catalog/slider.js}"></script>
 
 </body>
 </html>

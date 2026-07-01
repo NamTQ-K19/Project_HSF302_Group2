@@ -85,22 +85,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ===== TOAST =====
-    function showToast(message, type) {
-        const toast = document.getElementById('toast');
-        if (!toast) {
+    function showToast(message, type = 'success') {
+        if (window.showGlobalToast) {
+            window.showGlobalToast(message, type);
+        } else {
             alert(message);
-            return;
         }
-        const toastMessage = document.getElementById('toastMessage');
-        const toastClose = document.getElementById('toastClose');
-        toastMessage.textContent = message;
-        toast.className = 'toast';
-        toast.classList.add(type === 'success' ? 'toast-success' : type === 'warning' ? 'toast-warning' : 'toast-error');
-        toast.style.display = 'flex';
-        clearTimeout(toast._timeout);
-        toast._timeout = setTimeout(() => {
-            toast.style.display = 'none';
-        }, 5000);
     }
 
     // ===== HIỂN THỊ LỖI =====

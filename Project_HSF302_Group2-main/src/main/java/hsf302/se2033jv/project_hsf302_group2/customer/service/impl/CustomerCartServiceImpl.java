@@ -58,8 +58,16 @@ public class CustomerCartServiceImpl implements CustomerCartService {
             throw new BusinessException("Product is not available");
         }
 
-        ProductVariant variant = productVariantRepository.findById(request.getVariantId())
-                .orElseThrow(() -> new ResourceNotFoundException("Variant not found"));
+        ProductVariant variant;
+        if (request.getVariantId() != null) {
+            variant = productVariantRepository.findById(request.getVariantId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Variant not found"));
+        } else {
+            variant = product.getVariants().stream()
+                    .filter(ProductVariant::getIsAvailable)
+                    .findFirst()
+                    .orElseThrow(() -> new BusinessException("No available variant for this product"));
+        }
 
         if (!variant.getIsAvailable()) {
             throw new BusinessException("Variant is not available");
@@ -68,28 +76,22 @@ public class CustomerCartServiceImpl implements CustomerCartService {
         Cart cart = getOrCreateCart(userId);
 
         CartItem existingItem = cartItemRepository.findByCart_CartIdAndVariant_VariantId(
-                cart.getCartId(), request.getVariantId()).orElse(null);
+                cart.getCartId(), variant.getVariantId()).orElse(null);
 
         if (existingItem != null) {
-            int newQuantity = existingItem.getQuantity() + (request.getQuantity() != null ? request.getQuantity() : 1);
-            existingItem.setQuantity(newQuantity);
-            existingItem.setUpdatedAt(LocalDateTime.now());
-            if (request.getSpecialNote() != null) {
-                existingItem.setSpecialNote(request.getSpecialNote());
-            }
-            cartItemRepository.save(existingItem);
-        } else {
-            CartItem newItem = CartItem.builder()
-                    .cart(cart)
-                    .product(product)
-                    .variant(variant)
-                    .quantity(request.getQuantity() != null ? request.getQuantity() : 1)
-                    .specialNote(request.getSpecialNote())
-                    .addedAt(LocalDateTime.now())
-                    .updatedAt(LocalDateTime.now())
-                    .build();
-            cartItemRepository.save(newItem);
+            throw new BusinessException("Sản phẩm đã có trong giỏ hàng");
         }
+
+        CartItem newItem = CartItem.builder()
+                .cart(cart)
+                .product(product)
+                .variant(variant)
+                .quantity(request.getQuantity() != null ? request.getQuantity() : 1)
+                .specialNote(request.getSpecialNote())
+                .addedAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+        cartItemRepository.save(newItem);
 
         List<CartItem> cartItems = cartItemRepository.findByCart_CartId(cart.getCartId());
         return buildCartResponse(cart, cartItems, userId);
@@ -117,20 +119,18 @@ public class CustomerCartServiceImpl implements CustomerCartService {
         if ("increase".equals(request.getAction())) {
             newQuantity++;
         } else if ("decrease".equals(request.getAction())) {
+            if (newQuantity <= 1) {
+                throw new BusinessException("Sản phẩm đã đạt số lượng tối thiểu là 1!");
+            }
             newQuantity--;
         } else {
             throw new BusinessException("Invalid action: " + request.getAction());
         }
 
-        if (newQuantity <= 0) {
-            cartItemRepository.delete(item);
-            log.info("Removed cart item: id={}", item.getCartItemId());
-        } else {
-            item.setQuantity(newQuantity);
-            item.setUpdatedAt(LocalDateTime.now());
-            cartItemRepository.save(item);
-            log.info("Updated cart item: id={}, newQuantity={}", item.getCartItemId(), newQuantity);
-        }
+        item.setQuantity(newQuantity);
+        item.setUpdatedAt(LocalDateTime.now());
+        cartItemRepository.save(item);
+        log.info("Updated cart item: id={}, newQuantity={}", item.getCartItemId(), newQuantity);
 
         Cart cart = item.getCart();
         List<CartItem> cartItems = cartItemRepository.findByCart_CartId(cart.getCartId());

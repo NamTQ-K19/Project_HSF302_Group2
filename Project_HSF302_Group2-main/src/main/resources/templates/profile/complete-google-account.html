@@ -7,6 +7,8 @@
     <script src="https://unpkg.com/feather-icons"></script>
     <link rel="stylesheet" th:href="@{/css/auth-theme.css}">
     <link rel="stylesheet" th:href="@{/css/mark_password.css}">
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
 </head>
 <body>
 

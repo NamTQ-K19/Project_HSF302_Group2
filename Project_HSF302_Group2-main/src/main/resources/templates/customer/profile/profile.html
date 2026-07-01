@@ -4,424 +4,269 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Hồ sơ của tôi – Cafe Shop</title>
-    <link rel="stylesheet" th:href="@{/css/catalog/main.css}" />
-    <link th:href="@{/css/customer/profile.css}" rel="stylesheet"/>
+    <title>Hồ sơ của tôi – BrewMaster</title>
+    
+    <!-- Tailwind CSS config -->
+    <div th:replace="~{catalog/tailwind-head :: tailwind-head}"></div>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
 </head>
-<body>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed antialiased">
 
 <div th:replace="~{catalog/navbar :: navbar}"></div>
 
-<div class="page-wrapper">
+<main class="max-w-max-width mx-auto px-margin-desktop py-12 min-h-[70vh]">
 
-    <!-- ── Flash messages ─────────────────────────────────── -->
-    <div th:if="${successMessage}"
-         class="alert alert-success"
-         th:text="${successMessage}"></div>
-    <div th:if="${errorMessage}"
-         class="alert alert-error"
-         th:text="${errorMessage}"></div>
+    <!-- Flash messages are now handled globally via toast fragment in footer -->
 
-    <div class="profile-layout">
+    <div class="flex flex-col lg:flex-row gap-8">
 
         <!-- ══ LEFT: Avatar sidebar ═══════════════════════════ -->
-        <aside class="avatar-sidebar">
-
-            <!-- Avatar display -->
-            <div class="avatar-img-wrap">
-                <img th:if="${user.avatarUrl != null}"
-                     th:src="${user.avatarUrl}"
-                     class="avatar-img" alt="Avatar"/>
-                <div th:unless="${user.avatarUrl != null}"
-                     class="avatar-placeholder">👤</div>
-            </div>
-
-            <div class="avatar-name"
-                 th:text="${user.firstName + ' ' + user.lastName}"></div>
-            <div class="avatar-username"
-                 th:text="${'@' + user.username}"></div>
-
-            <!-- Avatar upload form -->
-            <form th:action="@{/customer/profile/avatar}"
-                  method="post"
-                  enctype="multipart/form-data"
-                  id="avatarForm">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-
-                <label class="avatar-upload-label" for="avatarFile">
-                    📷 Thay đổi ảnh
-                </label>
-                <input type="file"
-                       id="avatarFile"
-                       name="avatarFile"
-                       accept="image/jpeg,image/png,image/webp"
-                       style="display:none"
-                       onchange="document.getElementById('avatarForm').submit()"/>
-            </form>
-
-            <div class="avatar-hint">Định dạng JPG, PNG hoặc WEBP · Dung lượng tối đa 10MB</div>
-
-            <br>
-
-            <label class="avatar-upload-label"><a href="/profile/changePassword">Change Password</a></label>
-        </aside>
-
-        <!-- ══ RIGHT: Main content ════════════════════════════ -->
-        <div class="profile-main">
-
-            <!-- ── Card 1: Personal Information ─────────────── -->
-            <div class="card">
-                <div class="card-header">
-                    <span>👤</span>
-                    <h2>Thông tin cá nhân</h2>
+        <aside class="w-full lg:w-80 shrink-0">
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl p-8 flex flex-col items-center text-center sticky top-28 shadow-sm">
+                <!-- Avatar display -->
+                <div class="relative mb-4 group">
+                    <div class="w-32 h-32 rounded-full overflow-hidden bg-primary-container text-primary flex items-center justify-center font-bold text-[48px] shadow-sm border-4 border-white ring-1 ring-outline-variant">
+                        <img th:if="${user.avatarUrl != null}" th:src="${user.avatarUrl}" class="w-full h-full object-cover" alt="Avatar"/>
+                        <span th:unless="${user.avatarUrl != null}">A</span>
+                    </div>
+                    
+                    <label for="avatarFile" class="absolute bottom-0 right-0 bg-primary text-white w-10 h-10 rounded-full flex items-center justify-center cursor-pointer shadow-md hover:scale-110 transition-transform">
+                        <span class="material-symbols-outlined text-[20px]">photo_camera</span>
+                    </label>
                 </div>
-                <div class="card-body">
-                    <form th:action="@{/customer/profile/update}"
-                          th:object="${profileForm}"
-                          method="post">
-                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
-                        <div class="form-grid-2">
+                <div class="font-bold text-headline-sm text-primary mb-1" th:text="${user.firstName + ' ' + user.lastName}"></div>
+                <div class="text-on-surface-variant text-body-md mb-6" th:text="${'@' + user.username}"></div>
 
-                            <div class="form-group">
-                                <label class="form-label">
-                                    Họ <span class="required">*</span>
-                                </label>
-                                <input type="text"
-                                       th:field="*{firstName}"
-                                       class="form-control"
-                                       th:classappend="${#fields.hasErrors('firstName')} ? 'is-invalid'"
-                                       required
-                                />
-                                <div th:if="${#fields.hasErrors('firstName')}"
-                                     class="form-error"
-                                     th:errors="*{firstName}"></div>
-                            </div>
+                <!-- Avatar upload form -->
+                <form th:action="@{/customer/profile/avatar}" method="post" enctype="multipart/form-data" id="avatarForm" class="hidden">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <input type="file" id="avatarFile" name="avatarFile" accept="image/jpeg,image/png,image/webp" onchange="document.getElementById('avatarForm').submit()"/>
+                </form>
 
-                            <div class="form-group">
-                                <label class="form-label">
-                                    Tên <span class="required">*</span>
-                                </label>
-                                <input type="text"
-                                       th:field="*{lastName}"
-                                       class="form-control"
-                                       th:classappend="${#fields.hasErrors('lastName')} ? 'is-invalid'"
-                                       required
-                                />
-                                <div th:if="${#fields.hasErrors('lastName')}"
-                                     class="form-error"
-                                     th:errors="*{lastName}"></div>
-                            </div>
+                <p class="text-on-surface-variant/60 text-[12px] m-0 mb-6 border-b border-outline-variant border-dashed pb-6 w-full">Định dạng JPG, PNG hoặc WEBP · Dung lượng tối đa 10MB</p>
 
-                            <div class="form-group">
-                                <label class="form-label">
-                                    Tên người dùng <span class="required">*</span>
-                                </label>
-                                <input type="text"
-                                       th:field="*{username}"
-                                       class="form-control"
-                                       th:classappend="${#fields.hasErrors('username')} ? 'is-invalid'"
-                                       required
-                                />
-                                <div th:if="${#fields.hasErrors('username')}"
-                                     class="form-error"
-                                     th:errors="*{username}"></div>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">
-                                    Số điện thoại <span class="required">*</span>
-                                </label>
-                                <input type="text"
-                                       th:field="*{phone}"
-                                       class="form-control"
-                                       th:classappend="${#fields.hasErrors('phone')} ? 'is-invalid'"
-                                       required
-                                       pattern="0[0-9]{9}"
-                                       minlength="10"
-                                       maxlength="10"
-                                       title="Vui lòng nhập đúng số điện thoại 10 số, bắt đầu bằng số 0"
-                                       oninput="this.value = this.value.replace(/[^0-9]/g, '')"/>
-                                <div th:if="${#fields.hasErrors('phone')}"
-                                     class="form-error"
-                                     th:errors="*{phone}"></div>
-                            </div>
-
-                            <div class="form-group form-grid-full">
-                                <label class="form-label">
-                                    Email <span class="required">*</span>
-                                </label>
-                                <input type="email"
-                                       th:field="*{email}"
-                                       class="form-control"
-                                       th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
-                                       required/>
-                                <div th:if="${#fields.hasErrors('email')}"
-                                     class="form-error"
-                                     th:errors="*{email}"></div>
-                                <div class="form-hint">
-                                    ⚠ Việc thay đổi email yêu cầu xác minh mật khẩu và mã OTP.
-                                </div>
-                            </div>
-
-                        </div><!-- /form-grid-2 -->
-
-                        <div style="display:flex; gap:10px; margin-top:8px;">
-                            <button type="submit" class="btn btn-primary">
-                                Lưu thay đổi
-                            </button>
-                            <a th:href="@{/customer/profile}"
-                               class="btn btn-secondary">Hủy</a>
-                        </div>
-
+                <div class="flex flex-col w-full gap-2">
+                    <a href="/customer/profile" class="flex items-center gap-3 px-4 py-3 bg-primary/10 text-primary font-semibold rounded-xl no-underline">
+                        <span class="material-symbols-outlined">person</span> Thông tin cá nhân
+                    </a>
+                    <a href="/customer/orders/history" class="flex items-center gap-3 px-4 py-3 hover:bg-surface-container hover:text-primary text-on-surface-variant font-medium rounded-xl transition-colors no-underline">
+                        <span class="material-symbols-outlined">history</span> Lịch sử đơn hàng
+                    </a>
+                    <a href="/customer/reservations" class="flex items-center gap-3 px-4 py-3 hover:bg-surface-container hover:text-primary text-on-surface-variant font-medium rounded-xl transition-colors no-underline">
+                        <span class="material-symbols-outlined">calendar_month</span> Đặt bàn
+                    </a>
+                    <a href="/customer/reviews" class="flex items-center gap-3 px-4 py-3 hover:bg-surface-container hover:text-primary text-on-surface-variant font-medium rounded-xl transition-colors no-underline">
+                        <span class="material-symbols-outlined">rate_review</span> Đánh giá
+                    </a>
+                    <a href="/customer/points" class="flex items-center gap-3 px-4 py-3 hover:bg-surface-container hover:text-primary text-on-surface-variant font-medium rounded-xl transition-colors no-underline">
+                        <span class="material-symbols-outlined">stars</span> Điểm tích lũy
+                    </a>
+                    <a href="/profile/changePassword" class="flex items-center gap-3 px-4 py-3 hover:bg-surface-container hover:text-primary text-on-surface-variant font-medium rounded-xl transition-colors no-underline">
+                        <span class="material-symbols-outlined">lock_reset</span> Đổi mật khẩu
+                    </a>
+                    <form th:action="@{/logout}" method="post" class="m-0">
+                        <button type="submit" class="w-full text-left flex items-center gap-3 px-4 py-3 hover:bg-error/10 text-error font-medium rounded-xl transition-colors border-none cursor-pointer bg-transparent">
+                            <span class="material-symbols-outlined">logout</span> Đăng xuất
+                        </button>
                     </form>
                 </div>
             </div>
-            <!-- /Card 1 -->
+        </aside>
 
-            <!-- ── Card 2: Delivery Addresses ─────────────── -->
-            <div class="card">
-                <div class="card-header">
-                    <span>📍</span>
-                    <h2>Địa chỉ giao hàng</h2>
+        <!-- ══ RIGHT: Main content ════════════════════════════ -->
+        <div class="flex-1 flex flex-col gap-6">
+
+            <!-- ── Card 1: Personal Information ─────────────── -->
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl overflow-hidden shadow-sm">
+                <div class="px-8 py-5 border-b border-outline-variant bg-surface-container-low/50 flex items-center gap-3">
+                    <span class="material-symbols-outlined text-primary">badge</span>
+                    <h2 class="font-headline-sm text-primary m-0">Thông tin cá nhân</h2>
                 </div>
-                <div class="card-body">
+                <div class="p-8">
+                    <form th:action="@{/customer/profile/update}" th:object="${profileForm}" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
-                    <!-- Existing addresses -->
-                    <div class="address-list">
-
-                        <div th:each="addr : ${addresses}" class="address-item">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                             <div>
-                                <div class="address-label"
-                                     th:text="${addr.label != null ? addr.label : 'Address'}">
-                                </div>
-                                <div class="address-full"
-                                     th:text="${addr.fullAddress}"></div>
-                                <div class="address-meta">
-                                    <span th:text="${addr.recipientName}"></span>
-                                    &nbsp;·&nbsp;
-                                    <span th:text="${addr.recipientPhone}"></span>
+                                <label class="block text-body-sm font-bold text-on-surface mb-2">Họ <span class="text-error">*</span></label>
+                                <input type="text" th:field="*{firstName}" class="w-full bg-surface-container-lowest border border-outline rounded-xl p-3 text-body-md focus:border-primary focus:ring-0 outline-none transition-colors" th:classappend="${#fields.hasErrors('firstName')} ? 'border-error'" required/>
+                                <div th:if="${#fields.hasErrors('firstName')}" class="text-error text-body-sm mt-1" th:errors="*{firstName}"></div>
+                            </div>
+
+                            <div>
+                                <label class="block text-body-sm font-bold text-on-surface mb-2">Tên <span class="text-error">*</span></label>
+                                <input type="text" th:field="*{lastName}" class="w-full bg-surface-container-lowest border border-outline rounded-xl p-3 text-body-md focus:border-primary focus:ring-0 outline-none transition-colors" th:classappend="${#fields.hasErrors('lastName')} ? 'border-error'" required/>
+                                <div th:if="${#fields.hasErrors('lastName')}" class="text-error text-body-sm mt-1" th:errors="*{lastName}"></div>
+                            </div>
+
+                            <div>
+                                <label class="block text-body-sm font-bold text-on-surface mb-2">Tên người dùng <span class="text-error">*</span></label>
+                                <input type="text" th:field="*{username}" class="w-full bg-surface-container-lowest border border-outline rounded-xl p-3 text-body-md focus:border-primary focus:ring-0 outline-none transition-colors" th:classappend="${#fields.hasErrors('username')} ? 'border-error'" required/>
+                                <div th:if="${#fields.hasErrors('username')}" class="text-error text-body-sm mt-1" th:errors="*{username}"></div>
+                            </div>
+
+                            <div>
+                                <label class="block text-body-sm font-bold text-on-surface mb-2">Số điện thoại <span class="text-error">*</span></label>
+                                <input type="text" th:field="*{phone}" class="w-full bg-surface-container-lowest border border-outline rounded-xl p-3 text-body-md focus:border-primary focus:ring-0 outline-none transition-colors" th:classappend="${#fields.hasErrors('phone')} ? 'border-error'" required pattern="0[0-9]{9}" minlength="10" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')"/>
+                                <div th:if="${#fields.hasErrors('phone')}" class="text-error text-body-sm mt-1" th:errors="*{phone}"></div>
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="block text-body-sm font-bold text-on-surface mb-2">Email <span class="text-error">*</span></label>
+                                <input type="email" th:field="*{email}" class="w-full bg-surface-container-lowest border border-outline rounded-xl p-3 text-body-md focus:border-primary focus:ring-0 outline-none transition-colors" th:classappend="${#fields.hasErrors('email')} ? 'border-error'" required/>
+                                <div th:if="${#fields.hasErrors('email')}" class="text-error text-body-sm mt-1" th:errors="*{email}"></div>
+                                <div class="text-on-surface-variant/70 text-[12px] mt-2 flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[14px]">info</span> Việc thay đổi email yêu cầu xác minh mật khẩu và mã OTP.
                                 </div>
                             </div>
-                            <div class="address-actions">
-                                <!-- Edit button (opens modal) -->
-                                <button type="button"
-                                        class="btn btn-secondary btn-sm"
-                                        th:data-id="${addr.addressId}"
-                                        th:data-label="${addr.label}"
-                                        th:data-address="${addr.fullAddress}"
-                                        th:data-name="${addr.recipientName}"
-                                        th:data-phone="${addr.recipientPhone}"
-                                        onclick="openEditModal(
-                                        this.getAttribute('data-id'),
-                                        this.getAttribute('data-label'),
-                                        this.getAttribute('data-address'),
-                                        this.getAttribute('data-name'),
-                                        this.getAttribute('data-phone')
-                                    )">
-                                    ✏ Sửa
+                        </div>
+
+                        <div class="flex gap-4">
+                            <button type="submit" class="bg-primary text-white px-6 py-3 rounded-full font-bold text-body-sm hover:opacity-90 transition-opacity border-none cursor-pointer">Lưu thay đổi</button>
+                            <button type="reset" class="bg-surface-container border border-outline-variant text-on-surface-variant px-6 py-3 rounded-full font-bold text-body-sm hover:bg-surface-container-high transition-colors cursor-pointer">Hủy</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ── Card 2: Delivery Addresses ─────────────── -->
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl overflow-hidden shadow-sm">
+                <div class="px-8 py-5 border-b border-outline-variant bg-surface-container-low/50 flex items-center gap-3">
+                    <span class="material-symbols-outlined text-primary">location_on</span>
+                    <h2 class="font-headline-sm text-primary m-0">Địa chỉ giao hàng</h2>
+                </div>
+                <div class="p-8">
+                    <!-- Existing addresses -->
+                    <div class="flex flex-col gap-4 mb-6">
+                        <div th:each="addr : ${addresses}" class="border border-outline-variant rounded-2xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-primary/50 transition-colors bg-surface-container-lowest group">
+                            <div>
+                                <div class="inline-block bg-primary-container text-primary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider mb-2" th:text="${addr.label != null ? addr.label : 'Address'}">Nhà</div>
+                                <div class="font-bold text-on-surface text-body-md mb-1" th:text="${addr.fullAddress}"></div>
+                                <div class="text-on-surface-variant text-body-sm flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-[16px]">person</span> <span th:text="${addr.recipientName}"></span>
+                                    <span class="text-outline">|</span>
+                                    <span class="material-symbols-outlined text-[16px]">call</span> <span th:text="${addr.recipientPhone}"></span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 shrink-0">
+                                <button type="button" class="w-10 h-10 rounded-full bg-surface-container border-none text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors cursor-pointer"
+                                        th:data-id="${addr.addressId}" th:data-label="${addr.label}" th:data-address="${addr.fullAddress}" th:data-name="${addr.recipientName}" th:data-phone="${addr.recipientPhone}"
+                                        onclick="openEditModal(this.getAttribute('data-id'), this.getAttribute('data-label'), this.getAttribute('data-address'), this.getAttribute('data-name'), this.getAttribute('data-phone'))">
+                                    <span class="material-symbols-outlined text-[20px]">edit</span>
                                 </button>
-                                <!-- Delete -->
-                                <form th:action="@{'/customer/profile/address/' + ${addr.addressId} + '/delete'}"
-                                      method="post"
-                                      onsubmit="return confirm('Bạn có chắc muốn xóa địa chỉ này không?')">
+                                <form th:action="@{'/customer/profile/address/' + ${addr.addressId} + '/delete'}" method="post" onsubmit="return confirm('Bạn có chắc muốn xóa địa chỉ này không?')" class="m-0">
                                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                                    <button type="submit"
-                                            class="btn btn-danger btn-sm">
-                                        🗑 Xóa
+                                    <button type="submit" class="w-10 h-10 rounded-full bg-surface-container border-none text-error flex items-center justify-center hover:bg-error hover:text-white transition-colors cursor-pointer">
+                                        <span class="material-symbols-outlined text-[20px]">delete</span>
                                     </button>
                                 </form>
                             </div>
                         </div>
 
                         <!-- Empty state -->
-                        <div th:if="${#lists.isEmpty(addresses)}"
-                             style="text-align:center; color:var(--text-muted);
-                                    padding:20px; font-size:14px;">
-                            Chưa có địa chỉ nào. Vui lòng thêm địa chỉ của bạn bên dưới.
+                        <div th:if="${#lists.isEmpty(addresses)}" class="text-center py-8 text-on-surface-variant/60 border border-outline border-dashed rounded-2xl">
+                            <span class="material-symbols-outlined text-[48px] opacity-50 mb-2 block">location_off</span>
+                            Chưa có địa chỉ nào. Vui lòng thêm địa chỉ của bạn.
                         </div>
-
                     </div>
-                    <!-- /address-list -->
 
                     <!-- Toggle add form -->
-                    <div style="margin-top:16px;">
-                        <button type="button"
-                                class="add-address-toggle"
-                                id="toggleAddBtn"
-                                onclick="toggleAddForm()">
-                            + Thêm địa chỉ mới
-                        </button>
+                    <button type="button" id="toggleAddBtn" onclick="toggleAddForm()" class="inline-flex items-center gap-2 bg-primary/10 text-primary px-5 py-2.5 rounded-full font-bold text-body-sm hover:bg-primary hover:text-white transition-colors border-none cursor-pointer">
+                        <span class="material-symbols-outlined text-[18px]">add</span> Thêm địa chỉ mới
+                    </button>
 
-                        <!-- Add form (hidden by default, shown if showAddressForm) -->
-                        <div class="add-address-form"
-                             id="addAddressForm"
-                             th:classappend="${showAddressForm} ? 'visible'">
+                    <!-- Add form (hidden by default) -->
+                    <div id="addAddressForm" class="hidden mt-6 bg-surface-container border border-outline-variant rounded-2xl p-6" th:classappend="${showAddressForm} ? '!block'">
+                        <h3 class="font-bold text-body-lg text-primary mb-5 m-0">Thêm địa chỉ mới</h3>
+                        <form th:action="@{/customer/profile/address/add}" th:object="${addressForm}" method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
-                            <div class="section-title">Thêm địa chỉ mới</div>
-
-                            <form th:action="@{/customer/profile/address/add}"
-                                  th:object="${addressForm}"
-                                  method="post">
-                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-
-                                <div class="form-grid-2">
-                                    <div class="form-group">
-                                        <label class="form-label">Nhãn (Nhà, Cơ quan, ...)</label>
-                                        <select th:field="*{label}" class="form-control">
-                                            <option value="">-- Không chọn --</option>
-                                            <option value="Nhà">Nhà</option>
-                                            <option value="Cơ quan">Cơ quan</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">
-                                            Số điện thoại người nhận <span class="required">*</span>
-                                        </label>
-                                        <input type="text"
-                                               th:field="*{recipientPhone}"
-                                               class="form-control"
-                                               th:classappend="${#fields.hasErrors('recipientPhone')} ? 'is-invalid'"
-                                               required
-                                               pattern="0[0-9]{9}"
-                                               minlength="10"
-                                               maxlength="10"
-                                               title="Vui lòng nhập đúng số điện thoại 10 số, bắt đầu bằng số 0"
-                                               oninput="this.value = this.value.replace(/[^0-9]/g, '')"/>
-                                        <div th:if="${#fields.hasErrors('recipientPhone')}"
-                                             class="form-error"
-                                             th:errors="*{recipientPhone}"></div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">
-                                            Tên người nhận <span class="required">*</span>
-                                        </label>
-                                        <input type="text"
-                                               th:field="*{recipientName}"
-                                               class="form-control"
-                                               th:classappend="${#fields.hasErrors('recipientName')} ? 'is-invalid'"
-                                               required />
-                                        <div th:if="${#fields.hasErrors('recipientName')}"
-                                             class="form-error"
-                                             th:errors="*{recipientName}"></div>
-                                    </div>
-                                    <div class="form-group form-grid-full">
-                                        <label class="form-label">
-                                            Địa chỉ đầy đủ <span class="required">*</span>
-                                        </label>
-                                        <input type="text"
-                                               th:field="*{fullAddress}"
-                                               class="form-control"
-                                               th:classappend="${#fields.hasErrors('fullAddress')} ? 'is-invalid'"
-                                               placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành"
-                                               required/>
-                                        <div th:if="${#fields.hasErrors('fullAddress')}"
-                                             class="form-error"
-                                             th:errors="*{fullAddress}"></div>
-                                    </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                <div>
+                                    <label class="block text-body-sm font-bold text-on-surface mb-2">Nhãn</label>
+                                    <select th:field="*{label}" class="w-full bg-surface-container-lowest border border-outline rounded-xl p-3 text-body-md focus:border-primary outline-none appearance-none">
+                                        <option value="">-- Không chọn --</option>
+                                        <option value="Nhà">Nhà</option>
+                                        <option value="Cơ quan">Cơ quan</option>
+                                    </select>
                                 </div>
-
-                                <div style="display:flex; gap:10px;">
-                                    <button type="submit"
-                                            class="btn btn-primary btn-sm">
-                                        Lưu địa chỉ
-                                    </button>
-                                    <button type="button"
-                                            class="btn btn-secondary btn-sm"
-                                            onclick="toggleAddForm()">
-                                        Hủy
-                                    </button>
+                                <div>
+                                    <label class="block text-body-sm font-bold text-on-surface mb-2">Số điện thoại <span class="text-error">*</span></label>
+                                    <input type="text" th:field="*{recipientPhone}" class="w-full bg-surface-container-lowest border border-outline rounded-xl p-3 text-body-md focus:border-primary outline-none" th:classappend="${#fields.hasErrors('recipientPhone')} ? 'border-error'" required pattern="0[0-9]{9}" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')"/>
+                                    <div th:if="${#fields.hasErrors('recipientPhone')}" class="text-error text-body-sm mt-1" th:errors="*{recipientPhone}"></div>
                                 </div>
-                            </form>
-                        </div>
-                        <!-- /add-address-form -->
+                                <div>
+                                    <label class="block text-body-sm font-bold text-on-surface mb-2">Tên người nhận <span class="text-error">*</span></label>
+                                    <input type="text" th:field="*{recipientName}" class="w-full bg-surface-container-lowest border border-outline rounded-xl p-3 text-body-md focus:border-primary outline-none" th:classappend="${#fields.hasErrors('recipientName')} ? 'border-error'" required />
+                                    <div th:if="${#fields.hasErrors('recipientName')}" class="text-error text-body-sm mt-1" th:errors="*{recipientName}"></div>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-body-sm font-bold text-on-surface mb-2">Địa chỉ đầy đủ <span class="text-error">*</span></label>
+                                    <input type="text" th:field="*{fullAddress}" class="w-full bg-surface-container-lowest border border-outline rounded-xl p-3 text-body-md focus:border-primary outline-none" th:classappend="${#fields.hasErrors('fullAddress')} ? 'border-error'" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành" required/>
+                                    <div th:if="${#fields.hasErrors('fullAddress')}" class="text-error text-body-sm mt-1" th:errors="*{fullAddress}"></div>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-3">
+                                <button type="submit" class="bg-primary text-white px-5 py-2.5 rounded-full font-bold text-body-sm hover:opacity-90 transition-opacity border-none cursor-pointer">Lưu địa chỉ</button>
+                                <button type="button" class="bg-surface-container border border-outline-variant text-on-surface-variant px-5 py-2.5 rounded-full font-bold text-body-sm hover:bg-surface-container-high transition-colors cursor-pointer" onclick="toggleAddForm()">Hủy</button>
+                            </div>
+                        </form>
                     </div>
-
                 </div>
             </div>
-            <!-- /Card 2 -->
 
         </div>
-        <!-- /profile-main -->
     </div>
-    <!-- /profile-layout -->
-</div>
-<!-- /page-wrapper -->
+</main>
 
 <!-- ══ Edit Address Modal ═══════════════════════════════════ -->
-<div id="editModal"
-     style="display:none; position:fixed; inset:0;
-             background:rgba(0,0,0,.45); z-index:200;
-             flex-direction:column;
-             align-items:center; justify-content:center;">
-    <div style="background:#fff; border-radius:var(--radius-lg);
-            padding:28px 28px 20px; width:100%; max-width:480px;
-            box-shadow:var(--shadow-lg); margin:20px; z-index:1000;">
-
-        <div style="font-size:1.1rem; font-weight:700;
-                color:var(--brown-dark); margin-bottom:20px;">
-            ✏ Sửa địa chỉ
-        </div>
+<div id="editModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center backdrop-blur-sm">
+    <div class="bg-surface-container-lowest rounded-3xl p-8 w-full max-w-lg mx-4 shadow-xl relative">
+        <h3 class="font-headline-sm text-primary m-0 mb-6 flex items-center gap-2"><span class="material-symbols-outlined">edit_location</span> Sửa địa chỉ</h3>
+        <button onclick="closeEditModal()" class="absolute top-6 right-6 w-8 h-8 rounded-full bg-surface-container-high border-none flex items-center justify-center text-on-surface-variant hover:text-error hover:bg-error/10 cursor-pointer transition-colors"><span class="material-symbols-outlined text-[20px]">close</span></button>
 
         <form id="editAddressForm" method="post">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
-            <div class="form-group">
-                <label class="form-label" for="edit_label">Nhãn (Nhà, Cơ quan, ...)</label>
-                <select id="edit_label" name="label" class="form-control">
-                    <option value="">-- Không chọn --</option>
-                    <option value="Nhà">Nhà</option>
-                    <option value="Cơ quan">Cơ quan</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label">
-                    Địa chỉ đầy đủ <span class="required">*</span>
-                </label>
-                <input type="text" id="edit_fullAddress" name="fullAddress"
-                       class="form-control" required/>
-            </div>
-            <div class="form-grid-2">
-                <div class="form-group">
-                    <label class="form-label">
-                        Tên người nhận <span class="required">*</span>
-                    </label>
-                    <input type="text" id="edit_recipientName"
-                           name="recipientName"
-                           class="form-control" required/>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div class="md:col-span-2">
+                    <label class="block text-body-sm font-bold text-on-surface mb-2">Nhãn</label>
+                    <select id="edit_label" name="label" class="w-full bg-surface-container border border-outline rounded-xl p-3 text-body-md focus:border-primary outline-none">
+                        <option value="">-- Không chọn --</option>
+                        <option value="Nhà">Nhà</option>
+                        <option value="Cơ quan">Cơ quan</option>
+                    </select>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">
-                        Số điện thoại người nhận <span class="required">*</span>
-                    </label>
-                    <input type="text" id="edit_recipientPhoneInput"
-                           name="recipientPhone"
-                           class="form-control"
-                           required
-                           pattern="0[0-9]{9}"
-                           minlength="10"
-                           maxlength="10"
-                           title="Vui lòng nhập đúng số điện thoại 10 số, bắt đầu bằng số 0"
-                           oninput="this.value = this.value.replace(/[^0-9]/g, '')"/>
-                    <div id="editPhoneError" class="form-error" style="display:none;"></div>
+                <div class="md:col-span-2">
+                    <label class="block text-body-sm font-bold text-on-surface mb-2">Địa chỉ đầy đủ <span class="text-error">*</span></label>
+                    <input type="text" id="edit_fullAddress" name="fullAddress" class="w-full bg-surface-container border border-outline rounded-xl p-3 text-body-md focus:border-primary outline-none" required/>
+                </div>
+                <div>
+                    <label class="block text-body-sm font-bold text-on-surface mb-2">Tên người nhận <span class="text-error">*</span></label>
+                    <input type="text" id="edit_recipientName" name="recipientName" class="w-full bg-surface-container border border-outline rounded-xl p-3 text-body-md focus:border-primary outline-none" required/>
+                </div>
+                <div>
+                    <label class="block text-body-sm font-bold text-on-surface mb-2">Số điện thoại <span class="text-error">*</span></label>
+                    <input type="text" id="edit_recipientPhoneInput" name="recipientPhone" class="w-full bg-surface-container border border-outline rounded-xl p-3 text-body-md focus:border-primary outline-none" required pattern="0[0-9]{9}" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')"/>
+                    <div id="editPhoneError" class="text-error text-body-sm mt-1 hidden"></div>
                 </div>
             </div>
 
-            <div style="display:flex; gap:10px; margin-top:8px;">
-                <button type="submit" class="btn btn-primary btn-sm">
-                    💾 Lưu
-                </button>
-                <button type="button"
-                        class="btn btn-secondary btn-sm"
-                        onclick="closeEditModal()">Hủy</button>
+            <div class="flex gap-3 justify-end">
+                <button type="button" class="bg-surface-container border border-outline-variant text-on-surface-variant px-5 py-2.5 rounded-full font-bold text-body-sm hover:bg-surface-container-high transition-colors cursor-pointer" onclick="closeEditModal()">Hủy</button>
+                <button type="submit" class="bg-primary text-white px-5 py-2.5 rounded-full font-bold text-body-sm hover:opacity-90 transition-opacity border-none cursor-pointer">Lưu thay đổi</button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- If controller requests opening edit modal (e.g. validation error), pre-fill and open it -->
+<!-- If controller requests opening edit modal -->
 <div th:if="${openEditModal}">
     <script th:inline="javascript">
         /*<![CDATA[*/
@@ -433,7 +278,6 @@
             var recipientPhone = /*[[${editRecipientPhone}]]*/ '';
             var phoneError = /*[[${editPhoneError}]]*/ '';
 
-            // set values into edit modal fields
             var elLabel = document.getElementById('edit_label');
             if (elLabel) elLabel.value = label;
             var elFull = document.getElementById('edit_fullAddress');
@@ -443,28 +287,28 @@
             var elPhone = document.getElementById('edit_recipientPhoneInput');
             if (elPhone) elPhone.value = recipientPhone;
 
-            // Display phone error if exists
             if (phoneError) {
                 var phoneErrorDiv = document.getElementById('editPhoneError');
                 var phoneInput = document.getElementById('edit_recipientPhoneInput');
                 if (phoneErrorDiv) {
                     phoneErrorDiv.textContent = phoneError;
-                    phoneErrorDiv.style.display = 'block';
+                    phoneErrorDiv.classList.remove('hidden');
                 }
                 if (phoneInput) {
-                    phoneInput.classList.add('is-invalid');
+                    phoneInput.classList.add('border-error');
                 }
             }
 
-            // set form action to submit to the edit endpoint
             var form = document.getElementById('editAddressForm');
             if (form) {
                 form.action = /*[[@{/customer/profile/address/}]]*/ '' + id + '/edit';
             }
 
-            // show modal
             var modal = document.getElementById('editModal');
-            if (modal) modal.style.display = 'flex';
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
         })();
         /*]]>*/
     </script>
@@ -473,19 +317,20 @@
 <div th:replace="~{catalog/footer :: footer}"></div>
 
 <script th:inline="javascript">
-    // ── Add address form toggle ────────────────────────────────
     function toggleAddForm() {
         const form = document.getElementById('addAddressForm');
         const btn  = document.getElementById('toggleAddBtn');
-        form.classList.toggle('visible');
-        btn.textContent = form.classList.contains('visible')
-            ? '✕ Đóng'
-            : '+ Thêm địa chỉ mới';
+        if (form.classList.contains('hidden') && !form.classList.contains('!block')) {
+            form.classList.remove('hidden');
+            btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">close</span> Đóng';
+        } else {
+            form.classList.add('hidden');
+            form.classList.remove('!block');
+            btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">add</span> Thêm địa chỉ mới';
+        }
     }
 
-    // ── Edit modal ─────────────────────────────────────────────
     const ctx = /*[[@{/}]]*/ '';
-
     var baseUrl = /*[[@{/customer/profile/address/}]]*/ '/default-path/';
 
     function openEditModal(id, label, fullAddress, recipientName, recipientPhone) {
@@ -496,46 +341,41 @@
         var form = document.getElementById('editAddressForm');
         form.action = baseUrl + id + '/edit';
         const modal = document.getElementById('editModal');
-        modal.style.display = 'flex';
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
     }
 
     function closeEditModal() {
-        document.getElementById('editModal').style.display = 'none';
-        // Clear the error when closing
+        const modal = document.getElementById('editModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        
         var phoneError = document.getElementById('editPhoneError');
         if (phoneError) {
-            phoneError.style.display = 'none';
+            phoneError.classList.add('hidden');
             phoneError.textContent = '';
         }
         var phoneInput = document.getElementById('edit_recipientPhoneInput');
         if (phoneInput) {
-            phoneInput.classList.remove('is-invalid');
+            phoneInput.classList.remove('border-error');
         }
     }
 
     document.getElementById('editAddressForm').addEventListener('submit', function(e) {
-        // Ép trình duyệt kiểm tra lại toàn bộ rule (required, pattern, minlength...)
         if (!this.checkValidity()) {
-            e.preventDefault(); // CHẶN NGAY LẬP TỨC nếu có lỗi
-
-            // Chủ động hiện dòng chữ đỏ báo lỗi nếu trình duyệt không chịu hiện popup
+            e.preventDefault();
             const phoneError = document.getElementById('editPhoneError');
             const phoneInput = document.getElementById('edit_recipientPhoneInput');
-
-            phoneInput.classList.add('is-invalid');
+            phoneInput.classList.add('border-error');
             phoneError.textContent = "Vui lòng nhập đúng 10 số, bắt đầu bằng số 0.";
-            phoneError.style.display = 'block';
+            phoneError.classList.remove('hidden');
         }
     });
 
-    // Click overlay to close
-    document.getElementById('editModal')
-        .addEventListener('click', function(e) {
-            if (e.target === this) closeEditModal();
-        });
+    document.getElementById('editModal').addEventListener('click', function(e) {
+        if (e.target === this) closeEditModal();
+    });
 </script>
-
-<script th:src="@{/js/catalog/slider.js}"></script>
 
 </body>
 </html>

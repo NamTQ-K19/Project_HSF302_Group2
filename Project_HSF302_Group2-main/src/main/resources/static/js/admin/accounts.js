@@ -5,16 +5,6 @@ let scrollbarWidth = 0;
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Account Management page loaded');
-
-    // Kiểm tra có message từ server không
-    const messageElement = document.getElementById('serverMessage');
-    if (messageElement) {
-        const message = messageElement.dataset.message;
-        const type = messageElement.dataset.type;
-        if (message) {
-            showToast(message, type);
-        }
-    }
 });
 
 // ===== CONFIRMATION MODAL =====
@@ -143,25 +133,10 @@ document.addEventListener('keydown', function(event) {
 });
 
 // ===== TOAST =====
-function showToast(message, type) {
-    const toast = document.getElementById('toast');
-    const toastMessage = document.getElementById('toastMessage');
-    const toastClose = document.getElementById('toastClose');
-
-    if (!toast) return;
-
-    toastMessage.textContent = message;
-    toast.className = 'toast';
-    toast.classList.add(type === 'success' ? 'toast-success' : 'toast-error');
-    toast.style.display = 'flex';
-
-    clearTimeout(toast._timeout);
-    toast._timeout = setTimeout(() => {
-        toast.style.display = 'none';
-    }, 3000);
+function showToast(message, type = 'success') {
+    if (window.showGlobalToast) {
+        window.showGlobalToast(message, type);
+    } else {
+        alert(message);
+    }
 }
-
-// Close toast
-document.getElementById('toastClose')?.addEventListener('click', function() {
-    document.getElementById('toast').style.display = 'none';
-});

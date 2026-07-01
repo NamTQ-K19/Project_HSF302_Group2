@@ -3,132 +3,102 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title th:text="'Tìm kiếm: ' + ${keyword} + ' – Café Aroma'">Tìm kiếm – BrewMaster</title>
-  <link rel="stylesheet" th:href="@{/css/catalog/main.css}" />
+  <title th:text="'Tìm kiếm: ' + ${keyword} + ' – BrewMaster'">Tìm kiếm – BrewMaster</title>
+  
+  <!-- Include Tailwind CSS config & CDN -->
+  <div th:replace="~{catalog/tailwind-head :: tailwind-head}"></div>
+  
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <meta name="_csrf" th:content="${_csrf?.token}" />
+  <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
 </head>
-<body>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed antialiased">
 
 <div th:replace="~{catalog/navbar :: navbar}"></div>
 
-<main class="page-main">
-  <div class="section-container">
-
-    <!-- ============================================================
-         Search Header (Fields #1, #2, #3 – UC_02 screen def)
-         ============================================================ -->
-    <div class="search-page-header">
-      <h1 class="page-title">
-        <!-- Field #3: "Showing results for: [keyword]" -->
-        <span th:if="${searchMode == 'keyword'}"
-              th:text="'Kết quả tìm kiếm: &quot;' + ${keyword} + '&quot;'">
-                    Kết quả tìm kiếm
-                </span>
+<main class="max-w-max-width mx-auto px-margin-desktop py-12 min-h-[60vh]">
+  <div class="flex flex-col md:flex-row justify-between items-end md:items-center gap-6 mb-12">
+    <!-- Search Header -->
+    <div>
+      <h1 class="font-headline-lg text-[32px] tracking-tight text-primary m-0 mb-3 flex items-center gap-3">
+        <span class="material-symbols-outlined text-[36px]">search</span>
+        <span th:if="${searchMode == 'keyword'}" th:text="'Kết quả tìm kiếm: &quot;' + ${keyword} + '&quot;'">Kết quả tìm kiếm</span>
         <span th:if="${searchMode == 'category'}">
-                    Danh mục:
-                    <span th:each="cat : ${categories}"
-                          th:if="${cat.categoryId == selectedCategoryId}"
-                          th:text="${cat.name}">Category</span>
-                </span>
+            Danh mục: <span class="text-primary" th:each="cat : ${categories}" th:if="${cat.categoryId == selectedCategoryId}" th:text="${cat.name}">Category</span>
+        </span>
         <span th:if="${searchMode == 'all'}">Tất cả sản phẩm</span>
       </h1>
-
-      <!-- Inline search bar (Field #1 retains keyword) -->
-      <form th:action="@{/search}" method="get" class="search-inline-form">
-        <input type="text"
-               name="keyword"
-               th:value="${keyword}"
-               placeholder="Tìm kiếm đồ uống..."
-               maxlength="50"
-               class="search-input-lg"
-               aria-label="Search products"/>
-        <!-- Field #2: Search Button -->
-        <button type="submit" class="btn btn-primary">🔍 Tìm</button>
-      </form>
+      <p class="text-on-surface-variant text-body-md m-0"
+         th:unless="${#lists.isEmpty(products)}"
+         th:text="'Hiển thị ' + ${#lists.size(products)} + ' sản phẩm'">
+      </p>
     </div>
 
-    <!-- Category pills -->
-    <div class="category-bar-inline">
-      <a th:href="@{/search}"
-         th:class="${selectedCategoryId == null} ? 'category-pill active' : 'category-pill'">
-        Tất cả
-      </a>
-      <a th:each="cat : ${categories}"
-         th:href="@{/search(categoryId=${cat.categoryId})}"
-         th:text="${cat.name}"
-         th:class="${cat.categoryId == selectedCategoryId} ? 'category-pill active' : 'category-pill'">
-      </a>
-    </div>
+    <!-- Search Form -->
+    <form th:action="@{/search}" method="get" class="flex items-center bg-surface-container-low border border-outline-variant rounded-full p-1.5 w-full md:w-96">
+      <input type="text"
+             name="keyword"
+             th:value="${keyword}"
+             placeholder="Tìm kiếm đồ uống..."
+             maxlength="50"
+             class="bg-transparent border-none focus:ring-0 text-on-surface text-body-sm px-4 w-full outline-none placeholder:text-on-surface-variant/50"
+             aria-label="Search products"/>
+      <button type="submit" class="bg-primary text-white w-10 h-10 rounded-full flex items-center justify-center hover:opacity-90 transition-opacity border-none cursor-pointer shrink-0 shadow-sm">
+        <span class="material-symbols-outlined text-[20px]">search</span>
+      </button>
+    </form>
+  </div>
 
-    <!-- Result count -->
-    <p class="result-count"
-       th:unless="${#lists.isEmpty(products)}"
-       th:text="${#lists.size(products)} + ' sản phẩm'">
-    </p>
-
-    <!-- ============================================================
-         Product Grid (Field #4 – UC_02 screen def: Image, Name, Price)
-         ============================================================ -->
-    <div class="product-grid" th:if="${not #lists.isEmpty(products)}">
-      <div th:each="product : ${products}" class="product-card">
-        <a th:href="@{/products/{id}(id=${product.productId})}" class="product-card-link">
-          <div class="product-img-wrap">
-            <img th:src="@{${product.primaryImageUrl}}"
-                 th:alt="${product.name}"
-                 class="product-img"
-                 loading="lazy"
-                 onerror="this.onerror=null; this.style.visibility='hidden'"/>
-            <span class="category-badge" th:text="${product.categoryName}">Danh mục</span>
-          </div>
-          <div class="product-card-body">
-            <h3 class="product-name" th:text="${product.name}">Tên sản phẩm</h3>
-            <div class="rating-row" th:if="${product.reviewCount > 0}">
-              <div class="stars">
-                        <span th:each="i : ${#numbers.sequence(1,5)}"
-                              th:class="${i <= product.averageRating} ? 'star filled' : 'star'">★</span>
-              </div>
-              <span class="review-count"
-                    th:text="'(' + ${product.reviewCount} + ' đánh giá)'"></span>
-            </div>
-            <div class="price-row">
-                    <span class="price"
-                          th:if="${product.minPrice == product.maxPrice}"
-                          th:text="${#numbers.formatDecimal(product.minPrice,0,'COMMA',0,'POINT')} + ' ₫'">
-                    </span>
-              <span class="price"
-                    th:unless="${product.minPrice == product.maxPrice}"
-                    th:text="${#numbers.formatDecimal(product.minPrice,0,'COMMA',0,'POINT')}
-                                   + ' – '
-                                   + ${#numbers.formatDecimal(product.maxPrice,0,'COMMA',0,'POINT')}
-                                   + ' ₫'">
-                    </span>
-            </div>
-          </div>
+  <div class="flex flex-col lg:flex-row gap-10">
+    <!-- Filters / Categories -->
+    <div class="w-full lg:w-64 shrink-0">
+      <h3 class="font-label-caps text-label-caps text-on-surface-variant/60 uppercase mb-5 tracking-[0.2em] m-0">Danh mục</h3>
+      <div class="flex flex-row lg:flex-col gap-2 overflow-x-auto hide-scrollbar pb-4 lg:pb-0">
+        <a th:href="@{/search}"
+           th:classappend="${selectedCategoryId == null} ? 'bg-primary text-white shadow-md shadow-primary/20 border-primary' : 'bg-surface-container-lowest text-on-surface-variant border-outline hover:border-primary hover:text-primary'"
+           class="whitespace-nowrap lg:whitespace-normal px-5 py-3 rounded-2xl border font-semibold text-body-sm transition-all no-underline flex items-center justify-between group cursor-pointer">
+          <span>Tất cả menu</span>
+          <span class="material-symbols-outlined text-[18px] opacity-0 group-hover:opacity-100 transition-opacity hidden lg:block" th:classappend="${selectedCategoryId == null} ? 'opacity-100' : ''">chevron_right</span>
         </a>
-        <div class="product-card-footer">
-          <a th:href="@{/products/{id}(id=${product.productId})}"
-             class="btn btn-primary btn-sm">Xem chi tiết</a>
-        </div>
+        
+        <a th:each="cat : ${categories}"
+           th:href="@{/search(categoryId=${cat.categoryId})}"
+           th:classappend="${cat.categoryId == selectedCategoryId} ? 'bg-primary text-white shadow-md shadow-primary/20 border-primary' : 'bg-surface-container-lowest text-on-surface-variant border-outline hover:border-primary hover:text-primary'"
+           class="whitespace-nowrap lg:whitespace-normal px-5 py-3 rounded-2xl border font-semibold text-body-sm transition-all no-underline flex items-center justify-between group cursor-pointer">
+          <span th:text="${cat.name}">Danh mục</span>
+          <span class="material-symbols-outlined text-[18px] opacity-0 group-hover:opacity-100 transition-opacity hidden lg:block" th:classappend="${cat.categoryId == selectedCategoryId} ? 'opacity-100' : ''">chevron_right</span>
+        </a>
       </div>
     </div>
 
-    <!-- AT1: No products found (UC_02 alternative flow) -->
-    <div class="empty-search-state" th:if="${#lists.isEmpty(products)}">
-      <div class="empty-icon">☕</div>
-      <h2>Không tìm thấy sản phẩm</h2>
-      <p th:if="${searchMode == 'keyword'}"
-         th:text="'Không có sản phẩm phù hợp với từ khóa &quot;' + ${keyword} + '&quot;. Thử từ khóa khác nhé!'">
-      </p>
-      <p th:if="${searchMode == 'category'}">Danh mục này chưa có sản phẩm.</p>
-      <a th:href="@{/search}" class="btn btn-primary">Xem tất cả sản phẩm</a>
-    </div>
+    <!-- Product Grid -->
+    <div class="flex-1">
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-10" th:if="${not #lists.isEmpty(products)}">
+        <!-- Replace with product-card fragment -->
+        <div th:each="product : ${products}">
+          <div th:replace="~{catalog/product-card :: productCard(${product})}"></div>
+        </div>
+      </div>
 
+      <!-- No products found state -->
+      <div class="bg-surface-container-lowest border border-outline border-dashed rounded-3xl p-16 text-center flex flex-col items-center justify-center gap-4 mt-8" th:if="${#lists.isEmpty(products)}">
+        <span class="material-symbols-outlined text-[80px] text-on-surface-variant/20 mb-4 block">search_off</span>
+        <h2 class="font-headline-sm text-headline-sm text-primary m-0">Không tìm thấy sản phẩm</h2>
+        <p class="text-on-surface-variant text-body-sm m-0 max-w-md" th:if="${searchMode == 'keyword'}"
+           th:text="'Không có sản phẩm nào phù hợp với từ khóa &quot;' + ${keyword} + '&quot;. Vui lòng thử một từ khóa khác.'">
+        </p>
+        <p class="text-on-surface-variant text-body-sm m-0" th:if="${searchMode == 'category'}">Danh mục này hiện tại chưa có sản phẩm nào.</p>
+        <a th:href="@{/search}" class="mt-6 inline-flex bg-primary text-white px-8 py-3 rounded-full font-bold text-body-sm hover:opacity-90 transition-opacity no-underline items-center gap-2">
+          <span class="material-symbols-outlined text-sm">restaurant_menu</span> Xem tất cả thực đơn
+        </a>
+      </div>
+    </div>
   </div>
 </main>
 
 <div th:replace="~{catalog/footer :: footer}"></div>
 
-
+<script th:src="@{/js/catalog/slider.js}"></script>
 </body>
 </html>

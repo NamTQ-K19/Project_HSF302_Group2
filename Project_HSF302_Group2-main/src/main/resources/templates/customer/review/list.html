@@ -1,157 +1,98 @@
-<!-- src/main/resources/templates/customer/review/list.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đánh giá của tôi - BrewMaster</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Tailwind CSS config -->
+    <div th:replace="~{catalog/tailwind-head :: tailwind-head}"></div>
+    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-    <link th:href="@{/css/customer/customer.css}" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        .review-card {
-            transition: var(--transition);
-            border-radius: var(--radius-lg);
-            margin-bottom: 16px;
-            border: 2px solid var(--brown-beige);
-            background: var(--white);
-        }
-        .review-card:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-md);
-            border-color: var(--brown-primary);
-        }
-        .review-card .product-thumb {
-            width: 60px;
-            height: 60px;
-            border-radius: var(--radius-sm);
-            overflow: hidden;
-            background: var(--bg-light);
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .review-card .product-thumb img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .star-rating {
-            color: #f5a623;
-            font-size: 14px;
-        }
-        .star-rating .empty {
-            color: #dee2e6;
-        }
-        .review-comment {
-            color: var(--text-dark);
-            font-style: italic;
-        }
-        .review-date {
-            font-size: 13px;
-            color: var(--text-muted);
-        }
-        .points-badge {
-            background: var(--brown-cream);
-            color: var(--brown-primary);
-            padding: 2px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-    </style>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
 </head>
-<body>
-<header class="header">
-    <a href="/" class="header-logo">
-        <div class="header-logo-icon"><i class="fas fa-mug-hot"></i></div>
-        <span class="header-logo-text">Brew<span>Master</span></span>
-    </a>
-    <nav class="header-nav">
-        <a href="/menu"><i class="fas fa-utensils"></i><span>Menu</span></a>
-        <a href="/customer/cart" class="header-cart">
-            <i class="fas fa-shopping-cart"></i><span>Giỏ hàng</span>
-            <span class="header-cart-badge" id="cartBadge"><span id="cartCount">0</span></span>
-        </a>
-        <a href="/customer/orders/history"><i class="fas fa-history"></i><span>Lịch sử</span></a>
-        <a href="/customer/reviews" class="active"><i class="fas fa-star"></i><span>Đánh giá</span></a>
-        <div class="header-avatar"><i class="fas fa-user"></i></div>
-    </nav>
-</header>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed antialiased">
 
-<main class="main">
-    <div class="page-header">
-        <div class="page-header-left">
-            <h1><i class="fas fa-star" style="color: var(--brown-gold);"></i>Đánh giá của tôi</h1>
-            <p>Xem lại các đánh giá bạn đã viết</p>
+<div th:replace="~{catalog/navbar :: navbar}"></div>
+
+<main class="max-w-max-width mx-auto px-margin-desktop py-12 min-h-[70vh]">
+
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div>
+            <h1 class="font-headline-lg text-primary m-0 mb-1 flex items-center gap-3">
+                <span class="material-symbols-outlined text-[32px] text-secondary">grade</span> 
+                Đánh giá của tôi
+            </h1>
+            <p class="text-on-surface-variant font-bold text-body-lg m-0">Xem lại các đánh giá bạn đã viết</p>
         </div>
-        <a href="/customer/orders/history" class="btn-outline">
-            <i class="fas fa-history"></i> Xem lịch sử đơn hàng
+        <a href="/customer/orders/history" class="inline-flex bg-surface-container border border-outline-variant text-on-surface-variant px-6 py-2.5 rounded-full font-bold text-body-sm hover:bg-surface-container-high transition-colors no-underline items-center gap-2">
+            <span class="material-symbols-outlined text-sm">history</span> Lịch sử đơn hàng
         </a>
     </div>
 
     <!-- Empty -->
-    <div th:if="${reviews == null or reviews.isEmpty()}" style="text-align: center; padding: 60px 0;">
-        <i class="fas fa-star" style="font-size: 64px; color: var(--text-light);"></i>
-        <h3 style="color: var(--text-muted); margin-top: 20px;">Chưa có đánh giá nào</h3>
-        <p style="color: var(--text-muted);">Hãy đánh giá sản phẩm sau khi nhận hàng!</p>
-        <a href="/customer/orders/history" class="btn-primary" style="margin-top: 16px;">
-            <i class="fas fa-history"></i> Xem đơn hàng đã hoàn thành
+    <div th:if="${reviews == null or reviews.isEmpty()}" class="bg-surface-container-lowest border border-outline border-dashed rounded-3xl p-16 text-center mt-4">
+        <span class="material-symbols-outlined text-[64px] text-on-surface-variant/30 mb-4 block">star</span>
+        <h3 class="font-headline-sm text-primary m-0 mb-2">Chưa có đánh giá nào</h3>
+        <p class="text-on-surface-variant text-body-sm m-0 mb-6">Hãy đánh giá sản phẩm sau khi nhận hàng!</p>
+        <a href="/customer/orders/history" class="inline-flex bg-primary text-white px-8 py-3 rounded-full font-bold text-body-sm hover:opacity-90 transition-opacity no-underline items-center gap-2">
+            <span class="material-symbols-outlined text-sm">inventory_2</span> Xem đơn hàng đã hoàn thành
         </a>
     </div>
 
     <!-- Review List -->
-    <div th:if="${reviews != null and !reviews.isEmpty()}">
-        <div th:each="review : ${reviews}" class="review-card card">
-            <div class="card-body">
-                <div class="row align-items-center">
+    <div th:if="${reviews != null and !reviews.isEmpty()}" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div th:each="review : ${reviews}" class="bg-surface-container-lowest border border-outline-variant hover:border-primary/50 rounded-3xl p-6 shadow-sm transition-colors group flex flex-col justify-between">
+            <div>
+                <div class="flex justify-between items-start mb-4">
                     <!-- Product Info -->
-                    <div class="col-md-4">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="product-thumb">
-                                <img th:src="${review.productImage != null ? review.productImage : '/images/default-product.png'}"
-                                     alt="Product" onerror="this.style.display='none'">
-                            </div>
-                            <div>
-                                <h6 class="mb-0" th:text="${review.productName}">Product</h6>
-                                <small class="text-muted">Đơn hàng #<span th:text="${review.orderId}">001</span></small>
-                            </div>
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 rounded-xl overflow-hidden bg-surface-container border border-outline-variant shrink-0">
+                            <img th:src="${review.productImage != null ? review.productImage : '/images/default-product.png'}" alt="Product" class="w-full h-full object-cover" onerror="this.style.display='none'">
+                        </div>
+                        <div>
+                            <h6 class="font-bold text-body-lg text-primary m-0 mb-1" th:text="${review.productName}">Product</h6>
+                            <div class="text-on-surface-variant text-[13px] bg-surface-container-high px-2 py-0.5 rounded-md inline-block">Đơn hàng #<span th:text="${review.orderId}">001</span></div>
                         </div>
                     </div>
 
-                    <!-- Rating -->
-                    <div class="col-md-3">
-                        <div class="star-rating">
-                            <span th:each="i : ${#numbers.sequence(1, 5)}">
-                                <i th:class="${i <= review.rating} ? 'fas fa-star' : 'far fa-star'"></i>
-                            </span>
-                        </div>
-                        <small class="text-muted"><span th:text="${review.rating}">5</span>/5</small>
-                    </div>
-
-                    <!-- Comment -->
-                    <div class="col-md-3">
-                        <div class="review-comment" th:text="${review.comment != null ? review.comment : 'Không có bình luận'}">
-                            Sản phẩm tuyệt vời!
-                        </div>
-                    </div>
-
-                    <!-- Points & Date -->
-                    <div class="col-md-2 text-end">
-                        <div class="points-badge">
-                            <i class="fas fa-gem me-1"></i> +<span th:text="${review.pointsEarned}">5</span> điểm
-                        </div>
-                        <div class="review-date" th:text="${#temporals.format(review.createdAt, 'dd/MM/yyyy')}">01/01/2024</div>
+                    <!-- Points Badge -->
+                    <div class="inline-flex items-center gap-1 bg-secondary-container/30 text-secondary px-2.5 py-1 rounded-full text-[12px] font-bold">
+                        <span class="material-symbols-outlined text-[14px]">workspace_premium</span> +<span th:text="${review.pointsEarned}">5</span> điểm
                     </div>
                 </div>
+
+                <!-- Rating & Comment -->
+                <div class="bg-surface-container/50 rounded-2xl p-4 mb-4">
+                    <div class="flex items-center gap-1 mb-2 text-secondary">
+                        <span th:each="i : ${#numbers.sequence(1, 5)}">
+                            <span class="material-symbols-outlined text-[18px] font-variation-fill" th:if="${i <= review.rating}">star</span>
+                            <span class="material-symbols-outlined text-[18px] text-outline-variant" th:unless="${i <= review.rating}">star</span>
+                        </span>
+                        <span class="text-on-surface-variant text-[13px] font-bold ml-2"><span th:text="${review.rating}">5</span>/5</span>
+                    </div>
+                    
+                    <div class="text-on-surface italic text-body-md" th:if="${review.comment != null and !review.comment.isEmpty()}">
+                        "<span th:text="${review.comment}">Sản phẩm tuyệt vời!</span>"
+                    </div>
+                    <div class="text-on-surface-variant/60 italic text-body-sm" th:unless="${review.comment != null and !review.comment.isEmpty()}">
+                        (Không có bình luận)
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end text-on-surface-variant/70 text-[12px] font-medium items-center gap-1.5 pt-2 border-t border-outline-variant">
+                <span class="material-symbols-outlined text-[14px]">calendar_today</span>
+                <span th:text="${#temporals.format(review.createdAt, 'dd/MM/yyyy')}">01/01/2024</span>
             </div>
         </div>
     </div>
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<div th:replace="~{catalog/footer :: footer}"></div>
+
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
     $(document).ready(function() {

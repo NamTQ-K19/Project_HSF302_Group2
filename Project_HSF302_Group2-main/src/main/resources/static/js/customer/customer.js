@@ -29,30 +29,11 @@ function hideLoading() {
 }
 
 function showToast(message, type = 'success') {
-    const colors = {
-        success: '#28a745',
-        error: '#dc3545',
-        warning: '#ffc107',
-        info: '#17a2b8'
-    };
-
-    const toast = $(`
-        <div class="toast align-items-center text-white border-0" role="alert" 
-             style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px; background-color: ${colors[type]};">
-            <div class="d-flex">
-                <div class="toast-body">${message}</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        </div>
-    `);
-
-    $('body').append(toast);
-    const bsToast = new bootstrap.Toast(toast[0], { delay: 3000 });
-    bsToast.show();
-
-    toast.on('hidden.bs.toast', function() {
-        $(this).remove();
-    });
+    if (window.showGlobalToast) {
+        window.showGlobalToast(message, type);
+    } else {
+        alert(message);
+    }
 }
 
 $(document).ready(function() {

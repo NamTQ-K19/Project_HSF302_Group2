@@ -5,161 +5,125 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>BrewMaster – Trang chủ</title>
-    <link rel="stylesheet" th:href="@{/css/catalog/main.css}" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <!-- Include Tailwind CSS config & CDN -->
+    <div th:replace="~{catalog/tailwind-head :: tailwind-head}"></div>
+    
+    <!-- Link to previous styles in case they are needed elsewhere, though we should avoid conflicts if possible.
+         Wait, let's keep font-awesome just in case some other fragments need it. -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
-<body>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed antialiased">
 
-<!-- Navbar fragment (Field #1 Search Bar, Logo – UC_01 screen def) -->
+<!-- Navbar fragment -->
 <div th:replace="~{catalog/navbar :: navbar}"></div>
-<main class="page-main">
-<!-- ============================================================
-     Promotional Banner (Field #3 – UC_01 screen def)
-     ============================================================ -->
-<section class="hero-banner">
-    <div class="hero-slider" id="heroSlider">
-        <div class="slide slide-active">
-            <div class="slide-content">
-                <span class="slide-tag">🔥 Ưu đãi tháng 6</span>
-                <h1>Giảm 20% tất cả đồ uống mỗi thứ Ba</h1>
-                <p>Dành cho khách hàng thành viên tích lũy điểm tại Café Aroma.</p>
-                <a th:href="@{/search}" class="btn btn-primary btn-lg">Đặt ngay</a>
-            </div>
-            <div class="slide-badge">20%<br/>OFF</div>
-        </div>
-        <div class="slide">
-            <div class="slide-content">
-                <span class="slide-tag">✨ Mới ra mắt</span>
-                <h1>Matcha Đá Xay – Phiên bản Hè 2026</h1>
-                <p>Bột trà xanh Nhật Bản, đá xay mịn, thêm kem cheese béo ngậy.</p>
-                <a th:href="@{/products/7}" class="btn btn-primary btn-lg">Khám phá</a>
-            </div>
-            <div class="slide-badge">NEW</div>
-        </div>
-        <div class="slide">
-            <div class="slide-content">
-                <span class="slide-tag">🎁 Tích điểm</span>
-                <h1>Mỗi 100.000₫ – nhận 10 điểm thưởng</h1>
-                <p>Đổi điểm lấy đồ uống miễn phí hoặc giảm giá cho hóa đơn tiếp theo.</p>
-                <a th:href="@{/loyalty-policy}" class="btn btn-outline btn-lg">Xem chính sách</a>
-            </div>
-            <div class="slide-badge">🏆</div>
-        </div>
-    </div>
-    <!-- Slider controls -->
-    <button class="slider-prev" onclick="changeSlide(-1)" aria-label="Previous slide">‹</button>
-    <button class="slider-next" onclick="changeSlide(1)" aria-label="Next slide">›</button>
-    <div class="slider-dots">
-        <span class="dot active" onclick="goToSlide(0)"></span>
-        <span class="dot" onclick="goToSlide(1)"></span>
-        <span class="dot" onclick="goToSlide(2)"></span>
-    </div>
-</section>
 
-<!-- ============================================================
-     Product Category Filter Bar (Field #4 – UC_01 screen def)
-     ============================================================ -->
-<section class="category-bar">
-    <div class="section-container">
-        <h2 class="section-subtitle">Danh mục</h2>
-        <div class="category-list">
-            <a th:href="@{/search}" class="category-pill active">Tất cả</a>
-            <a th:each="cat : ${categories}"
-               th:href="@{/search(categoryId=${cat.categoryId})}"
-               th:text="${cat.name}"
-               class="category-pill">Category</a>
-        </div>
-    </div>
-</section>
-
-<!-- ============================================================
-     Best Seller Grid (Field #5 – UC_01 screen def)
-     Shows Image, Name, Price as specified
-     ============================================================ -->
-<section class="best-sellers">
-    <div class="section-container">
-        <div class="section-header">
-            <h2 class="section-title">☕ Bán chạy nhất</h2>
-            <a th:href="@{/search}" class="view-all-link">Xem tất cả →</a>
-        </div>
-
-        <div class="product-grid" th:if="${not #lists.isEmpty(bestSellers)}">
-            <div th:each="product : ${bestSellers}" class="product-card">
-                <a th:href="@{/products/{id}(id=${product.productId})}" class="product-card-link">
-                    <div class="product-img-wrap">
-                        <img th:src="@{${product.primaryImageUrl}}"
-                             th:alt="${product.name}"
-                             class="product-img"
-                             loading="lazy"
-                             onerror="this.onerror=null; this.style.visibility='hidden'"/>
-                        <span class="category-badge" th:text="${product.categoryName}">Danh mục</span>
+<main>
+    <!-- ============================================================
+         Promotional Banner
+         ============================================================ -->
+    <section class="max-w-max-width mx-auto px-margin-desktop py-12">
+        <div class="relative overflow-hidden rounded-xl h-[440px] bg-primary-container border border-outline-variant group">
+            <div class="absolute inset-0 flex items-center">
+                <div class="relative z-10 px-16 w-full lg:w-3/5">
+                    <div class="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm border border-outline-variant text-on-primary-container px-4 py-1.5 rounded-full mb-8">
+                        <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+                        <span class="font-label-caps text-label-caps uppercase tracking-wider">Chương trình tích điểm</span>
                     </div>
-                    <div class="product-card-body">
-                        <h3 class="product-name" th:text="${product.name}">Tên sản phẩm</h3>
-                        <div class="rating-row" th:if="${product.reviewCount > 0}">
-                            <div class="stars">
-                        <span th:each="i : ${#numbers.sequence(1,5)}"
-                              th:class="${i <= product.averageRating} ? 'star filled' : 'star'">★</span>
-                            </div>
-                            <span class="review-count"
-                                  th:text="'(' + ${product.reviewCount} + ' đánh giá)'"></span>
-                        </div>
-                        <div class="price-row">
-                    <span class="price"
-                          th:if="${product.minPrice == product.maxPrice}"
-                          th:text="${#numbers.formatDecimal(product.minPrice,0,'COMMA',0,'POINT')} + ' ₫'">
-                    </span>
-                            <span class="price"
-                                  th:unless="${product.minPrice == product.maxPrice}"
-                                  th:text="${#numbers.formatDecimal(product.minPrice,0,'COMMA',0,'POINT')}
-                                   + ' – '
-                                   + ${#numbers.formatDecimal(product.maxPrice,0,'COMMA',0,'POINT')}
-                                   + ' ₫'">
-                    </span>
+                    <h2 class="font-headline-xl text-headline-xl text-primary mb-6 leading-[1.1] tracking-tight">Mỗi 100.000đ – nhận 10 điểm thưởng</h2>
+                    <p class="font-body-lg text-on-surface-variant/80 mb-10 max-w-md">Đổi điểm lấy đồ uống miễn phí hoặc giảm giá cho hóa đơn tiếp theo tại toàn bộ cửa hàng.</p>
+                    <a th:href="@{/loyalty-policy}" class="inline-block bg-primary hover:bg-on-surface-variant text-white px-10 py-4 rounded-full font-bold text-body-sm transition-all duration-300 shadow-lg shadow-primary/10 no-underline">
+                        Xem chính sách
+                    </a>
+                </div>
+                <div class="absolute right-20 hidden lg:flex items-center justify-center">
+                    <div class="w-80 h-80 rounded-full bg-white/30 backdrop-blur-3xl flex items-center justify-center border border-white/50">
+                        <span class="material-symbols-outlined text-[140px] text-primary/10 -rotate-12">redeem</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="absolute bottom-8 left-16 flex gap-3 z-20">
+                <div class="w-8 h-1 rounded-full bg-primary transition-all"></div>
+                <div class="w-8 h-1 rounded-full bg-primary/10 transition-all hover:bg-primary/30 cursor-pointer"></div>
+                <div class="w-8 h-1 rounded-full bg-primary/10 transition-all hover:bg-primary/30 cursor-pointer"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         Category List
+         ============================================================ -->
+    <section class="max-w-max-width mx-auto px-margin-desktop py-6">
+        <h3 class="font-label-caps text-label-caps text-on-surface-variant/60 uppercase mb-8 tracking-[0.2em]">Danh mục sản phẩm</h3>
+        <div class="flex gap-4 overflow-x-auto hide-scrollbar pb-6">
+            <a th:href="@{/search}" class="whitespace-nowrap px-8 py-3 rounded-full bg-primary text-white font-bold text-body-sm transition-all no-underline">Tất cả</a>
+            <a th:each="cat : ${categories}" th:href="@{/search(categoryId=${cat.categoryId})}" class="whitespace-nowrap px-8 py-3 rounded-full bg-white border border-outline text-on-surface-variant font-semibold hover:border-primary hover:text-primary transition-all text-body-sm no-underline" th:text="${cat.name}">Category</a>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         Best Sellers Grid
+         ============================================================ -->
+    <section class="max-w-max-width mx-auto px-margin-desktop py-16">
+        <div class="flex justify-between items-center mb-12">
+            <div class="flex items-center gap-4">
+                <div class="w-1.5 h-8 bg-primary rounded-full"></div>
+                <h2 class="font-headline-lg text-headline-lg tracking-tight text-primary m-0">Bán chạy nhất</h2>
+            </div>
+            <a th:href="@{/search}" class="text-on-surface-variant font-bold text-body-sm hover:text-primary flex items-center gap-2 transition-all group no-underline">
+                <span>Khám phá tất cả</span>
+                <span class="material-symbols-outlined text-base group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </a>
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12" th:if="${not #lists.isEmpty(bestSellers)}">
+            <div th:each="product : ${bestSellers}" class="group flex flex-col">
+                <a th:href="@{/products/{id}(id=${product.productId})}" class="no-underline relative aspect-[4/5] rounded-xl overflow-hidden mb-6 bg-surface-container-low border border-outline-variant block">
+                    <img th:src="@{${product.primaryImageUrl}}" th:alt="${product.name}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" onerror="this.onerror=null; this.style.visibility='hidden'"/>
+                    
+                    <div class="absolute inset-x-4 bottom-4 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                        <div class="w-full py-3 bg-white text-primary font-bold text-body-sm rounded-lg minimal-shadow flex items-center justify-center gap-2 border border-outline-variant hover:bg-primary hover:text-white transition-colors cursor-pointer">
+                            <span class="material-symbols-outlined text-lg">add_shopping_cart</span> Thêm vào giỏ
                         </div>
                     </div>
                 </a>
-                <div class="product-card-footer">
-                    <a th:href="@{/products/{id}(id=${product.productId})}"
-                       class="btn btn-primary btn-sm" style="flex:1">Xem chi tiết</a>
-
-                    <!-- Đã login thì hiện nút giỏ hàng -->
-                    <button sec:authorize="isAuthenticated()"
-                            class="btn-cart"
-                            th:onclick="'quickAddToCart(' + ${product.productId} + ')'"
-                            title="Thêm vào giỏ">
-                        <i class="fas fa-shopping-cart"></i>
-                    </button>
-
-                    <!-- Chưa login thì redirect -->
-                    <a sec:authorize="isAnonymous()"
-                       th:href="@{/auth/login}"
-                       class="btn-cart"
-                       title="Đăng nhập để mua">
-                        <i class="fas fa-shopping-cart"></i>
-                    </a>
+                
+                <div class="px-1">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-headline-sm text-headline-sm text-primary m-0" th:text="${product.name}">Tên sản phẩm</h4>
+                        <p class="text-primary font-extrabold text-body-md m-0" 
+                           th:if="${product.minPrice == product.maxPrice}" 
+                           th:text="${#numbers.formatDecimal(product.minPrice,0,'COMMA',0,'POINT')} + 'đ'">Giá</p>
+                        <p class="text-primary font-extrabold text-body-md m-0" 
+                           th:unless="${product.minPrice == product.maxPrice}" 
+                           th:text="${#numbers.formatDecimal(product.minPrice,0,'COMMA',0,'POINT')} + ' – ' + ${#numbers.formatDecimal(product.maxPrice,0,'COMMA',0,'POINT')} + 'đ'">Giá</p>
+                    </div>
+                    
+                    <p class="text-on-surface-variant/60 text-body-sm mb-3 m-0" th:text="${product.categoryName}">Danh mục</p>
+                    
+                    <div class="flex items-center gap-1" th:if="${product.reviewCount > 0}">
+                        <div class="flex">
+                            <span th:each="i : ${#numbers.sequence(1,5)}" 
+                                  th:classappend="${i <= product.averageRating} ? 'text-primary' : 'text-outline'" 
+                                  class="material-symbols-outlined text-xs" 
+                                  th:style="${i <= product.averageRating} ? 'font-variation-settings: \'FILL\' 1;' : ''">star</span>
+                        </div>
+                        <span class="text-on-surface-variant/50 text-[11px] font-semibold ml-1" th:text="${product.reviewCount} + ' đánh giá'">Đánh giá</span>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <!-- Empty state (shouldn't happen post-seed, defensive) -->
-        <div class="empty-state" th:if="${#lists.isEmpty(bestSellers)}">
+        
+        <!-- Empty state -->
+        <div th:if="${#lists.isEmpty(bestSellers)}" class="text-center py-20 text-on-surface-variant">
             <p>Đang cập nhật thực đơn. Vui lòng quay lại sau!</p>
         </div>
-    </div>
-</section>
-
-<!-- ============================================================
-     Why Join Us – loyalty teaser (leads to UC_04)
-     ============================================================ -->
-
+    </section>
 
 </main>
-<!-- Footer with Reward Policy link (triggers UC_04) -->
-<div th:replace="~{catalog/footer :: footer}"></div>
 
-<script th:src="@{/js/catalog/slider.js}"></script>
+<!-- Footer -->
+<div th:replace="~{catalog/footer :: footer}"></div>
 
 </body>
 </html>

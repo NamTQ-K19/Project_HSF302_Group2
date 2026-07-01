@@ -25,6 +25,8 @@
         .cancel-box { background: #fdf0ee; border-left: 4px solid var(--danger); }
         .table-chip { display: inline-block; background: var(--cream-mid); color: var(--brown-dark); border-radius: 20px; font-weight: 700; font-size: 0.85rem; border: 1px solid var(--border); }
     </style>
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
 </head>
 <body class="manager-body">
 

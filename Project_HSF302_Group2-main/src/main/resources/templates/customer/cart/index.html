@@ -5,350 +5,170 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Giỏ hàng - BrewMaster</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Include Tailwind CSS config & CDN -->
+    <div th:replace="~{catalog/tailwind-head :: tailwind-head}"></div>
+    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-    <link th:href="@{/css/customer/customer.css}" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        .cart-item {
-            display: grid;
-            grid-template-columns: 0.3fr 3fr 1fr 1.2fr 1fr;
-            gap: 12px;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--brown-beige);
-            transition: var(--transition);
-        }
-        .cart-item:last-child {
-            border-bottom: none;
-        }
-        .cart-item .item-checkbox {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-            accent-color: var(--brown-primary);
-        }
-        .cart-item .item-checkbox:disabled {
-            cursor: not-allowed;
-            opacity: 0.5;
-        }
-        .cart-product {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        .cart-thumb {
-            width: 60px;
-            height: 60px;
-            border-radius: var(--radius-md);
-            overflow: hidden;
-            background: var(--bg-light);
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .cart-thumb img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .cart-thumb .placeholder {
-            font-size: 24px;
-            color: var(--text-light);
-        }
-        .cart-product-info h6 {
-            font-weight: 600;
-            color: var(--text-dark);
-            margin: 0;
-        }
-        .cart-product-info small {
-            color: var(--text-muted);
-            font-size: 13px;
-        }
-        .cart-product-info .note {
-            color: var(--brown-gold);
-            font-size: 12px;
-            margin-top: 2px;
-        }
-        .cart-price {
-            text-align: center;
-            font-weight: 600;
-            color: var(--text-dark);
-        }
-        .cart-qty-control {
-            display: inline-flex;
-            border-radius: var(--radius-md);
-            overflow: hidden;
-            border: 2px solid var(--brown-beige);
-            background: var(--white);
-        }
-        .cart-qty-control button {
-            border: none;
-            background: var(--white);
-            padding: 4px 14px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: var(--transition);
-            color: var(--text-dark);
-        }
-        .cart-qty-control button:hover {
-            background: var(--brown-primary);
-            color: var(--white);
-        }
-        .cart-qty-control input {
-            width: 40px;
-            text-align: center;
-            border: none;
-            border-left: 2px solid var(--brown-beige);
-            border-right: 2px solid var(--brown-beige);
-            padding: 4px 0;
-            background: var(--white);
-            font-weight: 600;
-            font-size: 14px;
-            color: var(--text-dark);
-        }
-        .cart-total .amount {
-            font-weight: 700;
-            color: var(--brown-primary);
-            font-size: 16px;
-        }
-        .cart-total .remove {
-            color: #dc3545;
-            font-size: 13px;
-            text-decoration: none;
-            display: inline-block;
-            margin-top: 2px;
-            transition: var(--transition);
-        }
-        .cart-total .remove:hover {
-            color: #c82333;
-            text-decoration: underline;
-        }
-        .summary-card {
-            background: var(--white);
-            border-radius: var(--radius-lg);
-            padding: 24px;
-            box-shadow: var(--shadow-sm);
-            border: 2px solid var(--brown-beige);
-        }
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-        }
-        .summary-row.total {
-            border-top: 2px solid var(--brown-beige);
-            margin-top: 12px;
-            padding-top: 16px;
-        }
-        .summary-row.total .label {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--text-dark);
-        }
-        .summary-row.total .value {
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--brown-primary);
-        }
-        .points-box {
-            background: var(--brown-cream);
-            border-radius: var(--radius-lg);
-            padding: 20px;
-            margin-top: 20px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            border: 2px solid var(--brown-beige);
-        }
-        .points-box i {
-            font-size: 32px;
-            color: var(--brown-gold);
-        }
-        .points-box .points-number {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--brown-primary);
-        }
-        .points-box small {
-            color: var(--text-muted);
-        }
-        .select-all-checkbox {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-            accent-color: var(--brown-primary);
-        }
-        .btn-checkout {
-            background: var(--brown-primary);
-            border: none;
-            color: white;
-            border-radius: var(--radius-md);
-            padding: 14px;
-            font-weight: 600;
-            transition: var(--transition);
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            text-decoration: none;
-        }
-        .btn-checkout:hover {
-            background: var(--brown-dark);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 16px rgba(107, 68, 35, 0.3);
-        }
-        .btn-checkout:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-    </style>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
 </head>
-<body>
-<header class="header">
-    <a href="/" class="header-logo">
-        <div class="header-logo-icon"><i class="fas fa-mug-hot"></i></div>
-        <span class="header-logo-text">Brew<span>Master</span></span>
-    </a>
-    <nav class="header-nav">
-        <a href="/menu"><i class="fas fa-utensils"></i><span>Menu</span></a>
-        <a href="/customer/cart" class="active header-cart">
-            <i class="fas fa-shopping-cart"></i><span>Giỏ hàng</span>
-            <span class="header-cart-badge" id="cartBadge"><span id="cartCount">0</span></span>
-        </a>
-        <a href="/customer/orders/history"><i class="fas fa-history"></i><span>Lịch sử</span></a>
-        <div class="header-avatar"><i class="fas fa-user"></i></div>
-    </nav>
-</header>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed antialiased">
+<div th:replace="~{catalog/navbar :: navbar}"></div>
 
-<main class="main">
-    <div class="page-header">
-        <div class="page-header-left">
-            <h1><i class="fas fa-shopping-cart"></i>Giỏ hàng</h1>
-            <p>Chọn sản phẩm bạn muốn thanh toán</p>
+<main class="max-w-max-width mx-auto px-margin-desktop py-12 min-h-[70vh]">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10">
+        <div>
+            <h1 class="font-headline-lg text-primary flex items-center gap-3 m-0">
+                <span class="material-symbols-outlined text-[32px]">shopping_cart</span> Giỏ hàng
+            </h1>
+            <p class="text-on-surface-variant text-body-sm mt-2 m-0">Chọn sản phẩm bạn muốn thanh toán</p>
         </div>
-        <a href="/menu" class="btn-outline"><i class="fas fa-arrow-left"></i> Tiếp tục mua hàng</a>
+        <a href="/search" class="inline-flex bg-surface-container border border-outline-variant text-on-surface-variant px-6 py-2.5 rounded-full font-bold text-body-sm hover:bg-surface-container-high transition-colors no-underline items-center gap-2">
+            <span class="material-symbols-outlined text-sm">arrow_back</span> Tiếp tục mua hàng
+        </a>
     </div>
 
-    <div th:if="${cart == null or cart.totalItems == 0}" style="text-align: center; padding: 80px 0;">
-        <i class="fas fa-shopping-cart" style="font-size: 64px; color: var(--text-light);"></i>
-        <h3 style="color: var(--text-muted); margin-top: 20px;">Giỏ hàng trống</h3>
-        <p style="color: var(--text-muted);">Hãy thêm sản phẩm vào giỏ hàng của bạn!</p>
-        <a href="/menu" class="btn-primary" style="margin-top: 16px;"><i class="fas fa-utensils"></i> Khám phá menu</a>
+    <!-- Empty Cart State -->
+    <div th:if="${cart == null or cart.totalItems == 0}" class="text-center py-24 bg-surface-container-lowest rounded-3xl border border-outline border-dashed">
+        <span class="material-symbols-outlined text-[80px] text-on-surface-variant/30 mb-6 block">shopping_basket</span>
+        <h3 class="font-headline-sm text-primary mb-2 m-0">Giỏ hàng trống</h3>
+        <p class="text-on-surface-variant text-body-sm mb-8 m-0">Hãy thêm sản phẩm vào giỏ hàng của bạn!</p>
+        <a href="/search" class="inline-flex bg-primary text-white px-8 py-3 rounded-full font-bold text-body-sm hover:opacity-90 transition-opacity no-underline items-center gap-2 shadow-sm">
+            <span class="material-symbols-outlined text-sm">restaurant_menu</span> Khám phá menu
+        </a>
     </div>
 
-    <div th:if="${cart != null and cart.totalItems > 0}">
-        <div class="row">
-            <div class="col-lg-8">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="d-flex align-items-center gap-3">
-                            <input type="checkbox" class="select-all-checkbox" id="selectAll" checked>
-                            <label for="selectAll" style="font-weight: 600; cursor: pointer; margin: 0;">Chọn tất cả</label>
+    <!-- Cart Data -->
+    <div th:if="${cart != null and cart.totalItems > 0}" class="flex flex-col lg:flex-row gap-8">
+        
+        <!-- Cart Items List (Left Side) -->
+        <div class="flex-1 flex flex-col gap-6">
+            <div class="bg-surface-container-lowest rounded-3xl border border-outline-variant overflow-hidden shadow-sm">
+                <!-- Header -->
+                <div class="px-6 md:px-8 py-5 border-b border-outline-variant bg-surface-container-low/50 flex justify-between items-center">
+                    <label for="selectAll" class="flex items-center gap-3 cursor-pointer m-0">
+                        <input type="checkbox" class="w-5 h-5 accent-primary cursor-pointer rounded border-outline-variant" id="selectAll" checked>
+                        <span class="font-bold text-body-md text-primary select-none">Chọn tất cả</span>
+                    </label>
+                    <button id="clearCart" class="inline-flex items-center gap-2 bg-transparent border-none text-on-surface-variant text-body-sm font-bold hover:text-error transition-colors cursor-pointer p-0">
+                        <span class="material-symbols-outlined text-[18px]">delete_sweep</span> Xóa tất cả
+                    </button>
+                </div>
+                
+                <!-- CART ITEMS LIST -->
+                <div id="cartItemsList" class="flex flex-col">
+                    <div th:each="item : ${cart.items}" class="cart-item group relative flex flex-col sm:flex-row items-start sm:items-center p-6 md:p-8 border-b border-outline-variant last:border-b-0 hover:bg-surface-container-lowest/50 transition-colors gap-4 sm:gap-6"
+                         th:data-item-total="${item.itemTotal}">
+                        
+                        <div class="pt-2 sm:pt-0">
+                            <input type="checkbox" class="item-select w-5 h-5 accent-primary cursor-pointer rounded border-outline-variant"
+                                   th:data-item-id="${item.cartItemId}"
+                                   th:data-item-total="${item.itemTotal}"
+                                   th:checked="${item.selected != null ? item.selected : true}">
                         </div>
-                    </div>
-                    <div class="card-body p-0">
-                        <div style="display: grid; grid-template-columns: 0.3fr 3fr 1fr 1.2fr 1fr; gap: 12px; padding: 12px 20px; border-bottom: 2px solid var(--brown-beige); font-weight: 600; color: var(--text-muted); font-size: 14px;">
-                            <div></div>
-                            <div>Sản phẩm</div>
-                            <div style="text-align: center;">Đơn giá</div>
-                            <div style="text-align: center;">Số lượng</div>
-                            <div style="text-align: center;">Thành tiền</div>
-                        </div>
 
-                        <!-- ✅ LƯU ITEM TOTAL VÀO DATA ATTRIBUTE -->
-                        <div th:each="item : ${cart.items}" class="cart-item" style="padding: 12px 20px; "
-                             th:data-item-total="${item.itemTotal}">
-                            <div>
-                                <input type="checkbox" class="item-checkbox item-select"
-                                       th:data-item-id="${item.cartItemId}"
-                                       th:data-item-total="${item.itemTotal}"
-                                       th:checked="${item.selected != null ? item.selected : true}">
+                        <div class="flex items-center gap-4 flex-1 w-full sm:w-auto">
+                            <div class="w-24 h-24 rounded-2xl overflow-hidden bg-surface-container border border-outline-variant shrink-0">
+                                <img th:src="${item.productImage}" alt="Product" loading="lazy" class="w-full h-full object-cover"
+                                     onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<span class=\'material-symbols-outlined text-on-surface-variant/30 text-3xl m-auto mt-8 block text-center\'>local_cafe</span>';">
                             </div>
-
-                            <div class="cart-product">
-                                <div class="cart-thumb">
-                                    <img th:src="${item.productImage}" alt="Product" loading="lazy"
-                                         onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<i class=\'fas fa-coffee placeholder\'></i>';">
+                            <div class="flex-1">
+                                <h6 class="font-bold text-primary text-body-lg mb-1 m-0" th:text="${item.productName}">Product</h6>
+                                <div class="text-on-surface-variant text-body-sm inline-block bg-surface-container-high px-2 py-0.5 rounded-md mb-2" th:text="${item.variantName}">Variant</div>
+                                <div class="text-secondary text-[12px] font-medium flex items-center gap-1 bg-secondary-container/30 px-2.5 py-1 rounded-lg inline-flex w-fit" th:if="${item.specialNote != null}">
+                                    <span class="material-symbols-outlined text-[14px]">edit_note</span> <span th:text="${item.specialNote}">Note</span>
                                 </div>
-                                <div class="cart-product-info">
-                                    <h6 th:text="${item.productName}">Product</h6>
-                                    <small th:text="${item.variantName}">Variant</small>
-                                    <div class="note" th:if="${item.specialNote != null}"><i class="fas fa-pen"></i> <span th:text="${item.specialNote}">Note</span></div>
-                                </div>
-                            </div>
-
-                            <div class="cart-price">
-                                <span th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT') + '₫'}">35.000₫</span>
-                            </div>
-
-                            <div style="text-align: center;" class="cart-qty" >
-                                <div class="cart-qty-control">
-                                    <button class="decrease-qty" th:data-item-id="${item.cartItemId}"><i class="fas fa-minus"></i></button>
-                                    <input type="text" class="item-qty" th:value="${item.quantity}" readonly>
-                                    <button class="increase-qty" th:data-item-id="${item.cartItemId}"><i class="fas fa-plus"></i></button>
-                                </div>
-                            </div>
-
-                            <div style="text-align: center;" class="cart-total">
-                                <div class="amount" th:text="${#numbers.formatDecimal(item.itemTotal, 0, 'COMMA', 0, 'POINT') + '₫'}">70.000₫</div>
-                                <a href="#" class="remove" th:data-item-id="${item.cartItemId}"><i class="fas fa-trash"></i> Xóa</a>
+                                <div class="font-bold text-on-surface text-body-md mt-2 block sm:hidden" th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT') + '₫'}">35.000₫</div>
                             </div>
                         </div>
-                    </div>
-                    <div class="card-footer bg-white" style="border-top: 2px solid var(--brown-beige); padding: 16px 20px;">
-                        <button class="btn-danger" id="clearCart"><i class="fas fa-trash-alt"></i> Xóa tất cả</button>
+
+                        <div class="hidden sm:block text-center font-bold text-on-surface text-body-md w-24">
+                            <span th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT') + '₫'}">35.000₫</span>
+                        </div>
+
+                        <div class="flex items-center justify-between sm:justify-center w-full sm:w-auto mt-4 sm:mt-0 pt-4 sm:pt-0 border-t border-outline-variant sm:border-0 gap-4">
+                            <!-- Qty -->
+                            <div class="inline-flex bg-surface-container rounded-full p-1 border border-outline-variant">
+                                <button class="decrease-qty w-8 h-8 rounded-full bg-surface-container-lowest flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-white transition-colors border-none cursor-pointer shadow-sm" th:data-item-id="${item.cartItemId}">
+                                    <span class="material-symbols-outlined text-[16px]">remove</span>
+                                </button>
+                                <input type="text" class="item-qty w-10 text-center border-none bg-transparent font-bold text-body-md text-primary p-0 outline-none" th:value="${item.quantity}" readonly>
+                                <button class="increase-qty w-8 h-8 rounded-full bg-surface-container-lowest flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-white transition-colors border-none cursor-pointer shadow-sm" th:data-item-id="${item.cartItemId}">
+                                    <span class="material-symbols-outlined text-[16px]">add</span>
+                                </button>
+                            </div>
+
+                            <!-- Total & Delete -->
+                            <div class="text-right flex flex-col items-end gap-1">
+                                <div class="amount font-bold text-primary text-title-md" th:text="${#numbers.formatDecimal(item.itemTotal, 0, 'COMMA', 0, 'POINT') + '₫'}">70.000₫</div>
+                                <a href="#" class="remove inline-flex items-center gap-1 text-on-surface-variant/70 hover:text-error transition-colors text-[12px] font-bold no-underline" th:data-item-id="${item.cartItemId}">
+                                    Xóa
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="col-lg-4">
-                <div class="summary-card">
-                    <div style="font-weight: 600; font-size: 16px; margin-bottom: 16px; color: var(--text-dark);">
-                        <i class="fas fa-receipt" style="color: var(--brown-primary);"></i> Tóm tắt đơn hàng
-                    </div>
-                    <div class="summary-row">
-                        <span style="color: var(--text-muted);">Sản phẩm đã chọn</span>
-                        <span class="fw-bold" id="selectedCount">0</span>
-                    </div>
-                    <div class="summary-row">
-                        <span style="color: var(--text-muted);">Tạm tính</span>
-                        <span class="fw-bold" id="subtotalDisplay">0₫</span>
-                    </div>
-                    <div class="summary-row total">
-                        <span class="label">Tổng cộng</span>
-                        <span class="value" id="totalDisplay">0₫</span>
-                    </div>
-                    <button class="btn-checkout" id="checkoutBtn">
-                        <i class="fas fa-credit-card"></i> Thanh toán sản phẩm đã chọn
-                    </button>
+        <!-- Summary (Right Side) -->
+        <div class="w-full lg:w-96 shrink-0 flex flex-col gap-6">
+            <div class="bg-surface-container-lowest rounded-3xl p-8 border border-outline-variant sticky top-28 shadow-sm">
+                <div class="font-bold text-headline-sm text-primary flex items-center gap-2 mb-6 border-b border-outline-variant pb-4">
+                    <span class="material-symbols-outlined text-primary">receipt_long</span> Tóm tắt đơn hàng
                 </div>
+                
+                <div class="flex justify-between items-center py-2 text-body-md text-on-surface-variant">
+                    <span>Sản phẩm đã chọn</span>
+                    <span class="font-bold text-primary bg-primary-container px-2 py-0.5 rounded-md" id="selectedCount">0</span>
+                </div>
+                
+                <div class="flex justify-between items-center py-2 text-body-md text-on-surface-variant">
+                    <span>Tạm tính</span>
+                    <span class="font-bold text-on-surface" id="subtotalDisplay">0₫</span>
+                </div>
+                
+                <div class="flex justify-between items-center pt-4 mt-4 border-t-2 border-outline-variant border-dashed">
+                    <span class="font-bold text-headline-sm text-primary">Tổng cộng</span>
+                    <span class="font-extrabold text-headline-md text-primary" id="totalDisplay">0₫</span>
+                </div>
+                
+                <button class="bg-primary hover:opacity-90 text-white rounded-full py-4 px-6 font-bold text-body-lg transition-opacity w-full flex justify-center items-center gap-2 mt-8 border-none cursor-pointer shadow-sm shadow-primary/20" id="checkoutBtn">
+                    <span class="material-symbols-outlined text-[20px]">credit_card</span> Thanh toán ngay
+                </button>
+            </div>
 
-                <div class="points-box">
-                    <i class="fas fa-gem"></i>
-                    <div>
-                        <div style="font-weight: 600;">Điểm tích lũy</div>
-                        <div><span class="points-number" th:text="${cart.loyaltyPoints}">0</span> điểm</div>
-                        <small>Tích 1 điểm cho mỗi 10.000₫</small>
-                    </div>
+            <div class="bg-secondary-container/30 border border-secondary/10 rounded-3xl p-6 flex items-start gap-4 shadow-sm">
+                <span class="material-symbols-outlined text-secondary text-[32px] mt-1">stars</span>
+                <div>
+                    <div class="font-bold text-secondary text-body-lg mb-1">Điểm tích lũy</div>
+                    <div class="text-on-surface text-body-sm mb-1">Bạn đang có <span class="points-number font-bold text-secondary text-body-md bg-white/50 px-2 py-0.5 rounded-md" th:text="${cart.loyaltyPoints}">0</span> điểm</div>
+                    <div class="text-on-surface-variant/70 text-[12px] font-medium border-t border-secondary/10 pt-2 mt-2">Tích 1 điểm cho mỗi 10.000₫ thanh toán.</div>
                 </div>
             </div>
         </div>
     </div>
 </main>
 
-<!-- TOAST BOTTOM RIGHT -->
-<div class="toast-container-bottom" id="toastContainer"></div>
+<div th:replace="~{catalog/footer :: footer}"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.5/dist/sweetalert2.all.min.js"></script>
 <script>
     $(document).ready(function() {
+        const csrfToken = $("meta[name='_csrf']").attr("content");
+        const csrfHeader = $("meta[name='_csrf_header']").attr("content");
+        
+        if (csrfToken && csrfHeader) {
+            $.ajaxSetup({
+                beforeSend: function(xhr) {
+                    xhr.setRequestHeader(csrfHeader, csrfToken);
+                }
+            });
+        }
+
         // ==================== CURRENCY HELPERS ====================
         function parseCurrency(text) {
             if (!text) return 0;
@@ -379,14 +199,11 @@
 
             $('.cart-item').each(function() {
                 const checkbox = $(this).find('.item-select');
-
-                // ✅ Lấy giá trị từ data attribute của checkbox hoặc cart-item
                 let itemTotal = 0;
                 const dataTotal = checkbox.data('item-total');
                 if (dataTotal !== undefined && dataTotal !== null) {
                     itemTotal = parseFloat(dataTotal);
                 } else {
-                    // Fallback: parse từ text
                     const amountText = $(this).find('.amount').text().trim();
                     if (amountText) {
                         itemTotal = parseCurrency(amountText);
@@ -413,7 +230,6 @@
                     const subtotal = cart.subtotal || 0;
                     $('#subtotalDisplay').text(formatCurrency(subtotal));
                     $('#totalDisplay').text(formatCurrency(subtotal));
-
                     const totalItems = cart.totalItems || 0;
                     $('#selectedCount').text(totalItems);
                 },
@@ -423,15 +239,12 @@
             });
         }
 
-        // ==================== INIT ====================
         loadCartTotals();
 
-        // ✅ Sự kiện khi checkbox thay đổi - Recalculate
         $('.item-select').on('change', function() {
             updateSelectedTotal();
         });
 
-        // ✅ Chọn tất cả
         $('#selectAll').on('change', function() {
             const isChecked = $(this).is(':checked');
             $('.item-select').prop('checked', isChecked);
@@ -446,6 +259,16 @@
 
         $('.decrease-qty').click(function() {
             const itemId = $(this).data('item-id');
+            const qtyInput = $(this).siblings('.item-qty');
+            const currentQty = parseInt(qtyInput.val(), 10) || 1;
+            if (currentQty <= 1) {
+                if (window.showGlobalToast) {
+                    window.showGlobalToast('Sản phẩm đã đạt số lượng tối thiểu là 1!', 'warning');
+                } else {
+                    Swal.fire({ icon: 'warning', title: 'Giới hạn số lượng', text: 'Sản phẩm đã đạt số lượng tối thiểu là 1!' });
+                }
+                return;
+            }
             updateCartItem(itemId, 'decrease');
         });
 
@@ -473,22 +296,24 @@
         // ==================== CHECKOUT ====================
         $('#checkoutBtn').click(function(e) {
             e.preventDefault();
-
             const selectedItems = [];
             $('.cart-item').each(function() {
                 const checkbox = $(this).find('.item-select');
                 if (checkbox.is(':checked')) {
-                    const itemId = checkbox.data('item-id');
-                    selectedItems.push(itemId);
+                    selectedItems.push(checkbox.data('item-id'));
                 }
             });
 
             if (selectedItems.length === 0) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Chưa chọn sản phẩm',
-                    text: 'Vui lòng chọn ít nhất một sản phẩm để thanh toán'
-                });
+                if (window.showGlobalToast) {
+                    window.showGlobalToast('Vui lòng chọn ít nhất 1 sản phẩm để thanh toán!', 'warning');
+                } else {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Chưa chọn sản phẩm',
+                        text: 'Vui lòng chọn ít nhất 1 sản phẩm để thanh toán!'
+                    });
+                }
                 return;
             }
 
@@ -507,13 +332,21 @@
                     if (response.success) {
                         location.reload();
                     } else {
-                        Swal.fire({ icon: 'error', title: 'Lỗi!', text: response.message || 'Không thể cập nhật giỏ hàng' });
+                        if (window.showGlobalToast) {
+                            window.showGlobalToast(response.message || 'Không thể cập nhật giỏ hàng', 'warning');
+                        } else {
+                            Swal.fire({ icon: 'warning', title: 'Thông báo', text: response.message || 'Không thể cập nhật giỏ hàng' });
+                        }
                     }
                 },
                 error: function(xhr) {
                     let errorMsg = 'Không thể cập nhật giỏ hàng';
                     try { const response = JSON.parse(xhr.responseText); if (response.message) errorMsg = response.message; } catch(e) {}
-                    Swal.fire({ icon: 'error', title: 'Lỗi!', text: errorMsg });
+                    if (window.showGlobalToast) {
+                        window.showGlobalToast(errorMsg, 'warning');
+                    } else {
+                        Swal.fire({ icon: 'warning', title: 'Thông báo', text: errorMsg });
+                    }
                 }
             });
         }
@@ -581,22 +414,6 @@
             });
         }
         updateCartBadge();
-
-        // ==================== TOAST ====================
-        function showToast(message, type) {
-            const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
-            const toast = $(`
-            <div class="toast-item-bottom ${type}">
-                <i class="fas ${icons[type] || 'fa-info-circle'} icon"></i>
-                <span class="msg">${message}</span>
-                <button class="close" onclick="this.parentElement.remove()">&times;</button>
-            </div>
-        `);
-            $('#toastContainer').append(toast);
-            setTimeout(() => toast.fadeOut(300, () => toast.remove()), 3000);
-        }
-
-        console.log('✅ Cart page loaded successfully!');
     });
 </script>
 </body>

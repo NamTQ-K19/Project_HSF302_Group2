@@ -4,16 +4,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('createAccountForm');
     const submitBtn = document.getElementById('submitBtn');
 
-    // Kiểm tra message từ server
-    const messageElement = document.getElementById('serverMessage');
-    if (messageElement) {
-        const message = messageElement.dataset.message;
-        const type = messageElement.dataset.type;
-        if (message) {
-            showToast(message, type);
-        }
-    }
-
     // Clear errors
     function clearErrors() {
         document.querySelectorAll('.error').forEach(el => el.textContent = '');
@@ -53,28 +43,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Show toast
-    function showToast(message, type) {
-        const toast = document.getElementById('toast');
-        const toastMessage = document.getElementById('toastMessage');
-        const toastClose = document.getElementById('toastClose');
-
-        if (!toast) return;
-
-        toastMessage.textContent = message;
-        toast.className = 'toast';
-        toast.classList.add(type === 'success' ? 'toast-success' : 'toast-error');
-        toast.style.display = 'flex';
-
-        clearTimeout(toast._timeout);
-        toast._timeout = setTimeout(() => {
-            toast.style.display = 'none';
-        }, 5000);
+    function showToast(message, type = 'success') {
+        if (window.showGlobalToast) {
+            window.showGlobalToast(message, type);
+        } else {
+            alert(message);
+        }
     }
-
-    // Close toast
-    document.getElementById('toastClose')?.addEventListener('click', function() {
-        document.getElementById('toast').style.display = 'none';
-    });
 
     // Form submit
     form.addEventListener('submit', function(e) {

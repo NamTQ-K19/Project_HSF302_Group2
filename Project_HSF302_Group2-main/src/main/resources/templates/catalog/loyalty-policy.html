@@ -5,194 +5,195 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Chính sách tích điểm – BrewMaster</title>
-    <link rel="stylesheet" th:href="@{/css/catalog/main.css}"/>
+    
+    <!-- Tailwind CSS config -->
+    <div th:replace="~{catalog/tailwind-head :: tailwind-head}"></div>
+    
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
 </head>
-<body>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed antialiased">
 
 <div th:replace="~{catalog/navbar :: navbar}"></div>
 
-<main class="page-main">
-    <div class="section-container">
+<main class="max-w-max-width mx-auto px-margin-desktop py-12">
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-body-sm mb-10 text-on-surface-variant" aria-label="breadcrumb">
+        <a th:href="@{/}" class="hover:text-primary transition-colors no-underline text-on-surface-variant font-medium">Trang chủ</a>
+        <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+        <span class="text-primary font-bold" aria-current="page">Chính sách tích điểm</span>
+    </nav>
 
-        <!-- Breadcrumb -->
-        <nav class="breadcrumb" aria-label="breadcrumb">
-            <a th:href="@{/}">Trang chủ</a>
-            <span class="breadcrumb-sep">›</span>
-            <span aria-current="page">Chính sách tích điểm</span>
-        </nav>
+    <!-- Header -->
+    <div class="text-center mb-16 max-w-2xl mx-auto">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-primary-container text-primary mb-6 shadow-sm">
+            <span class="material-symbols-outlined text-[32px]">workspace_premium</span>
+        </div>
+        <h1 class="font-headline-xl text-[40px] leading-tight tracking-tight text-primary m-0 mb-4">Chính sách tích điểm & ưu đãi</h1>
+        <p class="text-on-surface-variant text-body-lg m-0 leading-relaxed">
+            Tham gia chương trình thành viên BrewMaster – tích điểm mỗi lần mua hàng,
+            đổi điểm lấy quà và ưu đãi độc quyền.
+        </p>
+    </div>
 
-        <!-- ============================================================
-             Field #1: Page Title (UC_04 screen def)
-             ============================================================ -->
-        <div class="policy-page-header">
-            <h1 class="policy-page-title">🏅 Chính sách tích điểm & ưu đãi</h1>
-            <p class="policy-subtitle">
-                Tham gia chương trình thành viên Café Aroma – tích điểm mỗi lần mua hàng,
-                đổi điểm lấy quà và ưu đãi độc quyền.
-            </p>
+    <!-- EARN Section -->
+    <section class="mb-20">
+        <div class="flex items-center gap-3 mb-8">
+            <div class="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-md">
+                <span class="material-symbols-outlined">trending_up</span>
+            </div>
+            <div>
+                <h2 class="font-headline-lg text-headline-lg text-primary m-0">Cách tích điểm (EARN)</h2>
+                <p class="text-on-surface-variant text-body-sm m-0 mt-1">Điểm được cộng tự động vào tài khoản sau khi hoàn tất các hành động sau:</p>
+            </div>
         </div>
 
-        <!-- ============================================================
-             Field #2: Policy Content – Earn Policies
-             ============================================================ -->
-        <section class="policy-section">
-            <h2 class="policy-section-title">
-                <span class="policy-icon">📈</span>
-                Cách tích điểm (EARN)
-            </h2>
-            <p class="policy-section-desc">
-                Điểm được cộng tự động vào tài khoản sau khi hoàn tất các hành động sau:
-            </p>
-
-            <div class="policy-grid" th:if="${not #lists.isEmpty(earnPolicies)}">
-                <div th:each="policy : ${earnPolicies}" class="policy-card earn-card">
-                    <div class="policy-card-header">
-                        <span class="policy-action-icon"
-                              th:text="${policy.actionType == 'ORDER'} ? '🛒' :
-                                       (${policy.actionType == 'REVIEW'} ? '⭐' : '🎁')">
-                        </span>
-                        <h3 class="policy-name" th:text="${policy.policyName}">Policy Name</h3>
-                        <span class="policy-badge earn">EARN</span>
-                    </div>
-
-                    <div class="policy-value-row">
-                        <span class="policy-value"
-                              th:text="${#numbers.formatDecimal(policy.currencyValue, 0, 'COMMA', 0, 'POINT')}">
-                        </span>
-                        <span class="policy-unit" th:text="${policy.unit}">unit</span>
-                    </div>
-
-                    <p class="policy-comment"
-                       th:if="${policy.comment}"
-                       th:text="${policy.comment}">Comment</p>
-
-                    <div class="policy-meta">
-                        <span class="policy-action-tag"
-                              th:text="${policy.actionType == 'ORDER'} ? 'Mua hàng' :
-                                       (${policy.actionType == 'REVIEW'} ? 'Đánh giá sản phẩm' : 'Khác')">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" th:if="${not #lists.isEmpty(earnPolicies)}">
+            <div th:each="policy : ${earnPolicies}" class="bg-surface-container-lowest border border-outline-variant hover:border-primary/50 transition-colors p-8 rounded-3xl relative overflow-hidden group">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-[100px] -z-10 transition-transform group-hover:scale-110"></div>
+                <div class="flex justify-between items-start mb-6">
+                    <div class="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+                        <span class="material-symbols-outlined"
+                              th:text="${policy.actionType == 'ORDER'} ? 'shopping_cart' :
+                                       (${policy.actionType == 'REVIEW'} ? 'star' : 'redeem')">
                         </span>
                     </div>
+                    <span class="bg-primary/10 text-primary font-bold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">EARN</span>
+                </div>
+                
+                <h3 class="font-headline-sm text-headline-sm text-primary m-0 mb-4 h-14" th:text="${policy.policyName}">Policy Name</h3>
+                
+                <div class="flex items-baseline gap-1 mb-4 text-primary">
+                    <span class="font-extrabold text-[32px] tracking-tight" th:text="${#numbers.formatDecimal(policy.currencyValue, 0, 'COMMA', 0, 'POINT')}">10</span>
+                    <span class="font-bold text-body-md" th:text="${policy.unit}">unit</span>
+                </div>
+
+                <p class="text-on-surface-variant text-body-sm m-0 mb-6 h-10" th:if="${policy.comment}" th:text="${policy.comment}">Comment</p>
+
+                <div class="inline-flex bg-surface-container-high text-on-surface text-[12px] font-semibold px-3 py-1 rounded-full items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">sell</span>
+                    <span th:text="${policy.actionType == 'ORDER'} ? 'Mua hàng' :
+                             (${policy.actionType == 'REVIEW'} ? 'Đánh giá sản phẩm' : 'Khác')">
+                    </span>
                 </div>
             </div>
+        </div>
+        <div th:if="${#lists.isEmpty(earnPolicies)}" class="bg-surface-container-lowest border border-outline border-dashed rounded-3xl p-10 text-center text-on-surface-variant/60">
+            Chưa có chính sách tích điểm nào được công bố.
+        </div>
+    </section>
 
-            <p class="empty-policy" th:if="${#lists.isEmpty(earnPolicies)}">
-                Chưa có chính sách tích điểm nào được công bố.
-            </p>
-        </section>
+    <!-- REDEEM Section -->
+    <section class="mb-20">
+        <div class="flex items-center gap-3 mb-8">
+            <div class="w-12 h-12 rounded-2xl bg-secondary text-white flex items-center justify-center shadow-md">
+                <span class="material-symbols-outlined">card_giftcard</span>
+            </div>
+            <div>
+                <h2 class="font-headline-lg text-headline-lg text-primary m-0">Cách đổi điểm (REDEEM)</h2>
+                <p class="text-on-surface-variant text-body-sm m-0 mt-1">Dùng điểm tích lũy để đổi ưu đãi, giảm giá hoặc đồ uống miễn phí:</p>
+            </div>
+        </div>
 
-        <!-- ============================================================
-             Field #2: Policy Content – Redeem Policies
-             ============================================================ -->
-        <section class="policy-section">
-            <h2 class="policy-section-title">
-                <span class="policy-icon">🎁</span>
-                Cách đổi điểm (REDEEM)
-            </h2>
-            <p class="policy-section-desc">
-                Dùng điểm tích lũy để đổi ưu đãi, giảm giá hoặc đồ uống miễn phí:
-            </p>
-
-            <div class="policy-grid" th:if="${not #lists.isEmpty(redeemPolicies)}">
-                <div th:each="policy : ${redeemPolicies}" class="policy-card redeem-card">
-                    <div class="policy-card-header">
-                        <span class="policy-action-icon"
-                              th:text="${policy.actionType == 'DISCOUNT'} ? '💰' :
-                                       (${policy.actionType == 'ORDER'} ? '☕' : '🎁')">
-                        </span>
-                        <h3 class="policy-name" th:text="${policy.policyName}">Policy Name</h3>
-                        <span class="policy-badge redeem">REDEEM</span>
-                    </div>
-
-                    <div class="policy-value-row">
-                        <span class="policy-value"
-                              th:text="${policy.unit != null and #strings.contains(policy.unit,'%')}
-                                       ? ${#numbers.formatDecimal(policy.currencyValue, 0, 'COMMA', 0, 'POINT')} + '%'
-                                       : ${#numbers.formatDecimal(policy.currencyValue, 0, 'COMMA', 0, 'POINT')}">
-                        </span>
-                        <span class="policy-unit"
-                              th:unless="${policy.unit != null and #strings.contains(policy.unit,'%')}"
-                              th:text="${policy.unit}">unit</span>
-                    </div>
-
-                    <p class="policy-comment"
-                       th:if="${policy.comment}"
-                       th:text="${policy.comment}">Comment</p>
-
-                    <div class="policy-meta">
-                        <span class="policy-action-tag"
-                              th:text="${policy.actionType == 'DISCOUNT'} ? 'Giảm giá' :
-                                       (${policy.actionType == 'ORDER'} ? 'Đổi món' : 'Khác')">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" th:if="${not #lists.isEmpty(redeemPolicies)}">
+            <div th:each="policy : ${redeemPolicies}" class="bg-surface-container-lowest border border-outline-variant hover:border-secondary/50 transition-colors p-8 rounded-3xl relative overflow-hidden group">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-bl-[100px] -z-10 transition-transform group-hover:scale-110"></div>
+                <div class="flex justify-between items-start mb-6">
+                    <div class="w-12 h-12 rounded-2xl bg-secondary/10 text-secondary flex items-center justify-center">
+                        <span class="material-symbols-outlined"
+                              th:text="${policy.actionType == 'DISCOUNT'} ? 'payments' :
+                                       (${policy.actionType == 'ORDER'} ? 'local_cafe' : 'redeem')">
                         </span>
                     </div>
+                    <span class="bg-secondary/10 text-secondary font-bold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">REDEEM</span>
+                </div>
+
+                <h3 class="font-headline-sm text-headline-sm text-primary m-0 mb-4 h-14" th:text="${policy.policyName}">Policy Name</h3>
+
+                <div class="flex items-baseline gap-1 mb-4 text-secondary">
+                    <span class="font-extrabold text-[32px] tracking-tight"
+                          th:text="${policy.unit != null and #strings.contains(policy.unit,'%')}
+                                   ? ${#numbers.formatDecimal(policy.currencyValue, 0, 'COMMA', 0, 'POINT')} + '%'
+                                   : ${#numbers.formatDecimal(policy.currencyValue, 0, 'COMMA', 0, 'POINT')}">
+                    </span>
+                    <span class="font-bold text-body-md"
+                          th:unless="${policy.unit != null and #strings.contains(policy.unit,'%')}"
+                          th:text="${policy.unit}">unit</span>
+                </div>
+
+                <p class="text-on-surface-variant text-body-sm m-0 mb-6 h-10" th:if="${policy.comment}" th:text="${policy.comment}">Comment</p>
+
+                <div class="inline-flex bg-surface-container-high text-on-surface text-[12px] font-semibold px-3 py-1 rounded-full items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">sell</span>
+                    <span th:text="${policy.actionType == 'DISCOUNT'} ? 'Giảm giá' :
+                             (${policy.actionType == 'ORDER'} ? 'Đổi món' : 'Khác')">
+                    </span>
                 </div>
             </div>
+        </div>
+        <div th:if="${#lists.isEmpty(redeemPolicies)}" class="bg-surface-container-lowest border border-outline border-dashed rounded-3xl p-10 text-center text-on-surface-variant/60">
+            Chưa có chính sách đổi điểm nào được công bố.
+        </div>
+    </section>
 
-            <p class="empty-policy" th:if="${#lists.isEmpty(redeemPolicies)}">
-                Chưa có chính sách đổi điểm nào được công bố.
-            </p>
-        </section>
-
-        <!-- ============================================================
-             How it works – step by step
-             ============================================================ -->
-        <section class="how-it-works">
-            <h2 class="policy-section-title">Cách thức hoạt động</h2>
-            <div class="steps-grid">
-                <div class="step-card">
-                    <div class="step-num">1</div>
-                    <h3>Đăng ký tài khoản</h3>
-                    <p>Tạo tài khoản miễn phí tại Café Aroma để bắt đầu tích điểm.</p>
-                </div>
-                <div class="step-card">
-                    <div class="step-num">2</div>
-                    <h3>Mua hàng & tích điểm</h3>
-                    <p>Mỗi 100.000₫ chi tiêu = 10 điểm. Điểm cộng ngay sau khi đơn hàng hoàn tất.</p>
-                </div>
-                <div class="step-card">
-                    <div class="step-num">3</div>
-                    <h3>Đổi điểm lấy ưu đãi</h3>
-                    <p>Dùng điểm để giảm giá hóa đơn, đổi đồ uống hoặc nhận quà đặc biệt.</p>
-                </div>
-                <div class="step-card">
-                    <div class="step-num">4</div>
-                    <h3>Nhận ưu đãi sinh nhật</h3>
-                    <p>Tự động giảm 20% cho tất cả đơn hàng trong tháng sinh nhật của bạn.</p>
-                </div>
+    <!-- How it works -->
+    <section class="mb-20">
+        <h2 class="font-headline-lg text-headline-lg text-primary text-center m-0 mb-10">Cách thức hoạt động</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl p-6 text-center">
+                <div class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-bold text-headline-sm mx-auto mb-4">1</div>
+                <h3 class="font-bold text-body-lg text-primary m-0 mb-2">Đăng ký tài khoản</h3>
+                <p class="text-on-surface-variant text-body-sm m-0">Tạo tài khoản miễn phí tại BrewMaster để bắt đầu tích điểm.</p>
             </div>
-        </section>
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl p-6 text-center">
+                <div class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-bold text-headline-sm mx-auto mb-4">2</div>
+                <h3 class="font-bold text-body-lg text-primary m-0 mb-2">Mua hàng & tích điểm</h3>
+                <p class="text-on-surface-variant text-body-sm m-0">Mỗi 100.000₫ chi tiêu = 10 điểm. Điểm cộng ngay sau khi đơn hàng hoàn tất.</p>
+            </div>
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl p-6 text-center">
+                <div class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-bold text-headline-sm mx-auto mb-4">3</div>
+                <h3 class="font-bold text-body-lg text-primary m-0 mb-2">Đổi điểm lấy ưu đãi</h3>
+                <p class="text-on-surface-variant text-body-sm m-0">Dùng điểm để giảm giá hóa đơn, đổi đồ uống hoặc nhận quà đặc biệt.</p>
+            </div>
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl p-6 text-center">
+                <div class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-bold text-headline-sm mx-auto mb-4">4</div>
+                <h3 class="font-bold text-body-lg text-primary m-0 mb-2">Nhận ưu đãi sinh nhật</h3>
+                <p class="text-on-surface-variant text-body-sm m-0">Tự động giảm 20% cho tất cả đơn hàng trong tháng sinh nhật của bạn.</p>
+            </div>
+        </div>
+    </section>
 
-        <!-- ============================================================
-             Field #3: Register Now CTA button (UC_04 screen def)
-             ============================================================ -->
-        <div class="policy-cta" sec:authorize="isAnonymous()">
-            <h2>Sẵn sàng bắt đầu tích điểm?</h2>
-            <p>Đăng ký ngay hôm nay và nhận ngay ưu đãi chào mừng thành viên mới!</p>
-            <div class="cta-buttons">
-                <!-- Field #3: "Register Now" button -->
-                <a th:href="@{/register}" class="btn btn-primary btn-xl">
-                    🎉 Đăng ký ngay
+    <!-- CTAs -->
+    <div class="bg-primary text-white rounded-3xl p-12 text-center relative overflow-hidden" sec:authorize="isAnonymous()">
+        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+        <div class="relative z-10">
+            <h2 class="font-headline-lg text-headline-lg m-0 mb-4">Sẵn sàng bắt đầu tích điểm?</h2>
+            <p class="text-primary-container text-body-lg m-0 mb-8 max-w-lg mx-auto">Đăng ký ngay hôm nay và nhận ngay ưu đãi chào mừng thành viên mới!</p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a th:href="@{/register}" class="inline-flex bg-white text-primary px-8 py-4 rounded-full font-bold text-body-lg hover:bg-surface-container-lowest transition-colors no-underline items-center justify-center gap-2 shadow-lg">
+                    <span class="material-symbols-outlined">person_add</span> Đăng ký ngay
                 </a>
-                <a th:href="@{/auth/login}" class="btn btn-outline btn-xl">
+                <a th:href="@{/auth/login}" class="inline-flex bg-transparent border-2 border-white text-white px-8 py-4 rounded-full font-bold text-body-lg hover:bg-white/10 transition-colors no-underline items-center justify-center">
                     Đăng nhập
                 </a>
             </div>
         </div>
-
-        <!-- Message for logged-in members -->
-        <div class="policy-cta policy-cta-member" sec:authorize="isAuthenticated()">
-            <h2>Bạn đã là thành viên! 🎊</h2>
-            <p>Tiếp tục mua hàng để tích thêm điểm và nhận nhiều ưu đãi hơn.</p>
-            <a th:href="@{/search}" class="btn btn-primary btn-xl">
-                ☕ Đặt hàng ngay
-            </a>
-        </div>
-
     </div>
+
+    <div class="bg-secondary-container text-on-secondary-container rounded-3xl p-12 text-center" sec:authorize="isAuthenticated()">
+        <h2 class="font-headline-lg text-headline-lg m-0 mb-4 flex items-center justify-center gap-2">Bạn đã là thành viên! <span class="material-symbols-outlined text-[32px]">celebration</span></h2>
+        <p class="text-body-lg m-0 mb-8 max-w-lg mx-auto">Tiếp tục mua hàng để tích thêm điểm và nhận nhiều ưu đãi hơn.</p>
+        <a th:href="@{/search}" class="inline-flex bg-secondary text-white px-8 py-4 rounded-full font-bold text-body-lg hover:opacity-90 transition-opacity no-underline items-center justify-center gap-2 shadow-lg">
+            <span class="material-symbols-outlined">local_cafe</span> Đặt hàng ngay
+        </a>
+    </div>
+
 </main>
 
 <div th:replace="~{catalog/footer :: footer}"></div>
-
+<script th:src="@{/js/catalog/slider.js}"></script>
 </body>
 </html>

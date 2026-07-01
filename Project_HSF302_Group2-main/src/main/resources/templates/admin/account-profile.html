@@ -4,216 +4,241 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title th:text="${pageTitle} + ' - BrewMaster'">BrewMaster - Hồ sơ người dùng</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    
+    <!-- Tailwind CSS config -->
+    <div th:replace="~{catalog/tailwind-head :: tailwind-head}"></div>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link rel="stylesheet" href="/css/admin/sidebar.css" />
-    <link rel="stylesheet" href="/css/admin/account-profile.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
+    <style>
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            z-index: 9999;
+            transform: translateY(100%);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        #toast.success { border-left: 4px solid #22c55e; }
+        #toast.error { border-left: 4px solid #ef4444; }
+        #toastClose {
+            background: transparent;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #64748b;
+        }
+        #toastClose:hover { color: #0f172a; }
+    </style>
 </head>
-<body>
-<div class="dashboard-grid">
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed antialiased flex h-screen overflow-hidden">
+
     <!-- Sidebar -->
     <th:block th:replace="~{admin/fragments/sidebar :: sidebar(currentPage='accounts')}"></th:block>
 
     <!-- Main Content -->
-    <main class="main-content">
+    <main class="flex-1 flex flex-col overflow-y-auto">
         <!-- Top Bar -->
-        <header class="topbar">
+        <header class="sticky top-0 z-30 bg-surface-container-lowest/80 backdrop-blur-md border-b border-outline-variant px-8 py-5 flex items-center justify-between">
             <div>
-                <h1>Hồ sơ người dùng</h1>
-                <div style="font-size: 14px; color: #64748b; margin-top: 4px;">
+                <h1 class="font-headline-sm text-on-surface m-0 font-bold">Hồ sơ người dùng</h1>
+                <div class="text-body-sm text-on-surface-variant mt-1">
                     Thông tin chi tiết tài khoản
                 </div>
             </div>
-            <div class="topbar-actions">
-                <span class="date">22 Tháng 6, 2026</span>
-                <a th:href="@{/admin/accounts}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Quay lại
+            
+            <div>
+                <a th:href="@{/admin/accounts}" class="inline-flex items-center gap-2 bg-surface-container border border-outline-variant hover:bg-surface-container-high text-on-surface px-5 py-2.5 rounded-full font-bold text-body-sm transition-colors cursor-pointer no-underline">
+                    <span class="material-symbols-outlined text-[18px]">arrow_back</span> Quay lại
                 </a>
             </div>
         </header>
 
-        <!-- Profile Content -->
-        <div class="profile-container" th:if="${account != null}">
+        <div class="p-8 max-w-[1200px] w-full mx-auto flex flex-col gap-6" th:if="${account != null}">
             <!-- Profile Header -->
-            <div class="profile-header">
-                <div class="profile-avatar">
-                    <div class="avatar-circle"
-                         th:style="'background: ' + (${account.avatarUrl != null} ? 'url(' + ${account.avatarUrl} + ')' : '#c8a882') + '; background-size: cover;'">
-                        <span th:if="${account.avatarUrl == null}"
-                              th:text="${#strings.substring(account.fullName, 0, 1)}"
-                              style="font-size: 40px; color: white; font-weight: 700;">A</span>
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-sm">
+                <div class="flex items-center gap-6">
+                    <div class="w-24 h-24 rounded-full flex items-center justify-center bg-primary-container text-primary font-bold text-[36px] overflow-hidden shadow-inner border-4 border-white ring-1 ring-outline-variant shrink-0"
+                         th:style="${account.avatarUrl != null} ? 'background: url(' + ${account.avatarUrl} + ') center/cover;' : ''">
+                        <span th:if="${account.avatarUrl == null}" th:text="${#strings.substring(account.fullName, 0, 1)}" class="uppercase">A</span>
                     </div>
-                    <div class="profile-name">
-                        <h2 th:text="${account.fullName}">Nguyễn Văn A</h2>
-                        <span class="role-badge" th:text="${account.role}">ADMIN</span>
+                    <div>
+                        <h2 class="font-display-sm text-on-surface m-0 font-bold mb-2" th:text="${account.fullName}">Nguyễn Văn A</h2>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-body-sm font-bold uppercase tracking-wider"
+                              th:classappend="${account.role == 'ADMIN' ? 'bg-error/10 text-error' : (account.role == 'STAFF' ? 'bg-[#3b82f6]/10 text-[#3b82f6]' : 'bg-primary/10 text-primary')}"
+                              th:text="${account.role}">ADMIN</span>
                     </div>
                 </div>
-                <div class="profile-actions">
+                <div>
                     <!-- Nút Khóa/Mở khóa dạng button với modal -->
-                    <button class="btn-account-toggle"
-                            th:class="${account.status == 'ACTIVE'} ? 'btn-account-toggle btn-account-lock' : 'btn-account-toggle btn-account-unlock'"
+                    <button class="inline-flex items-center gap-2 px-6 py-3 rounded-full font-bold text-body-sm transition-colors border-none cursor-pointer shadow-sm"
+                            th:classappend="${account.status == 'ACTIVE'} ? 'bg-error hover:bg-[#dc2626] text-white' : 'bg-[#22c55e] hover:bg-[#16a34a] text-white'"
                             th:data-userid="${account.userId}"
                             th:data-action="${account.status == 'ACTIVE'} ? 'lock' : 'unlock'"
                             th:data-name="${account.fullName}"
                             onclick="openConfirmModal(this)">
-                        <i th:class="${account.status == 'ACTIVE'} ? 'fas fa-lock' : 'fas fa-unlock'"></i>
-                        <span th:text="${account.status == 'ACTIVE'} ? ' Khóa' : ' Mở khóa'"></span>
+                        <span class="material-symbols-outlined text-[18px]" th:text="${account.status == 'ACTIVE'} ? 'lock' : 'lock_open'"></span>
+                        <span th:text="${account.status == 'ACTIVE'} ? 'Khóa tài khoản' : 'Mở khóa tài khoản'"></span>
                     </button>
                 </div>
             </div>
 
             <!-- Profile Info Grid -->
-            <div class="profile-grid">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- Thông tin cơ bản -->
-                <div class="profile-card">
-                    <div class="card-header">
-                        <h3><i class="fas fa-user-circle" style="color: #c8a882;"></i> Thông tin cơ bản</h3>
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl overflow-hidden shadow-sm flex flex-col">
+                    <div class="px-6 py-5 border-b border-outline-variant bg-surface-container-low/50 flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">account_circle</span>
+                        <h3 class="font-bold text-body-lg text-on-surface m-0">Thông tin cơ bản</h3>
                     </div>
-                    <div class="card-body">
-                        <div class="info-row">
-                            <span class="info-label"><i class="fas fa-user"></i> Họ và tên</span>
-                            <span class="info-value" th:text="${account.fullName}">Nguyễn Văn A</span>
+                    <div class="p-6 flex flex-col gap-4">
+                        <div class="flex items-center justify-between py-2 border-b border-outline-variant/50 last:border-0">
+                            <span class="text-on-surface-variant flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">person</span> Họ và tên</span>
+                            <span class="font-bold text-on-surface" th:text="${account.fullName}">Nguyễn Văn A</span>
                         </div>
-                        <div class="info-row">
-                            <span class="info-label"><i class="fas fa-envelope"></i> Email</span>
-                            <span class="info-value" th:text="${account.email}">user@email.com</span>
+                        <div class="flex items-center justify-between py-2 border-b border-outline-variant/50 last:border-0">
+                            <span class="text-on-surface-variant flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">mail</span> Email</span>
+                            <span class="font-bold text-on-surface" th:text="${account.email}">user@email.com</span>
                         </div>
-                        <div class="info-row">
-                            <span class="info-label"><i class="fas fa-phone"></i> Số điện thoại</span>
-                            <span class="info-value" th:text="${account.phone}">0901234567</span>
+                        <div class="flex items-center justify-between py-2 border-b border-outline-variant/50 last:border-0">
+                            <span class="text-on-surface-variant flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">call</span> Số điện thoại</span>
+                            <span class="font-bold text-on-surface" th:text="${account.phone}">0901234567</span>
                         </div>
-                        <div class="info-row">
-                            <span class="info-label"><i class="fas fa-user-tag"></i> Vai trò</span>
-                            <span class="info-value" th:text="${account.role}">CUSTOMER</span>
+                        <div class="flex items-center justify-between py-2 border-b border-outline-variant/50 last:border-0">
+                            <span class="text-on-surface-variant flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">admin_panel_settings</span> Vai trò</span>
+                            <span class="font-bold text-on-surface" th:text="${account.role}">CUSTOMER</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Trạng thái & Thời gian -->
-                <div class="profile-card">
-                    <div class="card-header">
-                        <h3><i class="fas fa-clock" style="color: #c8a882;"></i> Trạng thái & Thời gian</h3>
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl overflow-hidden shadow-sm flex flex-col">
+                    <div class="px-6 py-5 border-b border-outline-variant bg-surface-container-low/50 flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">schedule</span>
+                        <h3 class="font-bold text-body-lg text-on-surface m-0">Trạng thái & Thời gian</h3>
                     </div>
-                    <div class="card-body">
-                        <div class="info-row">
-                            <span class="info-label"><i class="fas fa-circle"></i> Trạng thái</span>
-                            <span class="info-value">
-                                <span class="status-badge"
-                                      th:class="'status-badge ' + (${account.status == 'ACTIVE'} ? 'status-active' : 'status-locked')"
-                                      th:text="${account.status == 'ACTIVE'} ? 'Hoạt động' : 'Đã khóa'">
-                                    Hoạt động
-                                </span>
+                    <div class="p-6 flex flex-col gap-4">
+                        <div class="flex items-center justify-between py-2 border-b border-outline-variant/50 last:border-0">
+                            <span class="text-on-surface-variant flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">info</span> Trạng thái</span>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-body-sm font-bold"
+                                  th:classappend="${account.status == 'ACTIVE'} ? 'bg-[#22c55e]/10 text-[#22c55e]' : 'bg-error/10 text-error'">
+                                <span class="w-1.5 h-1.5 rounded-full" th:classappend="${account.status == 'ACTIVE'} ? 'bg-[#22c55e]' : 'bg-error'"></span>
+                                <span th:text="${account.status == 'ACTIVE'} ? 'Hoạt động' : 'Đã khóa'"></span>
                             </span>
                         </div>
-                        <div class="info-row">
-                            <span class="info-label"><i class="fas fa-calendar-plus"></i> Ngày tạo</span>
-                            <span class="info-value"
-                                  th:text="${#temporals.format(account.createdAt, 'dd/MM/yyyy HH:mm:ss')}">
-                                01/01/2024 10:00:00
-                            </span>
+                        <div class="flex items-center justify-between py-2 border-b border-outline-variant/50 last:border-0">
+                            <span class="text-on-surface-variant flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">calendar_month</span> Ngày tạo</span>
+                            <span class="font-bold text-on-surface" th:text="${#temporals.format(account.createdAt, 'dd/MM/yyyy HH:mm:ss')}">01/01/2024</span>
                         </div>
-                        <div class="info-row">
-                            <span class="info-label"><i class="fas fa-calendar-edit"></i> Cập nhật cuối</span>
-                            <span class="info-value"
-                                  th:text="${#temporals.format(account.updatedAt, 'dd/MM/yyyy HH:mm:ss')}">
-                                15/06/2024 14:30:00
-                            </span>
+                        <div class="flex items-center justify-between py-2 border-b border-outline-variant/50 last:border-0">
+                            <span class="text-on-surface-variant flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">edit_calendar</span> Cập nhật cuối</span>
+                            <span class="font-bold text-on-surface" th:text="${#temporals.format(account.updatedAt, 'dd/MM/yyyy HH:mm:ss')}">15/06/2024</span>
                         </div>
-                        <div class="info-row">
-                            <span class="info-label"><i class="fas fa-id-card"></i> ID</span>
-                            <span class="info-value" th:text="'#' + ${account.userId}">#001</span>
+                        <div class="flex items-center justify-between py-2 border-b border-outline-variant/50 last:border-0">
+                            <span class="text-on-surface-variant flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">tag</span> ID Hệ thống</span>
+                            <span class="font-bold text-on-surface" th:text="'#' + ${account.userId}">#001</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Thống kê -->
-            <div class="profile-stats" th:if="${accountStats != null}">
-                <div class="stat-item">
-                    <div class="stat-icon"><i class="fas fa-shopping-bag"></i></div>
-                    <div class="stat-info">
-                        <span class="stat-number" th:text="${accountStats.orderCount != null ? accountStats.orderCount : '0'}">0</span>
-                        <span class="stat-label">Đơn hàng</span>
-                    </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" th:if="${accountStats != null}">
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center gap-2 hover:-translate-y-1 transition-transform">
+                    <div class="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-2"><span class="material-symbols-outlined text-[24px]">shopping_bag</span></div>
+                    <div class="text-display-sm font-bold text-on-surface" th:text="${accountStats.orderCount != null ? accountStats.orderCount : '0'}">0</div>
+                    <div class="text-body-sm font-bold uppercase tracking-wider text-on-surface-variant">Đơn hàng</div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-icon"><i class="fas fa-star"></i></div>
-                    <div class="stat-info">
-                        <span class="stat-number" th:text="${accountStats.reviewCount != null ? accountStats.reviewCount : '0'}">0</span>
-                        <span class="stat-label">Đánh giá</span>
-                    </div>
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center gap-2 hover:-translate-y-1 transition-transform">
+                    <div class="w-12 h-12 rounded-full bg-[#f59e0b]/10 text-[#f59e0b] flex items-center justify-center mb-2"><span class="material-symbols-outlined text-[24px]">star</span></div>
+                    <div class="text-display-sm font-bold text-on-surface" th:text="${accountStats.reviewCount != null ? accountStats.reviewCount : '0'}">0</div>
+                    <div class="text-body-sm font-bold uppercase tracking-wider text-on-surface-variant">Đánh giá</div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-icon"><i class="fas fa-coins"></i></div>
-                    <div class="stat-info">
-                        <span class="stat-number" th:text="${accountStats.loyaltyPoints != null ? accountStats.loyaltyPoints : '0'}">0</span>
-                        <span class="stat-label">Điểm tích lũy</span>
-                    </div>
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center gap-2 hover:-translate-y-1 transition-transform">
+                    <div class="w-12 h-12 rounded-full bg-[#3b82f6]/10 text-[#3b82f6] flex items-center justify-center mb-2"><span class="material-symbols-outlined text-[24px]">stars</span></div>
+                    <div class="text-display-sm font-bold text-on-surface" th:text="${accountStats.loyaltyPoints != null ? accountStats.loyaltyPoints : '0'}">0</div>
+                    <div class="text-body-sm font-bold uppercase tracking-wider text-on-surface-variant">Điểm tích lũy</div>
                 </div>
             </div>
 
             <!-- Không có thống kê -->
-            <div class="profile-stats" th:if="${accountStats == null}">
-                <div class="stat-item" style="grid-column: 1 / -1; justify-content: center; background: transparent;">
-                    <div class="stat-info" style="text-align: center;">
-                        <span class="stat-number" style="font-size: 16px; color: #94a3b8;">📊 Chưa có dữ liệu thống kê</span>
-                    </div>
-                </div>
+            <div th:if="${accountStats == null}" class="bg-surface-container border border-outline-variant border-dashed rounded-2xl p-8 flex flex-col items-center justify-center text-on-surface-variant/50">
+                <span class="material-symbols-outlined text-[48px] mb-2 opacity-50">data_alert</span>
+                <span class="text-body-lg font-medium">Chưa có dữ liệu thống kê</span>
             </div>
         </div>
 
         <!-- Không tìm thấy user -->
-        <div class="profile-container" th:if="${account == null}">
-            <div class="error-box">
-                <i class="fas fa-exclamation-circle" style="font-size: 48px; color: #ef4444;"></i>
-                <h3>Không tìm thấy người dùng</h3>
-                <p>Người dùng bạn đang tìm không tồn tại hoặc đã bị xóa.</p>
-                <a th:href="@{/admin/accounts}" class="btn btn-primary">
-                    <i class="fas fa-arrow-left"></i> Quay lại danh sách
+        <div class="p-8 max-w-[1200px] w-full mx-auto" th:if="${account == null}">
+            <div class="bg-error-container text-on-error-container rounded-3xl p-10 flex flex-col items-center justify-center text-center max-w-lg mx-auto shadow-sm">
+                <span class="material-symbols-outlined text-[64px] text-error mb-4">error</span>
+                <h3 class="font-display-sm font-bold m-0 mb-2">Không tìm thấy người dùng</h3>
+                <p class="text-body-md mb-8">Người dùng bạn đang tìm không tồn tại hoặc đã bị xóa.</p>
+                <a th:href="@{/admin/accounts}" class="bg-error text-white hover:opacity-90 px-6 py-3 rounded-full font-bold text-body-sm transition-opacity no-underline inline-flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">arrow_back</span> Quay lại danh sách
                 </a>
             </div>
         </div>
     </main>
-</div>
 
 <!-- ===== CONFIRMATION MODAL ===== -->
-<div id="confirmModal" class="modal-overlay" style="display:none;">
-    <div class="modal-container">
-        <div class="modal-header">
-            <h3 id="modalTitle">Xác nhận</h3>
-            <button class="modal-close" onclick="closeConfirmModal()">&times;</button>
+<div id="confirmModal" style="display:none;" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center backdrop-blur-sm">
+    <div class="bg-surface-container-lowest rounded-3xl p-8 w-full max-w-md mx-4 shadow-xl relative">
+        <div class="flex items-center justify-between mb-6">
+            <h3 id="modalTitle" class="font-headline-sm text-on-surface m-0 font-bold">Xác nhận</h3>
+            <button class="modal-close w-8 h-8 flex items-center justify-center rounded-full bg-surface-container hover:bg-error/10 hover:text-error text-on-surface-variant transition-colors border-none cursor-pointer" onclick="closeConfirmModal()">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
         </div>
-        <div class="modal-body">
-            <p id="modalMessage">Bạn có chắc chắn muốn thực hiện hành động này?</p>
+        
+        <div class="mb-8 text-on-surface-variant">
+            <p id="modalMessage" class="m-0 mb-4 text-body-md">Bạn có chắc chắn muốn thực hiện hành động này?</p>
 
-            <div class="modal-user-info" id="modalUserInfo" style="display:none;">
-                <span class="user-label">Người dùng:</span>
-                <span class="user-name" id="modalUserName">---</span>
+            <div id="modalUserInfo" style="display:none;" class="bg-surface-container p-4 rounded-xl border border-outline-variant flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary">person</span>
+                <span id="modalUserName" class="font-bold text-on-surface">---</span>
             </div>
-            <div class="modal-reason" id="modalReasonGroup" style="margin-top: 16px;">
-                <label for="modalReason" style="display: block; font-size: 14px; font-weight: 500; color: #475569; margin-bottom: 6px;">
-                    Lý do <span class="required">*</span>
+            
+            <div id="modalReasonGroup" class="mt-4">
+                <label for="modalReason" class="block text-body-sm font-bold text-on-surface mb-2">
+                    Lý do <span class="text-error">*</span>
                 </label>
-                <textarea id="modalReason"
-                          rows="3"
-                          placeholder="Nhập lý do cho hành động này..."
-                          style="width: 100%; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-family: inherit; resize: vertical; transition: all 0.25s ease; background: #faf8f6;"></textarea>
-                <span class="error" id="modalReasonError" style="color: #ef4444; font-size: 12px; display: block; margin-top: 4px;"></span>
+                <textarea id="modalReason" rows="3" placeholder="Nhập lý do cho hành động này..." class="w-full bg-surface-container border border-outline rounded-xl p-3 text-body-md focus:border-primary outline-none resize-y"></textarea>
+                <span class="error hidden text-error text-body-sm mt-1" id="modalReasonError"></span>
             </div>
         </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeConfirmModal()">Hủy</button>
-            <button class="btn btn-confirm" id="modalConfirmBtn" onclick="confirmAction()">
-                <i class="fas fa-check"></i> Xác nhận
+        
+        <div class="flex items-center gap-3 justify-end">
+            <button class="px-5 py-2.5 rounded-full border border-outline-variant bg-surface-container hover:bg-surface-container-high text-on-surface font-bold text-body-sm transition-colors cursor-pointer" onclick="closeConfirmModal()">Hủy</button>
+            <button id="modalConfirmBtn" class="px-5 py-2.5 rounded-full bg-primary hover:opacity-90 text-white font-bold text-body-sm transition-opacity border-none cursor-pointer flex items-center gap-2" onclick="confirmAction()">
+                <span class="material-symbols-outlined text-[18px]">check</span> Xác nhận
             </button>
         </div>
     </div>
 </div>
 
 <!-- Toast Notification -->
-<div id="toast" class="toast" style="display:none;">
-    <span id="toastMessage"></span>
-    <button id="toastClose">&times;</button>
+<div id="toast" style="display:none;" class="fixed bottom-6 right-6 bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-xl z-50 flex items-center gap-4 transition-transform duration-300 translate-y-full opacity-0">
+    <div class="flex items-center gap-3">
+        <span id="toastIcon" class="material-symbols-outlined">info</span>
+        <span id="toastMessage" class="font-medium text-body-md"></span>
+    </div>
+    <button id="toastClose" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-container border-none bg-transparent cursor-pointer text-on-surface-variant"><span class="material-symbols-outlined text-[18px]">close</span></button>
 </div>
 
 <!-- Server Message -->

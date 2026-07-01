@@ -1,51 +1,65 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head></head>
+<head>
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
+</head>
 <body>
 <!-- Sidebar Fragment -->
-<aside class="sidebar" th:fragment="sidebar(currentPage)">
-    <div class="logo">
-        <div class="logo-icon"><i class="fas fa-mug-hot"></i></div>
-        <span class="logo-text">BrewMaster</span>
+<aside th:fragment="sidebar(currentPage)" class="w-72 shrink-0 bg-surface-container-lowest border-r border-outline-variant flex flex-col h-screen sticky top-0 overflow-y-auto">
+    <!-- Logo -->
+    <div class="p-6 flex items-center gap-3">
+        <span class="material-symbols-outlined text-primary text-[32px]">coffee</span>
+        <span class="font-headline-md text-primary font-bold m-0 tracking-tight">BrewMaster</span>
     </div>
 
-    <nav>
-        <div class="nav-label">CHÍNH</div>
-        <a th:href="@{/admin/dashboard}" class="nav-item" th:classappend="${currentPage == 'dashboard'} ? 'active' : ''">
-            <span class="nav-icon"><i class="fas fa-chart-pie"></i></span>
-            Tổng quan
-        </a>
-        <a th:href="@{/admin/accounts}" class="nav-item" th:classappend="${currentPage == 'accounts'} ? 'active' : ''">
-            <span class="nav-icon"><i class="fas fa-users"></i></span>
-            Người dùng
-        </a>
+    <!-- Navigation -->
+    <nav class="flex-1 px-4 pb-6 flex flex-col gap-6">
+        <!-- Main Section -->
+        <div class="flex flex-col gap-2">
+            <div class="text-[11px] font-bold text-on-surface-variant/60 uppercase tracking-widest px-4 mb-1">Chính</div>
+            <a th:href="@{/admin/dashboard}" 
+               class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors no-underline"
+               th:classappend="${currentPage == 'dashboard'} ? 'bg-primary/10 text-primary' : 'text-on-surface-variant hover:bg-surface-container hover:text-primary'">
+                <span class="material-symbols-outlined text-[20px]">dashboard</span>
+                Tổng quan
+            </a>
+            <a th:href="@{/admin/accounts}" 
+               class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors no-underline"
+               th:classappend="${currentPage == 'accounts'} ? 'bg-primary/10 text-primary' : 'text-on-surface-variant hover:bg-surface-container hover:text-primary'">
+                <span class="material-symbols-outlined text-[20px]">group</span>
+                Người dùng
+            </a>
+        </div>
 
-        <div class="nav-divider"></div>
+        <!-- System Section -->
+        <div class="flex flex-col gap-2">
+            <div class="text-[11px] font-bold text-on-surface-variant/60 uppercase tracking-widest px-4 mb-1 border-t border-outline-variant pt-6">Hệ thống</div>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors no-underline">
+                <span class="material-symbols-outlined text-[20px]">history</span>
+                Nhật ký hệ thống
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors no-underline">
+                <span class="material-symbols-outlined text-[20px]">settings</span>
+                Cấu hình hệ thống
+            </a>
+        </div>
 
-        <div class="nav-label">HỆ THỐNG</div>
-        <a href="#" class="nav-item">
-            <span class="nav-icon"><i class="fas fa-history"></i></span>
-            Nhật ký hệ thống
-        </a>
-        <a href="#" class="nav-item">
-            <span class="nav-icon"><i class="fas fa-cog"></i></span>
-            Cấu hình hệ thống
-        </a>
-
-        <div class="nav-divider"></div>
-
-        <div class="nav-label">TÀI KHOẢN</div>
-        <a th:href="@{/admin/profile}" class="nav-item">
-            <span class="nav-icon"><i class="fas fa-user-circle"></i></span>
-            Hồ sơ
-        </a>
-
-        <form th:action="@{/logout}" method="post" class="logout-form">
-            <button type="submit" class="logout-btn">
-                <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
-                <span>Đăng xuất</span>
-            </button>
-        </form>
+        <div class="mt-auto flex flex-col gap-2 pt-6 border-t border-outline-variant">
+            <div class="text-[11px] font-bold text-on-surface-variant/60 uppercase tracking-widest px-4 mb-1">Tài khoản</div>
+            <a th:href="@{/admin/profile}" 
+               class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors no-underline"
+               th:classappend="${currentPage == 'profile'} ? 'bg-primary/10 text-primary' : 'text-on-surface-variant hover:bg-surface-container hover:text-primary'">
+                <span class="material-symbols-outlined text-[20px]">account_circle</span>
+                Hồ sơ
+            </a>
+            <form th:action="@{/logout}" method="post" class="m-0">
+                <button type="submit" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-error hover:bg-error/10 transition-colors border-none cursor-pointer bg-transparent">
+                    <span class="material-symbols-outlined text-[20px]">logout</span>
+                    Đăng xuất
+                </button>
+            </form>
+        </div>
     </nav>
 </aside>
 </body>

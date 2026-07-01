@@ -5,60 +5,74 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thanh toán - BrewMaster</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Include Tailwind CSS config & CDN -->
+    <div th:replace="~{catalog/tailwind-head :: tailwind-head}"></div>
+    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-    <link th:href="@{/css/customer/customer.css}" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
 </head>
-<body>
-<header class="header">
-    <a href="/" class="header-logo">
-        <div class="header-logo-icon"><i class="fas fa-mug-hot"></i></div>
-        <span class="header-logo-text">Brew<span>Master</span></span>
-    </a>
-    <nav class="header-nav">
-        <a href="/menu"><i class="fas fa-utensils"></i><span>Menu</span></a>
-        <a href="/customer/cart"><i class="fas fa-shopping-cart"></i><span>Giỏ hàng</span></a>
-        <a href="/customer/orders/history"><i class="fas fa-history"></i><span>Lịch sử</span></a>
-        <div class="header-avatar"><i class="fas fa-user"></i></div>
-    </nav>
-</header>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed antialiased">
+<div th:replace="~{catalog/navbar :: navbar}"></div>
 
-<main class="main">
-    <div class="steps">
-        <div class="step"><span class="num">1</span><span>Giỏ hàng</span></div>
-        <span class="step-line"></span>
-        <div class="step active"><span class="num">2</span><span>Thanh toán</span></div>
-        <span class="step-line"></span>
-        <div class="step"><span class="num">3</span><span>Xác nhận</span></div>
-    </div>
-
-    <div class="page-header">
-        <div class="page-header-left">
-            <h1><i class="fas fa-credit-card"></i>Thanh toán</h1>
-            <p>Hoàn tất đơn hàng của bạn</p>
+<main class="max-w-max-width mx-auto px-margin-desktop py-12 min-h-[70vh]">
+    <div class="mb-12 relative z-10 flex justify-center items-center gap-4">
+        <div class="flex flex-col items-center gap-2">
+            <div class="w-10 h-10 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-body-md border border-outline-variant">1</div>
+            <span class="text-on-surface-variant text-body-sm font-medium">Giỏ hàng</span>
+        </div>
+        <div class="w-16 h-[2px] bg-outline-variant rounded-full mt-[-20px]"></div>
+        <div class="flex flex-col items-center gap-2">
+            <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-body-md shadow-md shadow-primary/20">2</div>
+            <span class="text-primary text-body-sm font-bold">Thanh toán</span>
+        </div>
+        <div class="w-16 h-[2px] bg-outline-variant rounded-full mt-[-20px]"></div>
+        <div class="flex flex-col items-center gap-2 opacity-50">
+            <div class="w-10 h-10 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-body-md border border-outline-variant">3</div>
+            <span class="text-on-surface-variant text-body-sm font-medium">Xác nhận</span>
         </div>
     </div>
 
+    <div class="mb-8">
+        <h1 class="font-headline-lg text-primary flex items-center gap-3 m-0"><span class="material-symbols-outlined text-[32px]">credit_card</span> Thanh toán</h1>
+        <p class="text-on-surface-variant text-body-sm mt-2 m-0">Hoàn tất đơn hàng của bạn</p>
+    </div>
+
     <form id="checkoutForm">
-        <div class="row">
-            <div class="col-lg-8">
-                <div class="card mb-4">
-                    <div class="card-header"><i class="fas fa-map-marker-alt"></i> Địa chỉ giao hàng</div>
-                    <div class="card-body">
-                        <div th:if="${addresses == null or addresses.isEmpty()}" class="text-center py-3">
-                            <p style="color: var(--text-muted);">Bạn chưa có địa chỉ giao hàng.</p>
-                            <a href="/customer/addresses/new" class="btn-primary" style="padding: 8px 20px; font-size: 14px;"><i class="fas fa-plus"></i> Thêm địa chỉ mới</a>
+        <div class="flex flex-col lg:flex-row gap-8">
+            <div class="flex-1 flex flex-col gap-6">
+                <!-- Địa chỉ giao hàng -->
+                <div class="bg-surface-container-lowest rounded-3xl border border-outline-variant overflow-hidden shadow-sm">
+                    <div class="px-6 md:px-8 py-5 border-b border-outline-variant bg-surface-container-low/50 font-bold text-headline-sm text-primary flex items-center gap-2">
+                        <span class="material-symbols-outlined">location_on</span> Địa chỉ giao hàng
+                    </div>
+                    <div class="p-6 md:p-8">
+                        <div th:if="${addresses == null or addresses.isEmpty()}" class="text-center py-8 border border-outline border-dashed rounded-2xl">
+                            <span class="material-symbols-outlined text-[48px] text-on-surface-variant/30 mb-4 block">location_off</span>
+                            <p class="text-on-surface-variant mb-4">Bạn chưa có địa chỉ giao hàng.</p>
+                            <a href="/customer/addresses/new" class="inline-flex bg-primary text-white px-6 py-3 rounded-full font-bold text-body-sm hover:opacity-90 transition-opacity no-underline items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px]">add</span> Thêm địa chỉ mới
+                            </a>
                         </div>
-                        <div th:if="${addresses != null and !addresses.isEmpty()}">
-                            <div th:each="addr : ${addresses}" class="address-card">
-                                <label class="d-block" style="cursor: pointer;">
-                                    <input type="radio" name="deliveryAddressId" th:value="${addr.addressId}" th:checked="${addrStat.index == 0}" required>
-                                    <div class="ms-3">
-                                        <div>
-                                            <strong th:text="${addr.label}">Nhà</strong>
-                                            <p class="mb-0 text-muted small" th:text="${addr.fullAddress}">Địa chỉ</p>
-                                            <p class="mb-0 text-muted small"><i class="fas fa-user"></i> <span th:text="${addr.recipientName}">Người nhận</span> <i class="fas fa-phone ms-2"></i> <span th:text="${addr.recipientPhone}">SĐT</span></p>
+                        <div th:if="${addresses != null and !addresses.isEmpty()}" class="flex flex-col gap-4">
+                            <div th:each="addr : ${addresses}" class="address-card relative p-5 rounded-2xl border-2 border-outline-variant hover:border-primary/50 transition-colors cursor-pointer group">
+                                <label class="flex items-start gap-4 cursor-pointer w-full m-0">
+                                    <input type="radio" name="deliveryAddressId" th:value="${addr.addressId}" th:checked="${addrStat.index == 0}" required class="peer sr-only">
+                                    
+                                    <!-- Custom Radio Button styling -->
+                                    <div class="w-6 h-6 rounded-full border-2 border-outline-variant flex items-center justify-center shrink-0 mt-1 transition-colors group-[.selected]:border-primary group-[.selected]:bg-primary">
+                                        <span class="material-symbols-outlined text-white text-[16px] opacity-0 group-[.selected]:opacity-100">check</span>
+                                    </div>
+
+                                    <div class="flex-1">
+                                        <div class="font-bold text-on-surface text-body-lg mb-1" th:text="${addr.label}">Nhà</div>
+                                        <p class="text-on-surface-variant text-body-md mb-3 m-0" th:text="${addr.fullAddress}">Địa chỉ</p>
+                                        <div class="flex flex-wrap items-center gap-4 text-on-surface-variant text-body-sm">
+                                            <span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[18px]">person</span> <span th:text="${addr.recipientName}">Người nhận</span></span>
+                                            <span class="text-outline-variant hidden sm:inline">|</span>
+                                            <span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[18px]">call</span> <span th:text="${addr.recipientPhone}">SĐT</span></span>
                                         </div>
                                     </div>
                                 </label>
@@ -67,98 +81,121 @@
                     </div>
                 </div>
 
-                <div class="card mb-4">
-                    <div class="card-header"><i class="fas fa-pen"></i> Ghi chú đơn hàng</div>
-                    <div class="card-body">
-                        <textarea class="form-control" id="orderNote" rows="3" placeholder="Ghi chú cho đơn hàng (ví dụ: giao giờ hành chính)" style="border-radius: var(--radius-md); border: 2px solid var(--brown-beige);"></textarea>
+                <!-- Phương thức thanh toán -->
+                <div class="bg-surface-container-lowest rounded-3xl border border-outline-variant overflow-hidden shadow-sm">
+                    <div class="px-6 md:px-8 py-5 border-b border-outline-variant bg-surface-container-low/50 font-bold text-headline-sm text-primary flex items-center gap-2">
+                        <span class="material-symbols-outlined">payments</span> Phương thức thanh toán
                     </div>
-                </div>
-            </div>
-
-            <div class="col-lg-4">
-                <div class="summary-card mb-4">
-                    <div style="font-weight: 600; font-size: 16px; margin-bottom: 16px; color: var(--text-dark);">
-                        <i class="fas fa-receipt" style="color: var(--brown-primary);"></i> Tóm tắt đơn hàng
-                    </div>
-                    <div class="summary-row">
-                        <span style="color: var(--text-muted);">Tạm tính</span>
-                        <span class="fw-bold" id="subtotal">0₫</span>
-                    </div>
-
-                    <div class="summary-row" id="discountRow" style="display: none;">
-                        <span style="color: var(--text-muted);">Giảm giá điểm</span>
-                        <span class="text-success" id="discountAmount">-0₫</span>
-                    </div>
-
-                    <div class="summary-row total">
-                        <span class="label">Tổng cộng</span>
-                        <span class="value" id="total">0₫</span>
-                    </div>
-
-                    <div class="points-discount-box">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="usePointsCheckbox">
-                                    <label class="form-check-label" for="usePointsCheckbox">
-                                        <i class="fas fa-gem" style="color: var(--brown-gold);"></i> Sử dụng điểm tích lũy
-                                    </label>
+                    <div class="p-6 md:p-8 flex flex-col gap-4">
+                        <div th:each="method : ${paymentMethods}" class="payment-card relative p-5 rounded-2xl border-2 border-outline-variant hover:border-primary/50 transition-colors cursor-pointer group">
+                            <label class="flex items-center gap-4 cursor-pointer w-full m-0">
+                                <input type="radio" name="paymentMethodId" th:value="${method.paymentMethodId}" th:checked="${methodStat.index == 0}" required class="peer sr-only">
+                                
+                                <div class="w-6 h-6 rounded-full border-2 border-outline-variant flex items-center justify-center shrink-0 transition-colors group-[.selected]:border-primary group-[.selected]:bg-primary">
+                                    <span class="material-symbols-outlined text-white text-[16px] opacity-0 group-[.selected]:opacity-100">check</span>
                                 </div>
-                                <div class="points-balance">
-                                    Bạn có <strong id="availablePoints">0</strong> điểm
-                                    (<span id="pointsValue">0₫</span>)
-                                </div>
-                            </div>
-                            <div style="text-align: right;">
-                                <span class="badge" style="background: var(--brown-primary); color: white; font-size: 12px;">
-                                    1 điểm = 100đ
-                                </span>
-                            </div>
-                        </div>
-                        <div class="discount-info" id="discountInfo">
-                            <i class="fas fa-info-circle me-1"></i>
-                            Sử dụng <strong id="usedPointsText">0</strong> điểm để giảm <span class="saving" id="savingAmount">0₫</span>
-                            <span id="remainingPointsText" style="color: var(--text-muted);"></span>
-                        </div>
-                    </div>
-
-                    <div class="text-muted small mt-2">
-                        <i class="fas fa-gem" style="color: var(--brown-gold);"></i>
-                        Bạn sẽ nhận được <strong id="pointsEarned">0</strong> điểm tích lũy cho đơn hàng này
-                    </div>
-                </div>
-
-                <div class="card mb-4">
-                    <div class="card-header"><i class="fas fa-wallet"></i> Phương thức thanh toán</div>
-                    <div class="card-body">
-                        <div th:each="method : ${paymentMethods}" class="payment-card">
-                            <label class="d-block" style="cursor: pointer;">
-                                <input type="radio" name="paymentMethodId" th:value="${method.paymentMethodId}" th:checked="${methodStat.index == 0}" required>
-                                <span class="ms-2" th:text="${method.name}">Tiền mặt</span>
+                                <span class="font-bold text-on-surface text-body-lg" th:text="${method.name}">Tiền mặt</span>
                             </label>
                         </div>
                     </div>
                 </div>
 
-                <button type="submit" class="btn-primary" id="placeOrderBtn" style="width: 100%; justify-content: center; padding: 14px; font-size: 16px;">
-                    <i class="fas fa-check-circle"></i> Đặt hàng
-                </button>
-                <a href="/customer/cart" class="btn-outline" style="width: 100%; justify-content: center; margin-top: 10px;"><i class="fas fa-arrow-left"></i> Quay lại giỏ hàng</a>
-                <div class="text-center text-muted small mt-3"><i class="fas fa-lock"></i> Thông tin được bảo mật</div>
+                <!-- Ghi chú đơn hàng -->
+                <div class="bg-surface-container-lowest rounded-3xl border border-outline-variant overflow-hidden shadow-sm">
+                    <div class="px-6 md:px-8 py-5 border-b border-outline-variant bg-surface-container-low/50 font-bold text-headline-sm text-primary flex items-center gap-2">
+                        <span class="material-symbols-outlined">edit_note</span> Ghi chú đơn hàng
+                    </div>
+                    <div class="p-6 md:p-8">
+                        <textarea class="w-full bg-surface-container-lowest border border-outline rounded-xl p-4 text-body-md text-on-surface focus:border-primary outline-none resize-y min-h-[100px]" id="orderNote" placeholder="Ghi chú cho đơn hàng (ví dụ: giao giờ hành chính, không lấy đá...)"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cột Tóm tắt -->
+            <div class="w-full lg:w-96 shrink-0">
+                <div class="bg-surface-container-lowest rounded-3xl p-8 border border-outline-variant sticky top-28 shadow-sm flex flex-col gap-6">
+                    <div class="font-bold text-headline-sm text-primary flex items-center gap-2 mb-2">
+                        <span class="material-symbols-outlined text-primary text-[24px]">receipt_long</span> Tóm tắt đơn hàng
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between items-center py-2 text-body-md text-on-surface-variant">
+                            <span>Tạm tính</span>
+                            <span class="font-bold text-on-surface" id="subtotal">0₫</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center py-2 text-body-md text-on-surface-variant" id="discountRow" style="display: none;">
+                            <span>Giảm giá điểm</span>
+                            <span class="font-bold text-success" id="discountAmount">-0₫</span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center pt-4 border-t-2 border-outline-variant border-dashed">
+                        <span class="font-bold text-headline-sm text-primary">Tổng cộng</span>
+                        <span class="font-extrabold text-headline-md text-primary" id="total">0₫</span>
+                    </div>
+
+                    <div class="bg-secondary-container/30 border border-secondary/10 rounded-2xl p-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <label class="flex items-center gap-3 cursor-pointer m-0">
+                                <input class="w-5 h-5 accent-secondary cursor-pointer rounded border-secondary" type="checkbox" id="usePointsCheckbox">
+                                <span class="font-bold text-secondary text-body-md flex items-center gap-1.5"><span class="material-symbols-outlined text-[20px]">stars</span> Sử dụng điểm</span>
+                            </label>
+                            <span class="bg-secondary text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">1đ = 100₫</span>
+                        </div>
+                        <div class="text-on-surface text-body-sm pl-8 mb-2">
+                            Bạn có <strong class="text-secondary font-bold text-body-md bg-white/50 px-2 py-0.5 rounded-md" id="availablePoints">0</strong> điểm (<span id="pointsValue" class="font-medium">0₫</span>)
+                        </div>
+                        
+                        <div class="text-secondary text-[13px] bg-white/50 p-3 rounded-lg flex items-start gap-2 mt-4 hidden" id="discountInfo">
+                            <span class="material-symbols-outlined text-[16px] shrink-0 mt-0.5">info</span>
+                            <div>
+                                Sử dụng <strong id="usedPointsText">0</strong> điểm để giảm <span class="font-bold" id="savingAmount">0₫</span>
+                                <span id="remainingPointsText" class="text-on-surface-variant block mt-0.5 font-medium"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-on-surface-variant text-[13px] flex items-center gap-2 justify-center bg-surface-container py-2 px-4 rounded-xl">
+                        <span class="material-symbols-outlined text-[18px] text-secondary">workspace_premium</span>
+                        Bạn sẽ nhận được <strong class="text-secondary font-bold" id="pointsEarned">0</strong> điểm từ đơn này
+                    </div>
+
+                    <div class="flex flex-col gap-3 mt-2">
+                        <button type="submit" class="w-full bg-primary hover:opacity-90 text-white rounded-full py-4 px-6 font-bold text-body-lg transition-opacity flex justify-center items-center gap-2 border-none cursor-pointer shadow-sm shadow-primary/20" id="placeOrderBtn">
+                            <span class="material-symbols-outlined text-[24px]">check_circle</span> Đặt hàng ngay
+                        </button>
+                        <a href="/customer/cart" class="w-full bg-transparent hover:bg-surface-container text-on-surface-variant rounded-full py-3 px-6 font-bold text-body-sm transition-colors flex justify-center items-center gap-2 border border-transparent no-underline">
+                            <span class="material-symbols-outlined text-[18px]">arrow_back</span> Quay lại giỏ hàng
+                        </a>
+                    </div>
+                    
+                    <div class="text-center text-on-surface-variant/60 text-[12px] flex items-center justify-center gap-1.5">
+                        <span class="material-symbols-outlined text-[14px]">lock</span> Thông tin thanh toán được bảo mật
+                    </div>
+                </div>
             </div>
         </div>
     </form>
 </main>
 
-<!-- TOAST BOTTOM RIGHT -->
-<div class="toast-container-bottom" id="toastContainer"></div>
+<div th:replace="~{catalog/footer :: footer}"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- TOAST BOTTOM RIGHT -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.5/dist/sweetalert2.all.min.js"></script>
 <script>
     $(document).ready(function() {
-        // ==================== BIẾN TOÀN CỤC ====================
+        const csrfToken = $("meta[name='_csrf']").attr("content");
+        const csrfHeader = $("meta[name='_csrf_header']").attr("content");
+        
+        if (csrfToken && csrfHeader) {
+            $.ajaxSetup({
+                beforeSend: function(xhr) {
+                    xhr.setRequestHeader(csrfHeader, csrfToken);
+                }
+            });
+        }
+
         let subtotal = 0;
         let availablePoints = 0;
         let usePoints = false;
@@ -167,42 +204,30 @@
         let selectedItemIds = [];
         let isLoading = false;
 
-        // ==================== LẤY ITEMS TỪ URL ====================
         const urlParams = new URLSearchParams(window.location.search);
         const itemsParam = urlParams.get('items');
 
-        console.log('Items param from URL:', itemsParam);
-
         if (itemsParam && itemsParam.length > 0) {
             try {
-                selectedItemIds = itemsParam.split(',').map(id => parseInt(id.trim()));
-                selectedItemIds = selectedItemIds.filter(id => !isNaN(id));
-                console.log('Selected items from URL:', selectedItemIds);
-
+                selectedItemIds = itemsParam.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
                 if (selectedItemIds.length > 0) {
                     loadSelectedItems();
                 } else {
                     loadCartData();
                 }
             } catch(e) {
-                console.error('Error parsing items:', e);
                 loadCartData();
             }
         } else {
-            console.log('No items selected, loading full cart');
             loadCartData();
         }
 
-        // ==================== LOAD SELECTED ITEMS ====================
         function loadSelectedItems() {
             if (isLoading) return;
             isLoading = true;
-
-            console.log('Loading selected items...', selectedItemIds);
-
             $('#subtotal').text('Đang tải...');
             $('#total').text('Đang tải...');
-
+            
             $.ajax({
                 url: '/customer/cart/selected-items',
                 type: 'POST',
@@ -211,92 +236,51 @@
                 timeout: 10000,
                 success: function(response) {
                     isLoading = false;
-                    console.log('Selected items response:', response);
-
                     if (response.success) {
                         subtotal = response.total || 0;
                         $('#subtotal').text(formatCurrency(subtotal));
                         $('#total').text(formatCurrency(subtotal));
-
-                        if ($('#selectedCount').length > 0) {
-                            $('#selectedCount').text(response.count || 0);
-                        }
-
                         loadLoyaltyPoints();
-
                         const earnedPoints = Math.floor(subtotal / 10000);
                         $('#pointsEarned').text(earnedPoints);
-
                         calculateDiscount();
-                        showToast('Đã tải ' + (response.count || 0) + ' sản phẩm được chọn', 'success');
                     } else {
-                        showToast((response.message || 'Không thể tải dữ liệu'), 'error');
                         loadCartData();
                     }
                 },
                 error: function(xhr) {
                     isLoading = false;
-                    console.error('Error loading selected items:', xhr);
-
-                    let errorMsg = 'Không thể tải dữ liệu';
-                    try {
-                        const response = JSON.parse(xhr.responseText);
-                        if (response.message) errorMsg = response.message;
-                    } catch(e) {}
-
-                    showToast(errorMsg + ', chuyển sang tải toàn bộ giỏ hàng', 'warning');
-
-                    setTimeout(function() {
-                        loadCartData();
-                    }, 500);
+                    setTimeout(function() { loadCartData(); }, 500);
                 }
             });
         }
 
-        // ==================== LOAD CART DATA ====================
         function loadCartData() {
             if (isLoading) return;
             isLoading = true;
-
-            console.log('Loading full cart data...');
-
             $.ajax({
                 url: '/customer/cart/json',
                 type: 'GET',
                 timeout: 10000,
                 success: function(cart) {
                     isLoading = false;
-                    console.log('Cart data:', cart);
-
                     subtotal = cart.subtotal || 0;
                     $('#subtotal').text(formatCurrency(subtotal));
                     $('#total').text(formatCurrency(subtotal));
-
                     availablePoints = cart.loyaltyPoints || 0;
                     updatePointsDisplay();
-
                     const earnedPoints = Math.floor(subtotal / 10000);
                     $('#pointsEarned').text(earnedPoints);
-
-                    if ($('#selectedCount').length > 0) {
-                        $('#selectedCount').text(cart.totalItems || 0);
-                    }
-
                     calculateDiscount();
-                    showToast('Đã tải toàn bộ giỏ hàng', 'success');
                 },
                 error: function(xhr) {
                     isLoading = false;
-                    console.error('Error loading cart JSON:', xhr);
                     loadCartDataFallback();
                 }
             });
         }
 
-        // ==================== LOAD CART DATA FALLBACK ====================
         function loadCartDataFallback() {
-            console.log('Loading cart data fallback...');
-
             $.ajax({
                 url: '/customer/cart',
                 type: 'GET',
@@ -307,29 +291,20 @@
                     subtotal = parseCurrency(subtotalText);
                     $('#subtotal').text(formatCurrency(subtotal));
                     $('#total').text(formatCurrency(subtotal));
-
                     const pointsText = $html.find('.points-number').text() || '0';
                     availablePoints = parseInt(pointsText) || 0;
                     updatePointsDisplay();
-
                     const earnedPoints = Math.floor(subtotal / 10000);
                     $('#pointsEarned').text(earnedPoints);
-
                     calculateDiscount();
                 },
-                error: function(xhr) {
-                    console.error('Error loading cart fallback:', xhr);
-                    showToast('Không thể tải dữ liệu giỏ hàng', 'error');
-
-                    $('#subtotal').text('0₫');
-                    $('#total').text('0₫');
+                error: function() {
                     subtotal = 0;
                     calculateDiscount();
                 }
             });
         }
 
-        // ==================== LOAD LOYALTY POINTS ====================
         function loadLoyaltyPoints() {
             $.ajax({
                 url: '/customer/cart/json',
@@ -346,13 +321,11 @@
             });
         }
 
-        // ==================== UPDATE POINTS DISPLAY ====================
         function updatePointsDisplay() {
             $('#availablePoints').text(availablePoints);
             $('#pointsValue').text(formatCurrency(availablePoints * POINT_VALUE));
         }
 
-        // ==================== CALCULATE DISCOUNT ====================
         function calculateDiscount() {
             if (usePoints && availablePoints > 0) {
                 let maxDiscount = subtotal * 0.5;
@@ -360,7 +333,8 @@
                 let pointsToUse = Math.min(availablePoints, maxPointsCanUse);
                 discountFromPoints = pointsToUse * POINT_VALUE;
 
-                $('#discountRow').show();
+                $('#discountRow').css('display', 'flex');
+                $('#discountInfo').removeClass('hidden');
                 $('#discountAmount').text('- ' + formatCurrency(discountFromPoints));
                 $('#usedPointsText').text(pointsToUse);
                 $('#savingAmount').text(formatCurrency(discountFromPoints));
@@ -368,36 +342,34 @@
             } else {
                 discountFromPoints = 0;
                 $('#discountRow').hide();
-                $('#usedPointsText').text('0');
-                $('#savingAmount').text('0₫');
-                $('#remainingPointsText').text('');
+                $('#discountInfo').addClass('hidden');
             }
-
             let total = subtotal - discountFromPoints;
             $('#total').text(formatCurrency(total));
         }
 
-        // ==================== SELECT ADDRESS ====================
+        // Add visual selection logic for tailwind
         $('.address-card').click(function() {
-            $('.address-card').removeClass('selected');
-            $(this).addClass('selected');
+            $('.address-card').removeClass('border-primary bg-primary-container/10 selected');
+            $(this).addClass('border-primary bg-primary-container/10 selected');
             $(this).find('input[type="radio"]').prop('checked', true);
         });
 
-        // ==================== SELECT PAYMENT ====================
         $('.payment-card').click(function() {
-            $('.payment-card').removeClass('selected');
-            $(this).addClass('selected');
+            $('.payment-card').removeClass('border-primary bg-primary-container/10 selected');
+            $(this).addClass('border-primary bg-primary-container/10 selected');
             $(this).find('input[type="radio"]').prop('checked', true);
         });
 
-        // ==================== POINTS CHECKBOX ====================
+        // Initialize selected items
+        $('.address-card input[type="radio"]:checked').closest('.address-card').addClass('border-primary bg-primary-container/10 selected');
+        $('.payment-card input[type="radio"]:checked').closest('.payment-card').addClass('border-primary bg-primary-container/10 selected');
+
         $('#usePointsCheckbox').change(function() {
             usePoints = $(this).is(':checked');
             calculateDiscount();
         });
 
-        // ==================== PARSE CURRENCY ====================
         function parseCurrency(text) {
             if (!text) return 0;
             let cleaned = text.replace(/[^0-9.,]/g, '');
@@ -407,41 +379,30 @@
             return parseFloat(cleaned) || 0;
         }
 
-        // ==================== FORMAT CURRENCY ====================
         function formatCurrency(amount) {
             if (amount === undefined || amount === null || isNaN(amount)) return '0₫';
             const num = typeof amount === 'string' ? parseFloat(amount) : amount;
             if (isNaN(num)) return '0₫';
-            return new Intl.NumberFormat('vi-VN', {
-                style: 'currency',
-                currency: 'VND',
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
-            }).format(num);
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(num);
         }
 
-        // ==================== SELECT DEFAULT ====================
-        $('.address-card input[type="radio"]:checked').closest('.address-card').addClass('selected');
-        $('.payment-card input[type="radio"]:checked').closest('.payment-card').addClass('selected');
-
-        // ==================== SUBMIT FORM ====================
         $('#checkoutForm').submit(function(e) {
             e.preventDefault();
             const btn = $('#placeOrderBtn');
             const originalText = btn.html();
 
             if (!$('input[name="deliveryAddressId"]:checked').length) {
-                showToast('Vui lòng chọn địa chỉ giao hàng', 'warning');
+                Swal.fire({ icon: 'warning', title: 'Chưa chọn địa chỉ', text: 'Vui lòng chọn địa chỉ giao hàng' });
                 return false;
             }
 
             if (!$('input[name="paymentMethodId"]:checked').length) {
-                showToast('Vui lòng chọn phương thức thanh toán', 'warning');
+                Swal.fire({ icon: 'warning', title: 'Chưa chọn thanh toán', text: 'Vui lòng chọn phương thức thanh toán' });
                 return false;
             }
 
             btn.prop('disabled', true);
-            btn.html('<i class="fas fa-spinner fa-spin"></i> Đang xử lý...');
+            btn.html('<span class="material-symbols-outlined animate-spin">sync</span> Đang xử lý...');
 
             const request = {
                 deliveryAddressId: parseInt($('input[name="deliveryAddressId"]:checked').val()),
@@ -449,12 +410,7 @@
                 note: $('#orderNote').val(),
                 usePoints: usePoints
             };
-
-            if (selectedItemIds.length > 0) {
-                request.itemIds = selectedItemIds;
-            }
-
-            console.log('Placing order:', request);
+            if (selectedItemIds.length > 0) request.itemIds = selectedItemIds;
 
             $.ajax({
                 url: '/customer/orders/place',
@@ -465,11 +421,7 @@
                     if (response.success && response.data) {
                         window.location.href = '/customer/orders/confirmation/' + response.data.orderId;
                     } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Lỗi!',
-                            text: response.message || 'Không thể đặt hàng'
-                        });
+                        Swal.fire({ icon: 'error', title: 'Lỗi!', text: response.message || 'Không thể đặt hàng' });
                         btn.prop('disabled', false);
                         btn.html(originalText);
                     }
@@ -478,43 +430,12 @@
                     btn.prop('disabled', false);
                     btn.html(originalText);
                     let errorMsg = 'Có lỗi xảy ra khi đặt hàng';
-                    try {
-                        const response = JSON.parse(xhr.responseText);
-                        if (response.message) errorMsg = response.message;
-                    } catch(e) {}
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Đặt hàng thất bại',
-                        text: errorMsg
-                    });
+                    try { const response = JSON.parse(xhr.responseText); if (response.message) errorMsg = response.message; } catch(e) {}
+                    Swal.fire({ icon: 'error', title: 'Đặt hàng thất bại', text: errorMsg });
                 }
             });
         });
 
-        // ==================== TOAST ====================
-        function showToast(message, type) {
-            const icons = {
-                success: 'fa-check-circle',
-                error: 'fa-exclamation-circle',
-                warning: 'fa-exclamation-triangle',
-                info: 'fa-info-circle'
-            };
-
-            const toast = $(`
-            <div class="toast-item-bottom ${type}">
-                <i class="fas ${icons[type] || 'fa-info-circle'} icon"></i>
-                <span class="msg">${message}</span>
-                <button class="close" onclick="this.parentElement.remove()">&times;</button>
-            </div>
-        `);
-
-            $('#toastContainer').append(toast);
-            setTimeout(() => {
-                toast.fadeOut(300, () => toast.remove());
-            }, 3500);
-        }
-
-        // ==================== UPDATE CART BADGE ====================
         function updateCartBadge() {
             $.ajax({
                 url: '/customer/cart/count',
@@ -526,9 +447,6 @@
             });
         }
         updateCartBadge();
-
-        console.log('Checkout page loaded successfully!');
-        console.log('Selected items:', selectedItemIds);
     });
 </script>
 </body>

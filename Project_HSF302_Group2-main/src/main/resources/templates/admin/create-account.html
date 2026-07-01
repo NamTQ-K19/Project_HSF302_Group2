@@ -1,153 +1,173 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title th:text="${pageTitle} + ' - BrewMaster'">BrewMaster - Tạo tài khoản mới</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    
+    <!-- Tailwind CSS config -->
+    <div th:replace="~{catalog/tailwind-head :: tailwind-head}"></div>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link rel="stylesheet" href="/css/admin/sidebar.css" />
-    <link rel="stylesheet" href="/css/admin/create-account.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
+    <style>
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            z-index: 9999;
+            transform: translateY(100%);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        #toast.success { border-left: 4px solid #22c55e; }
+        #toast.error { border-left: 4px solid #ef4444; }
+        #toastClose {
+            background: transparent;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #64748b;
+        }
+        #toastClose:hover { color: #0f172a; }
+    </style>
 </head>
-<body>
-<div class="dashboard-grid">
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed antialiased flex h-screen overflow-hidden">
+
     <!-- Sidebar -->
     <th:block th:replace="~{admin/fragments/sidebar :: sidebar(currentPage='accounts')}"></th:block>
 
     <!-- Main Content -->
-    <main class="main-content">
+    <main class="flex-1 flex flex-col overflow-y-auto">
         <!-- Top Bar -->
-        <header class="topbar">
+        <header class="sticky top-0 z-30 bg-surface-container-lowest/80 backdrop-blur-md border-b border-outline-variant px-8 py-5 flex items-center justify-between">
             <div>
-                <h1>Tạo tài khoản mới</h1>
-                <div style="font-size: 14px; color: #64748b; margin-top: 4px;">
+                <h1 class="font-headline-sm text-on-surface m-0 font-bold">Tạo tài khoản mới</h1>
+                <div class="text-body-sm text-on-surface-variant mt-1">
                     Tạo tài khoản nội bộ cho nhân viên hoặc quản lý
                 </div>
             </div>
-            <div class="topbar-actions">
-                <span class="date">22 Tháng 6, 2026</span>
-                <a th:href="@{/admin/accounts}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Quay lại
+            
+            <div>
+                <a th:href="@{/admin/accounts}" class="inline-flex items-center gap-2 bg-surface-container border border-outline-variant hover:bg-surface-container-high text-on-surface px-5 py-2.5 rounded-full font-bold text-body-sm transition-colors cursor-pointer no-underline">
+                    <span class="material-symbols-outlined text-[18px]">arrow_back</span> Quay lại
                 </a>
             </div>
         </header>
 
-        <!-- Form Section -->
-        <div class="form-container">
-            <div class="form-card">
-                <div class="form-header">
-                    <h2><i class="fas fa-user-plus" style="color: #c8a882;"></i> Thông tin tài khoản</h2>
-                    <p>Vui lòng điền đầy đủ thông tin bên dưới. Mã OTP sẽ được gửi đến email của bạn để xác thực.</p>
-                </div>
-
-                <!-- FORM SUBMIT - KHÔNG DÙNG FETCH API -->
-                <form th:action="@{/admin/accounts/create}" th:object="${request}" method="post">
-                    <!-- Họ và Tên (2 cột) -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="firstName">
-                                Họ <span class="required">*</span>
-                            </label>
-                            <input type="text" id="firstName" name="firstName"
-                                   th:field="*{firstName}"
-                                   placeholder="Nhập họ" maxlength="100" required />
-                            <span class="error" id="firstNameError"></span>
-                        </div>
-                        <div class="form-group">
-                            <label for="lastName">
-                                Tên <span class="required">*</span>
-                            </label>
-                            <input type="text" id="lastName" name="lastName"
-                                   th:field="*{lastName}"
-                                   placeholder="Nhập tên" maxlength="100" required />
-                            <span class="error" id="lastNameError"></span>
-                        </div>
+        <div class="p-8 max-w-[1200px] w-full mx-auto flex flex-col lg:flex-row gap-8">
+            
+            <!-- Form Section -->
+            <div class="flex-1">
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl overflow-hidden shadow-sm">
+                    <div class="px-8 py-5 border-b border-outline-variant bg-surface-container-low/50 flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">person_add</span>
+                        <h2 class="font-headline-sm text-primary m-0">Thông tin tài khoản</h2>
                     </div>
+                    <div class="p-8">
+                        <p class="text-body-sm text-on-surface-variant mb-6">Vui lòng điền đầy đủ thông tin bên dưới. Mã OTP sẽ được gửi đến email của bạn để xác thực.</p>
+                        
+                        <form th:action="@{/admin/accounts/create}" th:object="${request}" method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
-                    <!-- Username và Email (2 cột) -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="username">
-                                Tên đăng nhập <span class="required">*</span>
-                            </label>
-                            <input type="text" id="username" name="username"
-                                   th:field="*{username}"
-                                   placeholder="Nhập tên đăng nhập" maxlength="50" required />
-                            <span class="error" id="usernameError"></span>
-                        </div>
-                        <div class="form-group">
-                            <label for="email">
-                                Email <span class="required">*</span>
-                            </label>
-                            <input type="email" id="email" name="email"
-                                   th:field="*{email}"
-                                   placeholder="Nhập địa chỉ email" maxlength="150" required />
-                            <span class="error" id="emailError"></span>
-                        </div>
-                    </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                <!-- Họ -->
+                                <div>
+                                    <label for="firstName" class="block text-body-sm font-bold text-on-surface mb-2">Họ <span class="text-error">*</span></label>
+                                    <input type="text" id="firstName" name="firstName" th:field="*{firstName}" placeholder="Nhập họ" maxlength="100" class="w-full bg-surface-container border border-outline rounded-xl p-3 text-body-md focus:border-primary outline-none transition-colors" required />
+                                    <span class="error hidden text-error text-body-sm mt-1" id="firstNameError"></span>
+                                </div>
+                                <!-- Tên -->
+                                <div>
+                                    <label for="lastName" class="block text-body-sm font-bold text-on-surface mb-2">Tên <span class="text-error">*</span></label>
+                                    <input type="text" id="lastName" name="lastName" th:field="*{lastName}" placeholder="Nhập tên" maxlength="100" class="w-full bg-surface-container border border-outline rounded-xl p-3 text-body-md focus:border-primary outline-none transition-colors" required />
+                                    <span class="error hidden text-error text-body-sm mt-1" id="lastNameError"></span>
+                                </div>
+                                <!-- Tên đăng nhập -->
+                                <div>
+                                    <label for="username" class="block text-body-sm font-bold text-on-surface mb-2">Tên đăng nhập <span class="text-error">*</span></label>
+                                    <input type="text" id="username" name="username" th:field="*{username}" placeholder="Nhập tên đăng nhập" maxlength="50" class="w-full bg-surface-container border border-outline rounded-xl p-3 text-body-md focus:border-primary outline-none transition-colors" required />
+                                    <span class="error hidden text-error text-body-sm mt-1" id="usernameError"></span>
+                                </div>
+                                <!-- Email -->
+                                <div>
+                                    <label for="email" class="block text-body-sm font-bold text-on-surface mb-2">Email <span class="text-error">*</span></label>
+                                    <input type="email" id="email" name="email" th:field="*{email}" placeholder="Nhập địa chỉ email" maxlength="150" class="w-full bg-surface-container border border-outline rounded-xl p-3 text-body-md focus:border-primary outline-none transition-colors" required />
+                                    <span class="error hidden text-error text-body-sm mt-1" id="emailError"></span>
+                                </div>
+                                <!-- Số điện thoại -->
+                                <div>
+                                    <label for="phone" class="block text-body-sm font-bold text-on-surface mb-2">Số điện thoại <span class="text-error">*</span></label>
+                                    <input type="tel" id="phone" name="phone" th:field="*{phone}" placeholder="Nhập số điện thoại" maxlength="20" class="w-full bg-surface-container border border-outline rounded-xl p-3 text-body-md focus:border-primary outline-none transition-colors" required />
+                                    <span class="error hidden text-error text-body-sm mt-1" id="phoneError"></span>
+                                </div>
+                                <!-- Vai trò -->
+                                <div>
+                                    <label for="role" class="block text-body-sm font-bold text-on-surface mb-2">Vai trò <span class="text-error">*</span></label>
+                                    <select id="role" name="role" th:field="*{role}" class="w-full bg-surface-container border border-outline rounded-xl p-3 text-body-md focus:border-primary outline-none transition-colors appearance-none" required>
+                                        <option value="">Chọn vai trò</option>
+                                        <option value="ADMIN">Admin</option>
+                                        <option value="MANAGER">Manager</option>
+                                        <option value="CASHIER">Cashier</option>
+                                        <option value="BARISTA">Barista</option>
+                                    </select>
+                                    <span class="error hidden text-error text-body-sm mt-1" id="roleError"></span>
+                                </div>
+                            </div>
 
-                    <!-- Số điện thoại và Vai trò (2 cột) -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="phone">
-                                Số điện thoại <span class="required">*</span>
-                            </label>
-                            <input type="tel" id="phone" name="phone"
-                                   th:field="*{phone}"
-                                   placeholder="Nhập số điện thoại" maxlength="20" required />
-                            <span class="error" id="phoneError"></span>
-                        </div>
-                        <div class="form-group">
-                            <label for="role">
-                                Vai trò <span class="required">*</span>
-                            </label>
-                            <select id="role" name="role" th:field="*{role}" required>
-                                <option value="">Chọn vai trò</option>
-                                <option value="ADMIN">Admin</option>
-                                <option value="MANAGER">Manager</option>
-                                <option value="CASHIER">Cashier</option>
-                                <option value="BARISTA">Barista</option>
-                            </select>
-                            <span class="error" id="roleError"></span>
-                        </div>
-                    </div>
+                            <div th:if="${error != null}" class="bg-error-container text-on-error-container border border-error/20 p-4 rounded-xl mb-6 flex items-center gap-3">
+                                <span class="material-symbols-outlined">error</span>
+                                <span th:text="${error}"></span>
+                            </div>
 
-                    <div th:if="${error != null}" class="alert alert-error">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <span th:text="${error}"></span>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="fas fa-paper-plane"></i> Tạo tài khoản
-                        </button>
-                        <a th:href="@{/admin/accounts}" class="btn btn-secondary btn-lg">
-                            <i class="fas fa-times"></i> Hủy bỏ
-                        </a>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Thông tin hướng dẫn -->
-            <div class="info-box">
-                <div class="info-item">
-                    <i class="fas fa-info-circle" style="color: #c8a882;"></i>
-                    <div>
-                        <strong>Lưu ý:</strong>
-                        <p>Sau khi tạo tài khoản, hệ thống sẽ gửi mã OTP đến email của bạn. Vui lòng kiểm tra email và nhập mã OTP để hoàn tất quá trình tạo tài khoản.</p>
-                    </div>
-                </div>
-                <div class="info-item">
-                    <i class="fas fa-clock" style="color: #f59e0b;"></i>
-                    <div>
-                        <strong>Thời gian hiệu lực OTP:</strong>
-                        <p>Mã OTP có hiệu lực trong vòng 5 phút. Nếu hết hạn, bạn có thể yêu cầu gửi lại mã mới.</p>
+                            <div class="flex gap-4">
+                                <button type="submit" class="bg-primary text-white px-6 py-3 rounded-full font-bold text-body-sm hover:opacity-90 transition-opacity border-none cursor-pointer flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-[18px]">send</span> Tạo tài khoản
+                                </button>
+                                <a th:href="@{/admin/accounts}" class="bg-surface-container border border-outline-variant text-on-surface-variant px-6 py-3 rounded-full font-bold text-body-sm hover:bg-surface-container-high transition-colors cursor-pointer no-underline inline-flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-[18px]">close</span> Hủy bỏ
+                                </a>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
+
+            <!-- Info Box -->
+            <div class="w-full lg:w-80 shrink-0 flex flex-col gap-4">
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm flex items-start gap-4">
+                    <span class="material-symbols-outlined text-primary text-[28px]">info</span>
+                    <div>
+                        <strong class="block text-on-surface mb-1">Lưu ý</strong>
+                        <p class="text-body-sm text-on-surface-variant m-0">Sau khi tạo tài khoản, hệ thống sẽ gửi mã OTP đến email của bạn. Vui lòng kiểm tra email và nhập mã OTP để hoàn tất quá trình tạo tài khoản.</p>
+                    </div>
+                </div>
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm flex items-start gap-4">
+                    <span class="material-symbols-outlined text-[#f59e0b] text-[28px]">schedule</span>
+                    <div>
+                        <strong class="block text-on-surface mb-1">Thời gian hiệu lực OTP</strong>
+                        <p class="text-body-sm text-on-surface-variant m-0">Mã OTP có hiệu lực trong vòng 5 phút. Nếu hết hạn, bạn có thể yêu cầu gửi lại mã mới.</p>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </main>
-</div>
 
 <!-- Toast Notification -->
 <div id="toast" class="toast" style="display:none;">

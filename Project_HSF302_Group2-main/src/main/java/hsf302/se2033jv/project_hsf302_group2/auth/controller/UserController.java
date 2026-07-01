@@ -172,7 +172,7 @@ public class UserController {
 
         // Hiển thị template phù hợp theo role
         if (authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_CUSTOMER"))) {
-            return "profile/changePassword";
+            return "customer/profile/changePassword";
         } else {
             return "profile/changePassword"; // Dùng chung 1 template cho tất cả
         }
@@ -184,13 +184,15 @@ public class UserController {
                                  @RequestParam(value = "newPassword") String newPassword,
                                  @RequestParam(value = "confirmPassword") String confirmPassword,
                                  Authentication authentication,
-                                 Model model) {
+                                 Model model,
+                                 org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return "redirect:/login";
         }
 
         try {
             userService.changePassword(user.getUserId(), newPassword, confirmPassword, currentPassword);
+            redirectAttributes.addFlashAttribute("successMessage", "Đổi mật khẩu thành công!");
 
             // Redirect về đúng trang theo role sau khi đổi thành công
             if (authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_CUSTOMER"))) {
@@ -209,7 +211,11 @@ public class UserController {
         } catch (IllegalArgumentException e) {
             model.addAttribute("errorMessage", e.getMessage());
             model.addAttribute("user", user);
-            return "profile/changePassword";
+            if (authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_CUSTOMER"))) {
+                return "customer/profile/changePassword";
+            } else {
+                return "profile/changePassword";
+            }
         }
     }
 }

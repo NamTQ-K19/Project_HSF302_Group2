@@ -5,19 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Xác nhận đơn hàng - BrewMaster</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Include Tailwind CSS config & CDN -->
+    <div th:replace="~{catalog/tailwind-head :: tailwind-head}"></div>
+    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-    <link th:href="@{/css/customer/customer.css}" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
     <style>
-        .confirmation-wrapper {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 40px 0;
-        }
-        .confirmation-icon {
-            font-size: 80px;
-            color: #28a745;
+        .bounce-in {
             animation: bounceIn 0.8s ease;
         }
         @keyframes bounceIn {
@@ -26,255 +23,157 @@
             70% { transform: scale(0.95); }
             100% { transform: scale(1); }
         }
-        .order-number-box {
-            background: var(--white);
-            border-radius: var(--radius-lg);
-            padding: 30px;
-            text-align: center;
-            box-shadow: var(--shadow-sm);
-            border: 2px solid var(--brown-beige);
-        }
-        .order-number-box .number {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--brown-primary);
-            letter-spacing: 1px;
-        }
-        .points-earned-box {
-            background: var(--brown-primary);
-            border-radius: var(--radius-lg);
-            padding: 30px;
-            color: var(--white);
-            text-align: center;
-        }
-        .points-earned-box .big {
-            font-size: 48px;
-            font-weight: 700;
-        }
-        .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        .info-card {
-            background: var(--white);
-            border-radius: var(--radius-lg);
-            padding: 20px 24px;
-            box-shadow: var(--shadow-sm);
-            border: 2px solid var(--brown-beige);
-        }
-        .info-card .label {
-            font-size: 13px;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-        .info-card .value {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--text-dark);
-        }
-        .info-card .value.gold {
-            color: var(--brown-primary);
-        }
-        .action-buttons {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 30px;
-        }
-        .product-item-confirm {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--brown-beige);
-        }
-        .product-item-confirm:last-child {
-            border-bottom: none;
-        }
-        .product-item-confirm .info {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-        .product-item-confirm .thumb {
-            width: 48px;
-            height: 48px;
-            border-radius: var(--radius-sm);
-            overflow: hidden;
-            background: var(--bg-light);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        .product-item-confirm .thumb img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .product-item-confirm .name {
-            font-weight: 500;
-        }
-        .product-item-confirm .qty {
-            color: var(--text-muted);
-            font-size: 14px;
-        }
-        .product-item-confirm .price {
-            font-weight: 600;
-            color: var(--brown-primary);
-        }
-        @media (max-width: 768px) {
-            .info-grid {
-                grid-template-columns: 1fr;
-            }
-            .confirmation-wrapper {
-                padding: 20px 0;
-            }
-        }
     </style>
 </head>
-<body>
-<header class="header">
-    <a href="/" class="header-logo">
-        <div class="header-logo-icon"><i class="fas fa-mug-hot"></i></div>
-        <span class="header-logo-text">Brew<span>Master</span></span>
-    </a>
-    <nav class="header-nav">
-        <a href="/menu"><i class="fas fa-utensils"></i><span>Menu</span></a>
-        <a href="/customer/cart" class="header-cart">
-            <i class="fas fa-shopping-cart"></i><span>Giỏ hàng</span>
-            <span class="header-cart-badge" id="cartBadge"><span id="cartCount">0</span></span>
-        </a>
-        <a href="/customer/orders/history"><i class="fas fa-history"></i><span>Lịch sử</span></a>
-        <div class="header-avatar"><i class="fas fa-user"></i></div>
-    </nav>
-</header>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed antialiased">
+<div th:replace="~{catalog/navbar :: navbar}"></div>
 
-<main class="main">
-    <div class="confirmation-wrapper">
-        <!-- Success Icon -->
+<main class="max-w-max-width mx-auto px-margin-desktop py-12 min-h-[70vh]">
+    <div class="mb-12 relative z-10 flex justify-center items-center gap-4">
+        <div class="flex flex-col items-center gap-2">
+            <div class="w-10 h-10 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-body-md border border-outline-variant">1</div>
+            <span class="text-on-surface-variant text-body-sm font-medium">Giỏ hàng</span>
+        </div>
+        <div class="w-16 h-[2px] bg-outline-variant rounded-full mt-[-20px]"></div>
+        <div class="flex flex-col items-center gap-2">
+            <div class="w-10 h-10 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-body-md border border-outline-variant">2</div>
+            <span class="text-on-surface-variant text-body-sm font-medium">Thanh toán</span>
+        </div>
+        <div class="w-16 h-[2px] bg-outline-variant rounded-full mt-[-20px]"></div>
+        <div class="flex flex-col items-center gap-2">
+            <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-body-md shadow-md shadow-primary/20">3</div>
+            <span class="text-primary text-body-sm font-bold">Xác nhận</span>
+        </div>
+    </div>
+
+    <div class="max-w-3xl mx-auto flex flex-col gap-6">
+        <!-- Success Icon & Header -->
         <div class="text-center mb-4">
-            <div class="confirmation-icon"><i class="fas fa-check-circle"></i></div>
-            <h2 class="mt-3" style="font-weight: 700; color: var(--text-dark);">Đặt hàng thành công!</h2>
-            <p style="color: var(--text-muted);">Cảm ơn bạn đã đặt hàng tại BrewMaster</p>
+            <span class="material-symbols-outlined text-[80px] text-success bounce-in">check_circle</span>
+            <h2 class="font-headline-lg text-on-surface m-0 mt-4 mb-2">Đặt hàng thành công!</h2>
+            <p class="text-on-surface-variant text-body-md m-0">Cảm ơn bạn đã đặt hàng tại BrewMaster</p>
         </div>
 
-        <!-- Order Number -->
-        <div class="order-number-box mb-4">
-            <small style="color: var(--text-muted);">Mã đơn hàng</small>
-            <div class="number" th:text="${order.orderNumber}">#ORD-001</div>
-            <span class="status-badge mt-2" th:class="${order.orderStatus}" th:text="${order.orderStatus}">PENDING</span>
-        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Order Number -->
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl p-8 text-center flex flex-col items-center justify-center shadow-sm">
+                <div class="text-on-surface-variant text-body-sm mb-1">Mã đơn hàng</div>
+                <div class="font-bold text-headline-sm text-primary tracking-wide mb-3" th:text="${order.orderNumber}">#ORD-001</div>
+                <span th:class="'inline-flex px-4 py-1.5 rounded-full font-bold text-[12px] uppercase tracking-wider ' + 
+                    (${order.orderStatus == 'PENDING'} ? 'bg-[#fff3cd] text-[#856404]' : 
+                    (${order.orderStatus == 'CONFIRMED'} ? 'bg-[#cce5ff] text-[#004085]' : 
+                    (${order.orderStatus == 'PREPARING'} ? 'bg-[#d1ecf1] text-[#0c5460]' : 
+                    (${order.orderStatus == 'READY'} ? 'bg-[#d4edda] text-[#155724]' : 
+                    (${order.orderStatus == 'COMPLETED'} ? 'bg-primary/10 text-primary' : 'bg-error-container text-on-error-container')))))" 
+                    th:text="${order.orderStatus}">PENDING</span>
+            </div>
 
-        <!-- Points Earned -->
-        <div class="points-earned-box mb-4">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <i class="fas fa-gem" style="font-size: 48px;"></i>
-                </div>
-                <div class="col-md-6">
-                    <small>Bạn đã nhận được</small>
-                    <div class="big" th:text="${order.pointsEarned}">5</div>
-                    <small>điểm tích lũy</small>
+            <!-- Points Earned -->
+            <div class="bg-secondary text-white border-none rounded-3xl p-8 flex items-center justify-center gap-6 shadow-sm">
+                <span class="material-symbols-outlined text-[64px] text-white/90">workspace_premium</span>
+                <div>
+                    <div class="text-white/80 text-body-sm mb-1">Bạn đã nhận được</div>
+                    <div class="font-bold text-headline-lg leading-none" th:text="${order.pointsEarned}">5</div>
+                    <div class="text-white/80 text-body-sm mt-1">điểm tích lũy</div>
                 </div>
             </div>
         </div>
 
         <!-- Info Grid -->
-        <div class="info-grid mb-4">
-            <div class="info-card">
-                <div class="label"><i class="far fa-calendar-alt me-1"></i> Ngày đặt</div>
-                <div class="value" th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-2">
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl p-6 shadow-sm">
+                <div class="text-on-surface-variant text-body-sm font-bold flex items-center gap-2 mb-1"><span class="material-symbols-outlined text-[18px]">calendar_today</span> Ngày đặt</div>
+                <div class="font-bold text-on-surface text-body-lg" th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</div>
             </div>
-            <div class="info-card">
-                <div class="label"><i class="fas fa-clock me-1"></i> Dự kiến giao</div>
-                <div class="value" th:text="${#temporals.format(order.createdAt.plusMinutes(15), 'dd/MM/yyyy HH:mm')}">01/01/2024 11:00</div>
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl p-6 shadow-sm">
+                <div class="text-on-surface-variant text-body-sm font-bold flex items-center gap-2 mb-1"><span class="material-symbols-outlined text-[18px]">schedule</span> Dự kiến giao</div>
+                <div class="font-bold text-on-surface text-body-lg" th:text="${#temporals.format(order.createdAt.plusMinutes(15), 'dd/MM/yyyy HH:mm')}">01/01/2024 11:00</div>
             </div>
-            <div class="info-card">
-                <div class="label"><i class="fas fa-credit-card me-1"></i> Phương thức</div>
-                <div class="value" th:text="${order.payment.paymentMethod}">Tiền mặt</div>
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl p-6 shadow-sm">
+                <div class="text-on-surface-variant text-body-sm font-bold flex items-center gap-2 mb-1"><span class="material-symbols-outlined text-[18px]">credit_card</span> Phương thức</div>
+                <div class="font-bold text-on-surface text-body-lg" th:text="${order.payment.paymentMethod}">Tiền mặt</div>
             </div>
-            <div class="info-card">
-                <div class="label"><i class="fas fa-money-bill-wave me-1"></i> Tổng tiền</div>
-                <div class="value gold" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT') + '₫'}">35.000₫</div>
-            </div>
-        </div>
-
-        <!-- Payment Status -->
-        <div class="info-card mb-4">
-            <div class="label"><i class="fas fa-receipt me-1"></i> Trạng thái thanh toán</div>
-            <div class="value">
-                <span class="badge" th:class="${order.payment.paymentStatus == 'SUCCESS' ? 'bg-success' : 'bg-warning'}"
-                      th:text="${order.payment.paymentStatus}">PENDING</span>
-                <span class="ms-3 text-muted" style="font-weight: 400; font-size: 14px;" th:text="'Mã GD: ' + ${order.payment.transactionRef}">Mã GD: PAY-001</span>
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl p-6 shadow-sm">
+                <div class="text-on-surface-variant text-body-sm font-bold flex items-center gap-2 mb-1"><span class="material-symbols-outlined text-[18px]">payments</span> Tổng tiền</div>
+                <div class="font-bold text-primary text-body-lg" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT') + '₫'}">35.000₫</div>
             </div>
         </div>
 
-        <!-- Discount -->
-        <div class="info-card mb-4" th:if="${order.discountAmount != null and order.discountAmount.compareTo(0) > 0}">
-            <div class="label"><i class="fas fa-tag me-1"></i> Giảm giá</div>
-            <div class="value gold" style="color: #28a745;" th:text="'- ' + ${#numbers.formatDecimal(order.discountAmount, 0, 'COMMA', 0, 'POINT') + '₫'}">-5.000₫</div>
+        <!-- Status Block -->
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-2">
+            <div>
+                <div class="text-on-surface-variant text-body-sm font-bold flex items-center gap-2 mb-1"><span class="material-symbols-outlined text-[18px]">receipt</span> Trạng thái thanh toán</div>
+                <div class="text-on-surface-variant text-[13px] font-mono bg-surface-container-high px-2 py-0.5 rounded-md inline-block" th:text="'Mã GD: ' + ${order.payment.transactionRef}">Mã GD: PAY-001</div>
+            </div>
+            <span th:class="'inline-flex px-3 py-1 rounded-full font-bold text-[11px] uppercase tracking-wider h-fit ' + (${order.payment.paymentStatus == 'SUCCESS'} ? 'bg-primary-container text-primary' : 'bg-[#fff3cd] text-[#856404]')" th:text="${order.payment.paymentStatus}">PENDING</span>
         </div>
 
-        <!-- Delivery Address -->
-        <div class="info-card mb-4" th:if="${order.deliveryAddress != null}">
-            <div class="label"><i class="fas fa-map-marker-alt me-1"></i> Địa chỉ giao hàng</div>
-            <div class="value" th:text="${order.deliveryAddress.fullAddress}">Địa chỉ</div>
-            <div style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">
-                <span th:text="${order.deliveryAddress.recipientName}">Người nhận</span>
-                <span class="mx-2">|</span>
-                <span th:text="${order.deliveryAddress.recipientPhone}">SĐT</span>
+        <!-- Discount & Delivery -->
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl p-6 shadow-sm mt-2" th:if="${order.discountAmount != null and order.discountAmount.compareTo(0) > 0}">
+            <div class="text-on-surface-variant text-body-sm font-bold flex items-center gap-2 mb-1"><span class="material-symbols-outlined text-[18px]">local_offer</span> Giảm giá</div>
+            <div class="font-bold text-success text-body-lg" th:text="'- ' + ${#numbers.formatDecimal(order.discountAmount, 0, 'COMMA', 0, 'POINT') + '₫'}">-5.000₫</div>
+        </div>
+
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl p-6 shadow-sm mt-2 flex gap-4 items-start" th:if="${order.deliveryAddress != null}">
+            <div class="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-on-surface-variant text-[24px]">location_on</span>
+            </div>
+            <div>
+                <div class="text-on-surface-variant text-body-sm font-bold mb-1">Địa chỉ giao hàng</div>
+                <div class="font-bold text-on-surface text-body-md mb-2" th:text="${order.deliveryAddress.fullAddress}">Địa chỉ</div>
+                <div class="flex flex-wrap items-center gap-4 text-on-surface-variant text-[13px]">
+                    <span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px]">person</span> <span th:text="${order.deliveryAddress.recipientName}">Người nhận</span></span>
+                    <span class="text-outline-variant hidden sm:inline">|</span>
+                    <span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px]">call</span> <span th:text="${order.deliveryAddress.recipientPhone}">SĐT</span></span>
+                </div>
             </div>
         </div>
 
         <!-- Order Items -->
-        <div class="card mb-4">
-            <div class="card-header"><i class="fas fa-shopping-bag"></i> Chi tiết đơn hàng</div>
-            <div class="card-body p-0">
-                <div th:each="item : ${order.items}" class="product-item-confirm px-3">
-                    <div class="info">
-                        <div class="thumb">
-                            <img th:src="${item.productImage != null ? item.productImage : '/images/default-product.png'}"
-                                 alt="Product" onerror="this.style.display='none'">
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl overflow-hidden shadow-sm mt-2">
+            <div class="px-6 py-4 border-b border-outline-variant bg-surface-container-low/50 font-bold text-headline-sm text-primary flex items-center gap-2">
+                <span class="material-symbols-outlined">shopping_bag</span> Chi tiết đơn hàng
+            </div>
+            <div class="p-0">
+                <div th:each="item : ${order.items}" class="flex items-center justify-between p-6 border-b border-outline-variant last:border-b-0 gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 rounded-xl overflow-hidden bg-surface-container border border-outline-variant shrink-0">
+                            <img th:src="${item.productImage != null ? item.productImage : '/images/default-product.png'}" alt="Product" class="w-full h-full object-cover" onerror="this.style.display='none'">
                         </div>
                         <div>
-                            <div class="name" th:text="${item.productName}">Product</div>
-                            <div class="qty" th:text="${item.variantName + ' x ' + item.quantity}">Variant x 2</div>
+                            <div class="font-bold text-on-surface text-body-lg mb-0.5" th:text="${item.productName}">Product</div>
+                            <div class="text-on-surface-variant text-body-sm bg-surface-container-high px-2 py-0.5 rounded-md inline-block" th:text="${item.variantName + ' x ' + item.quantity}">Variant x 2</div>
                         </div>
                     </div>
-                    <div class="price" th:text="${#numbers.formatDecimal(item.itemTotal, 0, 'COMMA', 0, 'POINT') + '₫'}">70.000₫</div>
+                    <div class="font-bold text-primary text-body-lg" th:text="${#numbers.formatDecimal(item.itemTotal, 0, 'COMMA', 0, 'POINT') + '₫'}">70.000₫</div>
                 </div>
             </div>
-            <div class="card-footer bg-white" style="border-top: 2px solid var(--brown-beige); padding: 16px 20px;">
-                <div class="row">
-                    <div class="col-6">
-                        <span style="color: var(--text-muted);">Tạm tính</span>
-                        <span class="float-end fw-bold" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT') + '₫'}">35.000₫</span>
-                    </div>
-                    <div class="col-6 text-end">
-                        <strong style="font-size: 18px;">Tổng cộng</strong>
-                        <span style="font-size: 20px; font-weight: 700; color: var(--brown-primary);"
-                              th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT') + '₫'}">35.000₫</span>
-                    </div>
+            <div class="p-6 bg-surface-container-low border-t-2 border-outline-variant border-dashed">
+                <div class="flex justify-between items-center text-body-md text-on-surface-variant mb-2">
+                    <span>Tạm tính</span>
+                    <span class="font-bold text-on-surface" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT') + '₫'}">35.000₫</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="font-bold text-headline-sm text-on-surface">Tổng cộng</span>
+                    <span class="font-extrabold text-headline-md text-primary" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT') + '₫'}">35.000₫</span>
                 </div>
             </div>
         </div>
 
         <!-- Actions -->
-        <div class="action-buttons">
-            <a href="/menu" class="btn-primary" style="padding: 12px 36px;">
-                <i class="fas fa-utensils me-2"></i> Tiếp tục mua sắm
+        <div class="flex flex-col sm:flex-row gap-4 justify-center mt-6">
+            <a href="/search" class="inline-flex justify-center bg-primary text-white px-8 py-3.5 rounded-full font-bold text-body-md hover:opacity-90 transition-opacity no-underline items-center gap-2 shadow-sm">
+                <span class="material-symbols-outlined text-[20px]">restaurant_menu</span> Tiếp tục mua sắm
             </a>
-            <a href="/customer/orders/history" class="btn-outline" style="padding: 12px 36px;">
-                <i class="fas fa-history me-2"></i> Xem lịch sử
+            <a href="/customer/orders/history" class="inline-flex justify-center bg-surface-container border border-outline-variant text-on-surface-variant px-8 py-3.5 rounded-full font-bold text-body-md hover:bg-surface-container-high transition-colors no-underline items-center gap-2 shadow-sm">
+                <span class="material-symbols-outlined text-[20px]">history</span> Xem lịch sử
             </a>
         </div>
     </div>
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<div th:replace="~{catalog/footer :: footer}"></div>
+
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
     $(document).ready(function() {

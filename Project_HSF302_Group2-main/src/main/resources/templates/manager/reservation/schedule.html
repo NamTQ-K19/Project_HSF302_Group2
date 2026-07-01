@@ -6,6 +6,8 @@
     <title>Lịch đặt bàn – CafeShop Manager</title>
     <link th:href="@{/css/manager/manager-layout.css}" rel="stylesheet"/>
     <link th:href="@{/css/manager/reservation-schedule.css}" rel="stylesheet"/>
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
 </head>
 <body class="manager-body">
 

@@ -1,274 +1,228 @@
-<!-- src/main/resources/templates/customer/order/history.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lịch sử đơn hàng - BrewMaster</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Tailwind CSS config -->
+    <div th:replace="~{catalog/tailwind-head :: tailwind-head}"></div>
+    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-    <link th:href="@{/css/customer/customer.css}" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        .order-card {
-            transition: var(--transition);
-            border-radius: var(--radius-lg);
-            margin-bottom: 16px;
-            border: 2px solid var(--brown-beige);
-            background: var(--white);
-        }
-        .order-card:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-md);
-            border-color: var(--brown-primary);
-        }
-        .status-badge {
-            padding: 4px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 12px;
-        }
-        .status-badge.PENDING { background: #fff3cd; color: #856404; }
-        .status-badge.CONFIRMED { background: #cce5ff; color: #004085; }
-        .status-badge.PREPARING { background: #d1ecf1; color: #0c5460; }
-        .status-badge.READY { background: #d4edda; color: #155724; }
-        .status-badge.COMPLETED { background: #d4edda; color: #155724; }
-        .status-badge.CANCELLED { background: #f8d7da; color: #721c24; }
-
-        .order-item-thumb {
-            width: 40px;
-            height: 40px;
-            border-radius: var(--radius-sm);
-            overflow: hidden;
-            background: var(--bg-light);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .order-item-thumb img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        /* ✅ CĂN CHỈNH KÍCH THƯỚC NÚT ĐỒNG ĐỀU */
-        .btn-action {
-            border-radius: var(--radius-md);
-            padding: 4px 12px;
-            font-size: 12px;
-            white-space: nowrap;
-            min-width: 85px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            height: 40px;
-        }
-        .btn-action i {
-            font-size: 11px;
-        }
-
-        .btn-cancel-order-ajax {
-            background: #dc3545;
-            border: none;
-            color: white;
-            transition: var(--transition);
-        }
-        .btn-cancel-order-ajax:hover {
-            background: #c82333;
-            transform: translateY(-1px);
-        }
-        .btn-cancel-order-ajax:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-status-disabled {
-            border: none;
-            color: white;
-            cursor: default;
-        }
-        .btn-status-disabled.cancelled {
-            background: #6c757d;
-            opacity: 0.5;
-        }
-        .btn-status-disabled.completed {
-            background: #0a761b;
-            opacity: 0.7;
-            color: white;
-        }
-
-        .btn-view {
-            border: 2px solid var(--brown-primary);
-            color: var(--brown-primary);
-            background: transparent;
-        }
-        .btn-view:hover {
-            background: var(--brown-primary);
-            color: white;
-            transform: translateY(-1px);
-        }
-
-        .action-group {
-            display: flex;
-            gap: 6px;
-            justify-content: flex-end;
-            align-items: center;
-            flex-wrap: nowrap;
-        }
-        @media (max-width: 768px) {
-            .action-group {
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
 </head>
-<body>
-<header class="header">
-    <a href="/" class="header-logo">
-        <div class="header-logo-icon"><i class="fas fa-mug-hot"></i></div>
-        <span class="header-logo-text">Brew<span>Master</span></span>
-    </a>
-    <nav class="header-nav">
-        <a href="/menu"><i class="fas fa-utensils"></i><span>Menu</span></a>
-        <a href="/customer/cart" class="header-cart">
-            <i class="fas fa-shopping-cart"></i><span>Giỏ hàng</span>
-            <span class="header-cart-badge" id="cartBadge"><span id="cartCount">0</span></span>
-        </a>
-        <a href="/customer/orders/history" class="active"><i class="fas fa-history"></i><span>Lịch sử</span></a>
-        <div class="header-avatar"><i class="fas fa-user"></i></div>
-    </nav>
-</header>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed antialiased">
 
-<main class="main">
-    <div class="page-header">
-        <div class="page-header-left">
-            <h1><i class="fas fa-history"></i>Lịch sử đơn hàng</h1>
-            <p>Xem lại tất cả đơn hàng bạn đã đặt</p>
-        </div>
-        <a href="/menu" class="btn-primary"><i class="fas fa-plus"></i> Đặt hàng mới</a>
-    </div>
+<div th:replace="~{catalog/navbar :: navbar}"></div>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <form class="row g-3" method="GET" id="filterForm">
-                <div class="col-md-3">
-                    <label class="form-label small fw-semibold">Trạng thái</label>
-                    <select class="form-select" name="status" style="border-radius: var(--radius-md); border: 2px solid var(--brown-beige);">
-                        <option value="">Tất cả</option>
-                        <option value="PENDING" th:selected="${selectedStatus == 'PENDING'}">Đang xử lý</option>
-                        <option value="CONFIRMED" th:selected="${selectedStatus == 'CONFIRMED'}">Đã xác nhận</option>
-                        <option value="PREPARING" th:selected="${selectedStatus == 'PREPARING'}">Đang chuẩn bị</option>
-                        <option value="READY" th:selected="${selectedStatus == 'READY'}">Sẵn sàng</option>
-                        <option value="COMPLETED" th:selected="${selectedStatus == 'COMPLETED'}">Hoàn thành</option>
-                        <option value="CANCELLED" th:selected="${selectedStatus == 'CANCELLED'}">Đã hủy</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label small fw-semibold">Từ ngày</label>
-                    <input type="date" class="form-control" name="startDate" th:value="${startDate}" style="border-radius: var(--radius-md); border: 2px solid var(--brown-beige);">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label small fw-semibold">Đến ngày</label>
-                    <input type="date" class="form-control" name="endDate" th:value="${endDate}" style="border-radius: var(--radius-md); border: 2px solid var(--brown-beige);">
-                </div>
-                <div class="col-md-3 d-flex align-items-end gap-2">
-                    <button type="submit" class="btn btn-filter flex-grow-1"><i class="fas fa-search me-2"></i> Lọc</button>
-                    <button type="button" class="btn btn-refresh" id="btnRefresh"><i class="fas fa-sync-alt"></i></button>
-                </div>
-            </form>
-        </div>
-    </div>
+<main class="max-w-max-width mx-auto px-margin-desktop py-12 min-h-[70vh]">
 
-    <div th:if="${orders == null or orders.isEmpty()}" style="text-align: center; padding: 60px 0;">
-        <i class="fas fa-inbox" style="font-size: 64px; color: var(--text-light);"></i>
-        <h3 style="color: var(--text-muted); margin-top: 20px;">Chưa có đơn hàng nào</h3>
-        <p style="color: var(--text-muted);">Bắt đầu đặt hàng ngay hôm nay!</p>
-        <a href="/menu" class="btn-primary" style="margin-top: 16px;"><i class="fas fa-utensils"></i> Khám phá menu</a>
-    </div>
+    <div class="flex flex-col lg:flex-row gap-8">
 
-    <div th:if="${orders != null and !orders.isEmpty()}">
-        <div th:each="order : ${orders.getContent()}" class="order-card card">
-            <div class="card-body">
-                <div class="row align-items-center">
-                    <div class="col-md-3">
-                        <strong class="text-primary" th:text="${order.orderNumber}">#ORD-001</strong>
-                        <br><small class="text-muted"><i class="far fa-calendar-alt me-1"></i><span th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</span></small>
+        <!-- ══ LEFT: Sidebar ═══════════════════════════ -->
+        <aside class="w-full lg:w-80 shrink-0">
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl p-8 flex flex-col items-center text-center sticky top-28 shadow-sm">
+                <!-- Avatar display -->
+                <div class="w-32 h-32 rounded-full overflow-hidden bg-primary-container text-primary flex items-center justify-center font-bold text-[48px] shadow-sm border-4 border-white ring-1 ring-outline-variant mb-4">
+                    <img th:if="${user != null and user.avatarUrl != null}" th:src="${user.avatarUrl}" class="w-full h-full object-cover" alt="Avatar"/>
+                    <span th:unless="${user != null and user.avatarUrl != null}">A</span>
+                </div>
+
+                <div class="font-bold text-headline-sm text-primary mb-1" th:if="${user != null}" th:text="${user.firstName + ' ' + user.lastName}"></div>
+                <div class="text-on-surface-variant text-body-md mb-6 border-b border-outline-variant border-dashed pb-6 w-full" th:if="${user != null}" th:text="${'@' + user.username}"></div>
+
+                <div class="flex flex-col w-full gap-2 mt-2">
+                    <a href="/customer/profile" class="flex items-center gap-3 px-4 py-3 hover:bg-surface-container hover:text-primary text-on-surface-variant font-medium rounded-xl transition-colors no-underline">
+                        <span class="material-symbols-outlined">person</span> Thông tin cá nhân
+                    </a>
+                    <a href="/customer/orders/history" class="flex items-center gap-3 px-4 py-3 bg-primary/10 text-primary font-semibold rounded-xl no-underline">
+                        <span class="material-symbols-outlined">history</span> Lịch sử đơn hàng
+                    </a>
+                    <a href="/customer/reservations" class="flex items-center gap-3 px-4 py-3 hover:bg-surface-container hover:text-primary text-on-surface-variant font-medium rounded-xl transition-colors no-underline">
+                        <span class="material-symbols-outlined">calendar_month</span> Đặt bàn
+                    </a>
+                    <a href="/customer/reviews" class="flex items-center gap-3 px-4 py-3 hover:bg-surface-container hover:text-primary text-on-surface-variant font-medium rounded-xl transition-colors no-underline">
+                        <span class="material-symbols-outlined">rate_review</span> Đánh giá
+                    </a>
+                    <a href="/customer/points" class="flex items-center gap-3 px-4 py-3 hover:bg-surface-container hover:text-primary text-on-surface-variant font-medium rounded-xl transition-colors no-underline">
+                        <span class="material-symbols-outlined">stars</span> Điểm tích lũy
+                    </a>
+                    <a href="/profile/changePassword" class="flex items-center gap-3 px-4 py-3 hover:bg-surface-container hover:text-primary text-on-surface-variant font-medium rounded-xl transition-colors no-underline">
+                        <span class="material-symbols-outlined">lock_reset</span> Đổi mật khẩu
+                    </a>
+                    <form th:action="@{/logout}" method="post" class="m-0">
+                        <button type="submit" class="w-full text-left flex items-center gap-3 px-4 py-3 hover:bg-error/10 text-error font-medium rounded-xl transition-colors border-none cursor-pointer bg-transparent">
+                            <span class="material-symbols-outlined">logout</span> Đăng xuất
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ══ RIGHT: Main content ════════════════════════════ -->
+        <div class="flex-1 flex flex-col gap-6">
+
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
+                <div>
+                    <h1 class="font-headline-lg text-primary m-0 mb-1 flex items-center gap-2"><span class="material-symbols-outlined text-[32px]">history</span> Lịch sử đơn hàng</h1>
+                    <p class="text-on-surface-variant text-body-sm m-0">Xem lại tất cả đơn hàng bạn đã đặt</p>
+                </div>
+                <a href="/search" class="inline-flex bg-primary text-white px-6 py-2.5 rounded-full font-bold text-body-sm hover:opacity-90 transition-opacity no-underline items-center gap-2 border-none shadow-sm">
+                    <span class="material-symbols-outlined text-sm">add</span> Đặt hàng mới
+                </a>
+            </div>
+
+            <!-- Filter Card -->
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl p-6 shadow-sm">
+                <form method="GET" id="filterForm" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                    <div>
+                        <label class="block text-body-sm font-bold text-on-surface mb-2">Trạng thái</label>
+                        <select class="w-full bg-surface-container border border-outline rounded-xl p-3 text-body-md focus:border-primary outline-none appearance-none" name="status">
+                            <option value="">Tất cả</option>
+                            <option value="PENDING" th:selected="${selectedStatus == 'PENDING'}">Đang xử lý</option>
+                            <option value="CONFIRMED" th:selected="${selectedStatus == 'CONFIRMED'}">Đã xác nhận</option>
+                            <option value="PREPARING" th:selected="${selectedStatus == 'PREPARING'}">Đang chuẩn bị</option>
+                            <option value="READY" th:selected="${selectedStatus == 'READY'}">Sẵn sàng</option>
+                            <option value="COMPLETED" th:selected="${selectedStatus == 'COMPLETED'}">Hoàn thành</option>
+                            <option value="CANCELLED" th:selected="${selectedStatus == 'CANCELLED'}">Đã hủy</option>
+                        </select>
                     </div>
-                    <div class="col-md-2">
-                        <span class="fw-bold" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT') + '₫'}">35.000₫</span>
-                        <br><small class="text-muted"><span th:text="${order.items.size()} + ' sản phẩm'">2 sản phẩm</span></small>
+                    <div>
+                        <label class="block text-body-sm font-bold text-on-surface mb-2">Từ ngày</label>
+                        <input type="date" class="w-full bg-surface-container border border-outline rounded-xl p-3 text-body-md focus:border-primary outline-none" name="startDate" th:value="${startDate}">
                     </div>
-                    <div class="col-md-2">
-                        <span class="status-badge" th:class="${order.orderStatus}" th:text="${order.orderStatus}">PENDING</span>
-                        <br><small class="text-muted" th:text="${order.orderType}">ONLINE</small>
+                    <div>
+                        <label class="block text-body-sm font-bold text-on-surface mb-2">Đến ngày</label>
+                        <input type="date" class="w-full bg-surface-container border border-outline rounded-xl p-3 text-body-md focus:border-primary outline-none" name="endDate" th:value="${endDate}">
                     </div>
-                    <div class="col-md-3">
-                        <div class="d-flex gap-1">
-                            <div th:each="item : ${order.items}" class="order-item-thumb" th:if="${itemStat.index < 3}">
-                                <img th:src="${item.productImage != null ? item.productImage : '/images/default-product.png'}" alt="Product" onerror="this.style.display='none'">
-                            </div>
-                            <div th:if="${order.items.size() > 3}" class="order-item-thumb" style="background: var(--brown-beige); font-size: 12px; font-weight: 600; color: var(--text-muted);">
-                                +<span th:text="${order.items.size() - 3}">2</span>
+                    <div class="flex gap-2">
+                        <button type="submit" class="flex-1 bg-primary text-white px-5 py-3 rounded-xl font-bold text-body-sm hover:opacity-90 transition-opacity border-none cursor-pointer flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-[18px]">search</span> Lọc
+                        </button>
+                        <button type="button" id="btnRefresh" class="w-12 h-12 bg-surface-container border border-outline-variant text-on-surface-variant rounded-xl flex items-center justify-center hover:bg-surface-container-high transition-colors cursor-pointer shrink-0">
+                            <span class="material-symbols-outlined text-[20px]">sync</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Empty State -->
+            <div th:if="${orders == null or orders.isEmpty()}" class="bg-surface-container-lowest border border-outline border-dashed rounded-3xl p-16 text-center mt-4">
+                <span class="material-symbols-outlined text-[64px] text-on-surface-variant/30 mb-4 block">inbox</span>
+                <h3 class="font-headline-sm text-primary m-0 mb-2">Chưa có đơn hàng nào</h3>
+                <p class="text-on-surface-variant text-body-sm m-0 mb-6">Bắt đầu đặt hàng ngay hôm nay!</p>
+                <a href="/search" class="inline-flex bg-primary text-white px-8 py-3 rounded-full font-bold text-body-sm hover:opacity-90 transition-opacity no-underline items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">restaurant_menu</span> Khám phá menu
+                </a>
+            </div>
+
+            <!-- Order List -->
+            <div th:if="${orders != null and !orders.isEmpty()}" class="flex flex-col gap-4 mt-2">
+                <div th:each="order : ${orders.getContent()}" class="bg-surface-container-lowest border border-outline-variant hover:border-primary/50 transition-colors rounded-3xl p-6 shadow-sm group">
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+                        <!-- ID & Date -->
+                        <div class="lg:col-span-2">
+                            <strong class="text-primary text-body-lg block mb-1" th:text="${order.orderNumber}">#ORD-001</strong>
+                            <div class="text-on-surface-variant/70 text-[12px] flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[14px]">calendar_today</span>
+                                <span th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024</span>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="action-group">
-                            <a th:href="@{/customer/orders/detail/{id}(id=${order.orderId})}"
-                               class="btn btn-action btn-view">
-                                <i class="fas fa-eye"></i> Xem
+
+                        <!-- Price & Items count -->
+                        <div class="lg:col-span-2">
+                            <span class="font-bold text-primary text-body-lg block mb-1" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT') + '₫'}">35.000₫</span>
+                            <span class="text-on-surface-variant text-body-sm block" th:text="${order.items.size()} + ' sản phẩm'">2 sản phẩm</span>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="lg:col-span-2">
+                            <span th:class="'inline-flex px-3 py-1 rounded-full font-bold text-[11px] uppercase tracking-wider mb-1 whitespace-nowrap ' + 
+                                (${order.orderStatus == 'PENDING'} ? 'bg-[#fff3cd] text-[#856404]' : 
+                                (${order.orderStatus == 'CONFIRMED'} ? 'bg-[#cce5ff] text-[#004085]' : 
+                                (${order.orderStatus == 'PREPARING'} ? 'bg-[#d1ecf1] text-[#0c5460]' : 
+                                (${order.orderStatus == 'READY'} ? 'bg-[#d4edda] text-[#155724]' : 
+                                (${order.orderStatus == 'COMPLETED'} ? 'bg-primary/10 text-primary' : 'bg-error-container text-on-error-container')))))" 
+                                th:text="${order.orderStatus}">PENDING</span>
+                            <div class="text-on-surface-variant text-body-sm" th:text="${order.orderType}">ONLINE</div>
+                        </div>
+
+                        <!-- Thumbnails -->
+                        <div class="lg:col-span-3 flex items-center">
+                            <div class="flex gap-1 items-center overflow-hidden">
+                                <div th:each="item, itemStat : ${order.items}" th:if="${itemStat.index < 3}" class="w-10 h-10 rounded-lg overflow-hidden bg-surface-container border border-outline-variant shrink-0">
+                                    <img th:src="${item.productImage != null ? item.productImage : '/img/default-product.png'}" class="w-full h-full object-cover" alt="Product" onerror="this.style.display='none'">
+                                </div>
+                                <div th:if="${order.items.size() > 3}" class="w-10 h-10 rounded-lg bg-surface-container-high border border-outline-variant flex items-center justify-center text-[12px] font-bold text-on-surface-variant shrink-0">
+                                    +<span th:text="${order.items.size() - 3}">2</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="lg:col-span-3 flex flex-row items-center justify-start lg:justify-end gap-2.5 whitespace-nowrap overflow-x-auto py-1">
+                            <a th:href="@{/customer/orders/detail/{id}(id=${order.orderId})}" class="inline-flex bg-white border border-outline text-on-surface hover:border-primary hover:text-primary px-4 py-2 rounded-xl font-semibold text-[13px] transition-all no-underline items-center gap-1.5 h-10 whitespace-nowrap shrink-0 shadow-sm">
+                                <span class="material-symbols-outlined text-[16px]">visibility</span> Xem
                             </a>
 
-                            <!-- NÚT HỦY - KHI PENDING HOẶC CONFIRMED -->
-                            <button th:if="${order.orderStatus == 'PENDING' or order.orderStatus == 'CONFIRMED'}"
-                                    class="btn btn-action btn-cancel-order-ajax"
-                                    data-order-id="${order.orderId}">
-                                <i class="fas fa-times"></i> Hủy
+                            <button th:if="${order.orderStatus == 'PENDING' or order.orderStatus == 'CONFIRMED'}" class="btn-cancel-order-ajax inline-flex items-center gap-1.5 h-10 px-4 py-2 rounded-xl font-semibold text-[13px] bg-error/10 text-error border border-error/30 hover:bg-error hover:text-white hover:border-error hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap shrink-0" th:data-order-id="${order.orderId}">
+                                <span class="material-symbols-outlined text-[16px]">cancel</span> Hủy đơn
                             </button>
-
-                            <!-- NÚT ĐÃ HỦY - KHI CANCELLED -->
-                            <button th:if="${order.orderStatus == 'CANCELLED'}"
-                                    class="btn btn-action btn-status-disabled cancelled"
-                                    disabled>
-                                <i class="fas fa-times"></i> Đã hủy
-                            </button>
-
-                            <!-- NÚT ĐÃ HOÀN THÀNH - KHI COMPLETED -->
-                            <button th:if="${order.orderStatus == 'COMPLETED'}"
-                                    class="btn btn-action btn-status-disabled completed"
-                                    disabled>
-                                <i class="fas fa-check-circle"></i> Hoàn Thành
-                            </button>
+                            
+                            <div th:if="${order.orderStatus == 'CANCELLED'}" class="inline-flex bg-error/10 text-error/80 border border-error/20 px-4 py-2 rounded-xl font-semibold text-[13px] items-center gap-1.5 h-10 cursor-not-allowed whitespace-nowrap shrink-0">
+                                <span class="material-symbols-outlined text-[16px]">block</span> Đã hủy
+                            </div>
+                            
+                            <div th:if="${order.orderStatus == 'COMPLETED'}" class="inline-flex bg-primary/10 text-primary border border-primary/20 px-4 py-2 rounded-xl font-semibold text-[13px] items-center gap-1.5 h-10 cursor-default whitespace-nowrap shrink-0">
+                                <span class="material-symbols-outlined text-[16px]">check_circle</span> Hoàn Thành
+                            </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div th:if="${totalPages > 1}" class="flex justify-center mt-6">
+                    <div class="inline-flex bg-surface-container-lowest border border-outline-variant rounded-full p-1 shadow-sm">
+                        <a th:class="'w-10 h-10 flex items-center justify-center rounded-full transition-colors no-underline ' + (${currentPage == 0} ? 'text-on-surface-variant/30 pointer-events-none' : 'text-on-surface-variant hover:bg-surface-container hover:text-primary')" 
+                           th:href="@{/customer/orders/history(page=${currentPage - 1}, status=${selectedStatus}, startDate=${startDate}, endDate=${endDate})}">
+                            <span class="material-symbols-outlined">chevron_left</span>
+                        </a>
+                        
+                        <a th:each="page : ${#numbers.sequence(0, totalPages - 1)}" 
+                           th:class="'w-10 h-10 flex items-center justify-center rounded-full font-bold text-body-sm transition-colors no-underline ' + (${page == currentPage} ? 'bg-primary text-white' : 'text-on-surface-variant hover:bg-surface-container hover:text-primary')"
+                           th:href="@{/customer/orders/history(page=${page}, status=${selectedStatus}, startDate=${startDate}, endDate=${endDate})}" 
+                           th:text="${page + 1}">1</a>
+                           
+                        <a th:class="'w-10 h-10 flex items-center justify-center rounded-full transition-colors no-underline ' + (${currentPage == totalPages - 1} ? 'text-on-surface-variant/30 pointer-events-none' : 'text-on-surface-variant hover:bg-surface-container hover:text-primary')" 
+                           th:href="@{/customer/orders/history(page=${currentPage + 1}, status=${selectedStatus}, startDate=${startDate}, endDate=${endDate})}">
+                            <span class="material-symbols-outlined">chevron_right</span>
+                        </a>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div th:if="${totalPages > 1}" class="d-flex justify-content-center mt-4">
-            <nav><ul class="pagination">
-                <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
-                    <a class="page-link" th:href="@{/customer/orders/history(page=${currentPage - 1}, status=${selectedStatus}, startDate=${startDate}, endDate=${endDate})}"><i class="fas fa-chevron-left"></i></a>
-                </li>
-                <li th:each="page : ${#numbers.sequence(0, totalPages - 1)}" class="page-item" th:classappend="${page == currentPage ? 'active' : ''}">
-                    <a class="page-link" th:href="@{/customer/orders/history(page=${page}, status=${selectedStatus}, startDate=${startDate}, endDate=${endDate})}" th:text="${page + 1}">1</a>
-                </li>
-                <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
-                    <a class="page-link" th:href="@{/customer/orders/history(page=${currentPage + 1}, status=${selectedStatus}, startDate=${startDate}, endDate=${endDate})}"><i class="fas fa-chevron-right"></i></a>
-                </li>
-            </ul></nav>
         </div>
     </div>
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<div th:replace="~{catalog/footer :: footer}"></div>
+
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.5/dist/sweetalert2.all.min.js"></script>
 <script>
     $(document).ready(function() {
+        const csrfToken = $("meta[name='_csrf']").attr("content");
+        const csrfHeader = $("meta[name='_csrf_header']").attr("content");
+        
+        if (csrfToken && csrfHeader) {
+            $.ajaxSetup({
+                beforeSend: function(xhr) {
+                    xhr.setRequestHeader(csrfHeader, csrfToken);
+                }
+            });
+        }
+
         // CANCEL ORDER - AJAX
         $('.btn-cancel-order-ajax').on('click', function(e) {
             e.preventDefault();
@@ -276,11 +230,7 @@
             const btn = $(this);
 
             if (!orderId) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Lỗi!',
-                    text: 'Không tìm thấy ID đơn hàng'
-                });
+                Swal.fire({ icon: 'error', title: 'Lỗi!', text: 'Không tìm thấy ID đơn hàng' });
                 return;
             }
 
@@ -298,9 +248,8 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     const reason = result.value || '';
-
                     btn.prop('disabled', true);
-                    btn.html('<i class="fas fa-spinner fa-spin"></i>');
+                    btn.html('<span class="material-symbols-outlined animate-spin text-[16px]">sync</span> Đang hủy');
 
                     $.ajax({
                         url: '/customer/orders/cancel/' + orderId,
@@ -310,32 +259,21 @@
                         success: function(response) {
                             if (response.success) {
                                 Swal.fire({
-                                    icon: 'success',
-                                    title: 'Hủy đơn hàng thành công!',
-                                    showConfirmButton: false,
-                                    timer: 1500
-                                }).then(() => {
-                                    location.reload();
-                                });
+                                    icon: 'success', title: 'Hủy đơn hàng thành công!',
+                                    showConfirmButton: false, timer: 1500
+                                }).then(() => { location.reload(); });
                             } else {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Lỗi!',
-                                    text: response.message || 'Không thể hủy đơn hàng'
-                                });
+                                Swal.fire({ icon: 'error', title: 'Lỗi!', text: response.message || 'Không thể hủy đơn hàng' });
                                 btn.prop('disabled', false);
-                                btn.html('<i class="fas fa-times"></i> Hủy');
+                                btn.html('<span class="material-symbols-outlined text-[16px]">close</span> Hủy');
                             }
                         },
                         error: function(xhr) {
                             let errorMsg = 'Có lỗi xảy ra khi hủy đơn hàng';
-                            try {
-                                const response = JSON.parse(xhr.responseText);
-                                if (response.message) errorMsg = response.message;
-                            } catch(e) {}
+                            try { const response = JSON.parse(xhr.responseText); if (response.message) errorMsg = response.message; } catch(e) {}
                             Swal.fire({ icon: 'error', title: 'Lỗi!', text: errorMsg });
                             btn.prop('disabled', false);
-                            btn.html('<i class="fas fa-times"></i> Hủy');
+                            btn.html('<span class="material-symbols-outlined text-[16px]">close</span> Hủy');
                         }
                     });
                 }
@@ -348,18 +286,6 @@
             $('#filterForm input[name="endDate"]').val('');
             $('#filterForm').submit();
         });
-
-        function updateCartBadge() {
-            $.ajax({
-                url: '/customer/cart/count',
-                type: 'GET',
-                success: function(count) {
-                    $('#cartCount').text(count || 0);
-                    count > 0 ? $('#cartBadge').css('display', 'flex') : $('#cartBadge').hide();
-                }
-            });
-        }
-        updateCartBadge();
     });
 </script>
 </body>

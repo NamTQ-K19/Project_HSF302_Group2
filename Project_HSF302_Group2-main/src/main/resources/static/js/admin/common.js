@@ -5,22 +5,12 @@ function formatCurrency(amount) {
 }
 
 // Toast notification dùng chung
-function showToast(message, type) {
-    const toast = document.getElementById('toast');
-    const toastMessage = document.getElementById('toastMessage');
-    const toastClose = document.getElementById('toastClose');
-
-    if (!toast) return;
-
-    toastMessage.textContent = message;
-    toast.className = 'toast';
-    toast.classList.add(type === 'success' ? 'toast-success' : 'toast-error');
-    toast.style.display = 'flex';
-
-    clearTimeout(toast._timeout);
-    toast._timeout = setTimeout(() => {
-        toast.style.display = 'none';
-    }, 3000);
+function showToast(message, type = 'success') {
+    if (window.showGlobalToast) {
+        window.showGlobalToast(message, type);
+    } else {
+        alert(message);
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
