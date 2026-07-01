@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Bean & Brew - Register</title>
+    <link rel="stylesheet" th:href="@{/css/auth-theme.css}">
+    <script src="https://unpkg.com/feather-icons"></script>
+</head>
+
+<body>
+
+<div class="auth-layout">
+  <!-- Left Pane - Branding & Graphic -->
+  <div class="auth-left-pane">
+      <a class="auth-brand" th:href="@{/}">
+          BrewMaster
+      </a>
+    <div class="auth-illustration-container">
+      <div class="auth-illustration-wrapper">
+        <img 
+          src="https://images.unsplash.com/photo-1605187151664-9d89904d62d0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZXN0aGV0aWMlMjBjb2ZmZWUlMjBsYXR0ZSUyMGFydHxlbnwxfHx8fDE3ODIxODU3NjF8MA&ixlib=rb-4.1.0&q=80&w=1080" 
+          alt="Aesthetic coffee latte art"
+          class="auth-illustration-image"
+        />
+      </div>
+      <h2 class="auth-tagline">
+        Sip, Smile, Repeat.
+      </h2>
+    </div>
+    <div class="auth-blob-tr"></div>
+    <div class="auth-blob-bl"></div>
+  </div>
+
+  <!-- Right Pane - Form -->
+  <div class="auth-right-pane" style="overflow-y: auto;">
+    <div class="auth-form-container" style="max-width: 500px;">
+      
+      <div class="auth-header">
+        <h1 class="auth-title">Create Account</h1>
+        <p class="auth-subtitle">Join the Bean & Brew family</p>
+      </div>
+
+      <!-- General Error Message -->
+      <div th:if="${errorMessage}" class="auth-alert-error">
+          <i data-feather="alert-circle" class="auth-icon-small"></i>
+          <span th:text="${errorMessage}"></span>
+      </div>
+
+      <!-- Registration Form -->
+      <form th:action="@{/register}" th:object="${user}" method="post" class="auth-form">
+        
+        <div class="auth-grid-2">
+            <!-- First Name -->
+            <div class="space-y-1">
+                <div class="auth-input-group">
+                  <div class="auth-input-icon-left">
+                    <i data-feather="user" class="auth-icon"></i>
+                  </div>
+                  <input th:field="*{firstName}" id="firstName" required type="text"
+                    class="auth-input" placeholder="First Name" />
+                </div>
+                <div id="error-firstName" class="text-red-500" style="font-size: 0.75rem; color: #ef4444; margin-top: 0.25rem;"></div>
+            </div>
+            
+            <!-- Last Name -->
+            <div class="space-y-1">
+                <div class="auth-input-group">
+                  <div class="auth-input-icon-left">
+                    <i data-feather="user" class="auth-icon"></i>
+                  </div>
+                  <input th:field="*{lastName}" id="lastName" required type="text"
+                    class="auth-input" placeholder="Last Name" />
+                </div>
+                <div id="error-lastName" class="text-red-500" style="font-size: 0.75rem; color: #ef4444; margin-top: 0.25rem;"></div>
+            </div>
+        </div>
+
+        <div class="auth-grid-2">
+            <!-- Username -->
+            <div class="space-y-1">
+                <div class="auth-input-group">
+                  <div class="auth-input-icon-left">
+                    <i data-feather="at-sign" class="auth-icon"></i>
+                  </div>
+                  <input th:field="*{username}" id="username" required type="text"
+                    class="auth-input" placeholder="Username" />
+                </div>
+                <div id="error-username" class="text-red-500" style="font-size: 0.75rem; color: #ef4444; margin-top: 0.25rem;"></div>
+            </div>
+            
+            <!-- Phone -->
+            <div class="space-y-1">
+                <div class="auth-input-group">
+                  <div class="auth-input-icon-left">
+                    <i data-feather="phone" class="auth-icon"></i>
+                  </div>
+                  <input th:field="*{phone}" id="phoneNumber" required type="tel"
+                    class="auth-input" placeholder="Phone Number" />
+                </div>
+                <div id="error-phone" class="text-red-500" style="font-size: 0.75rem; color: #ef4444; margin-top: 0.25rem;"></div>
+            </div>
+        </div>
+
+        <div class="auth-grid-2">
+            <!-- Email -->
+            <div class="space-y-1" style="grid-column: span 2;">
+                <div class="auth-input-group">
+                  <div class="auth-input-icon-left">
+                    <i data-feather="mail" class="auth-icon"></i>
+                  </div>
+                  <input th:field="*{email}" id="email" required type="email"
+                    class="auth-input" placeholder="Email Address" />
+                </div>
+                <div id="error-email" class="text-red-500" style="font-size: 0.75rem; color: #ef4444; margin-top: 0.25rem;"></div>
+            </div>
+        </div>
+
+        <div class="auth-grid-2">
+            <!-- Password -->
+            <div class="space-y-1">
+                <div class="auth-input-group">
+                  <div class="auth-input-icon-left">
+                    <i data-feather="lock" class="auth-icon"></i>
+                  </div>
+                  <input th:field="*{passwordHash}" id="password" required type="password"
+                    class="auth-input-password" placeholder="Password" />
+                  <button type="button" onclick="togglePassword('password', 'eye-icon-1')" class="auth-input-icon-right">
+                    <i id="eye-icon-1" data-feather="eye" class="auth-icon"></i>
+                  </button>
+                </div>
+                <div id="error-password" class="text-red-500" style="font-size: 0.75rem; color: #ef4444; margin-top: 0.25rem;"></div>
+            </div>
+            
+            <!-- Confirm Password -->
+            <div class="space-y-1">
+                <div class="auth-input-group">
+                  <div class="auth-input-icon-left">
+                    <i data-feather="lock" class="auth-icon"></i>
+                  </div>
+                  <input id="confirmPassword" required type="password"
+                    class="auth-input-password" placeholder="Confirm Password" />
+                  <button type="button" onclick="togglePassword('confirmPassword', 'eye-icon-2')" class="auth-input-icon-right">
+                    <i id="eye-icon-2" data-feather="eye" class="auth-icon"></i>
+                  </button>
+                </div>
+                <div id="error-confirmPassword" class="text-red-500" style="font-size: 0.75rem; color: #ef4444; margin-top: 0.25rem;"></div>
+            </div>
+        </div>
+
+        <button type="submit" class="auth-btn-primary mt-6">
+            Register
+        </button>
+        
+        <!-- Google Button -->
+        <div class="auth-divider">
+            <div class="auth-divider-line"><div class="auth-divider-line-inner"></div></div>
+            <div class="auth-divider-text-container"><span class="auth-divider-text">OR</span></div>
+        </div>
+
+        <a href="/oauth2/authorization/google" class="auth-btn-google">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="auth-icon-google" alt="Google icon">
+          Sign up with Google
+        </a>
+      </form>
+
+      <!-- Footer Login Link -->
+      <p class="auth-footer-text">
+        Already have an account? 
+        <a href="/login" class="auth-link">
+          Login here
+        </a>
+      </p>
+
+    </div>
+  </div>
+</div>
+
+<script>
+    feather.replace();
+
+    function togglePassword(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (input.type === "password") {
+        input.type = "text";
+        icon.setAttribute('data-feather', 'eye-off');
+      } else {
+        input.type = "password";
+        icon.setAttribute('data-feather', 'eye');
+      }
+      feather.replace();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const form = document.querySelector("form");
+        const passwordField = document.getElementById("password");
+        const confirmPasswordField = document.getElementById("confirmPassword");
+
+        function setError(id, message) {
+            const errorElement = document.getElementById(id);
+            if (errorElement) {
+                errorElement.innerText = message;
+            }
+        }
+
+        function clearError(id) {
+            const errorElement = document.getElementById(id);
+            if (errorElement) {
+                errorElement.innerText = "";
+            }
+        }
+
+        function validatePasswordMatch() {
+            if (!passwordField || !confirmPasswordField) return true;
+            const passwordValue = passwordField.value;
+            const confirmValue = confirmPasswordField.value;
+
+            if (confirmValue.trim() === "") {
+                clearError("error-confirmPassword");
+                return true;
+            }
+
+            if (passwordValue === confirmValue) {
+                clearError("error-confirmPassword");
+                return true;
+            } else {
+                setError("error-confirmPassword", "Passwords do not match.");
+                return false;
+            }
+        }
+
+        if (passwordField && confirmPasswordField) {
+            passwordField.addEventListener("input", validatePasswordMatch);
+            confirmPasswordField.addEventListener("input", validatePasswordMatch);
+        }
+
+        if (form) {
+            form.addEventListener("submit", function (e) {
+                let valid = true;
+
+                const firstName = document.getElementById("firstName")?.value?.trim() || "";
+                const lastName = document.getElementById("lastName")?.value?.trim() || "";
+                const username = document.getElementById("username")?.value?.trim() || "";
+                const email = document.getElementById("email")?.value?.trim() || "";
+                const phone = document.getElementById("phoneNumber")?.value?.trim() || "";
+                const password = passwordField?.value?.trim() || "";
+
+                clearError("error-firstName");
+                clearError("error-lastName");
+                clearError("error-username");
+                clearError("error-email");
+                clearError("error-phone");
+                clearError("error-password");
+                clearError("error-confirmPassword");
+
+                if (!firstName) {
+                    setError("error-firstName", "Required");
+                    valid = false;
+                } else if (!/^[\p{L} ]+$/u.test(firstName)) {
+                    setError("error-firstName", "Letters only");
+                    valid = false;
+                }
+
+                if (!lastName) {
+                    setError("error-lastName", "Required");
+                    valid = false;
+                } else if (!/^[\p{L} ]+$/u.test(lastName)) {
+                    setError("error-lastName", "Letters only");
+                    valid = false;
+                }
+
+                if (!username) {
+                    setError("error-username", "Required");
+                    valid = false;
+                } else if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+                    setError("error-username", "Letters, digits, _ only");
+                    valid = false;
+                }
+
+                if (!email) {
+                    setError("error-email", "Required");
+                    valid = false;
+                } else if (!/^[\w._%+-]+@[\w.-]+\.[a-zA-Z]{2,6}$/.test(email)) {
+                    setError("error-email", "Invalid email format");
+                    valid = false;
+                }
+
+                if (!phone) {
+                    setError("error-phone", "Required");
+                    valid = false;
+                } else if (!/^\d{10}$/.test(phone)) {
+                    setError("error-phone", "Must contain 10 digits");
+                    valid = false;
+                }
+
+                let passwordValid = true;
+                if (passwordField) { 
+                    if (!password) {
+                        setError("error-password", "Required");
+                        passwordValid = false;
+                    } else if (password.length < 8 || password.length > 64) {
+                        setError("error-password", "8-64 characters");
+                        passwordValid = false;
+                    }
+                }
+                if (!passwordValid) valid = false;
+
+                if (confirmPasswordField) {
+                    const match = validatePasswordMatch();
+                    if (!match) {
+                        valid = false;
+                        if (valid) confirmPasswordField.focus();
+                    }
+                }
+
+                if (!valid) {
+                    e.preventDefault();
+                }
+            });
+        }
+    });
+</script>
+
+</body>
+</html>
