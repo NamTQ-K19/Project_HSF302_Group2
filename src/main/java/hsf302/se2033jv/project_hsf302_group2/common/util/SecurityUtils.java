@@ -16,6 +16,10 @@ public class SecurityUtils {
         Object principal = authentication.getPrincipal();
         if (principal instanceof hsf302.se2033jv.project_hsf302_group2.auth.security.CustomUserDetails customUserDetails) {
             return customUserDetails.getUser().getUserId().longValue();
+        } else if (principal instanceof hsf302.se2033jv.project_hsf302_group2.auth.security.CustomOidcUser customOidcUser) {
+            if (customOidcUser.getUser() != null && customOidcUser.getUser().getUserId() != null) {
+                return customOidcUser.getUser().getUserId().longValue();
+            }
         } else if (principal instanceof hsf302.se2033jv.project_hsf302_group2.common.entity.User user) {
             return user.getUserId().longValue();
         }
@@ -31,6 +35,10 @@ public class SecurityUtils {
         Object principal = authentication.getPrincipal();
         if (principal instanceof UserDetails userDetails) {
             return userDetails.getUsername();
+        } else if (principal instanceof hsf302.se2033jv.project_hsf302_group2.auth.security.CustomOidcUser customOidcUser) {
+            if (customOidcUser.getUser() != null) {
+                return customOidcUser.getUser().getUsername();
+            }
         }
         return authentication.getName();
     }

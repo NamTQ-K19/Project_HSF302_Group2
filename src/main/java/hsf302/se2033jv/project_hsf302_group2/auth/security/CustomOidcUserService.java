@@ -77,16 +77,8 @@ public class CustomOidcUserService extends OidcUserService {
         // → RuntimeException("User not found")
         // Wrapper này override getName() để trả về user.getUsername() thực trong DB
         final User finalUser = user;
-        final OidcUser finalOidcUser = oidcUser;
         final Set<SimpleGrantedAuthority> mappedAuthorities = Set.of(new SimpleGrantedAuthority("ROLE_CUSTOMER"));
 
-        return new OidcUser() {
-            @Override public String getName() { return finalUser.getUsername(); }
-            @Override public Map<String, Object> getAttributes() { return finalOidcUser.getAttributes(); }
-            @Override public java.util.Collection<? extends org.springframework.security.core.GrantedAuthority> getAuthorities() { return mappedAuthorities; }
-            @Override public OidcIdToken getIdToken() { return finalOidcUser.getIdToken(); }
-            @Override public OidcUserInfo getUserInfo() { return finalOidcUser.getUserInfo(); }
-            @Override public Map<String, Object> getClaims() { return finalOidcUser.getClaims(); }
-        };
+        return new CustomOidcUser(oidcUser, user, mappedAuthorities);
     }
 }

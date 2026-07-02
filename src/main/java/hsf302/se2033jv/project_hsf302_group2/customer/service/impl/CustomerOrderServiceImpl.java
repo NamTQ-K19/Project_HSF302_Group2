@@ -72,12 +72,11 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         if (selectedItemIds != null && !selectedItemIds.isEmpty()) {
             cartItems = cartItemRepository.findAllById(selectedItemIds);
 
-            // Bỏ qua kiểm tra quyền
-            // for (CartItem item : cartItems) {
-            //     if (!item.getCart().getCustomer().getUserId().equals(userId)) {
-            //         throw new BusinessException("You are not authorized to access this item");
-            //     }
-            // }
+            for (CartItem item : cartItems) {
+                if (!item.getCart().getCustomer().getUserId().equals(userId)) {
+                    throw new BusinessException("You are not authorized to access this item");
+                }
+            }
 
             if (cartItems.isEmpty()) {
                 throw new BusinessException("No items selected for checkout");
@@ -238,10 +237,9 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
-        // Bỏ qua kiểm tra quyền
-        // if (!order.getUser().getUserId().equals(userId)) {
-        //     throw new BusinessException("You are not authorized to view this order");
-        // }
+        if (!order.getUser().getUserId().equals(userId)) {
+            throw new BusinessException("You are not authorized to view this order");
+        }
 
         List<OrderDetail> details = orderDetailRepository.findByOrder_OrderId(orderId);
         Payment payment = paymentRepository.findByOrder_OrderId(orderId).orElse(null);
@@ -256,10 +254,9 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
-        // Bỏ qua kiểm tra quyền
-        // if (!order.getUser().getUserId().equals(userId)) {
-        //     throw new BusinessException("You are not authorized to cancel this order");
-        // }
+        if (!order.getUser().getUserId().equals(userId)) {
+            throw new BusinessException("You are not authorized to cancel this order");
+        }
 
         if (order.getOrderStatus() != OrderStatus.PENDING &&
                 order.getOrderStatus() != OrderStatus.CONFIRMED) {

@@ -53,10 +53,9 @@ public class CustomerReviewServiceImpl implements CustomerReviewService {
         Order order = orderRepository.findById(request.getOrderId())
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
-        // Bỏ qua kiểm tra quyền
-        // if (!order.getUser().getUserId().equals(userId)) {
-        //     throw new BusinessException("You are not authorized to review this order");
-        // }
+        if (!order.getUser().getUserId().equals(userId)) {
+            throw new BusinessException("You are not authorized to review this order");
+        }
 
         if (order.getOrderStatus() != OrderStatus.COMPLETED) {
             throw new BusinessException("Only completed orders can be reviewed");
@@ -119,10 +118,9 @@ public class CustomerReviewServiceImpl implements CustomerReviewService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
-        // Bỏ qua kiểm tra quyền
-        // if (!order.getUser().getUserId().equals(userId)) {
-        //     throw new BusinessException("You are not authorized to view reviews for this order");
-        // }
+        if (!order.getUser().getUserId().equals(userId)) {
+            throw new BusinessException("You are not authorized to view reviews for this order");
+        }
 
         List<Review> reviews = reviewRepository.findByCustomer_UserIdAndOrder_OrderId(userId, orderId);
         return reviews.stream()
@@ -141,10 +139,9 @@ public class CustomerReviewServiceImpl implements CustomerReviewService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
-        // Bỏ qua kiểm tra quyền
-        // if (!order.getUser().getUserId().equals(userId)) {
-        //     throw new BusinessException("You are not authorized to view this order");
-        // }
+        if (!order.getUser().getUserId().equals(userId)) {
+            throw new BusinessException("You are not authorized to view this order");
+        }
 
         if (order.getOrderStatus() != OrderStatus.COMPLETED) {
             return new ArrayList<>();

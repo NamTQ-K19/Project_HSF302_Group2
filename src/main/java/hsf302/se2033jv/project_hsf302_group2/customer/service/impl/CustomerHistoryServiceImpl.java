@@ -6,6 +6,7 @@ import hsf302.se2033jv.project_hsf302_group2.common.entity.OrderDetail;
 import hsf302.se2033jv.project_hsf302_group2.common.entity.Payment;
 import hsf302.se2033jv.project_hsf302_group2.common.entity.CustomerAddress;
 import hsf302.se2033jv.project_hsf302_group2.common.enums.OrderStatus;
+import hsf302.se2033jv.project_hsf302_group2.common.exception.BusinessException;
 import hsf302.se2033jv.project_hsf302_group2.common.exception.ResourceNotFoundException;
 import hsf302.se2033jv.project_hsf302_group2.common.repository.OrderDetailRepository;
 import hsf302.se2033jv.project_hsf302_group2.common.repository.OrderRepository;
@@ -79,10 +80,9 @@ public class CustomerHistoryServiceImpl implements CustomerHistoryService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
-        // Bỏ qua kiểm tra quyền
-        // if (!order.getUser().getUserId().equals(userId)) {
-        //     throw new BusinessException("You are not authorized to view this order");
-        // }
+        if (!order.getUser().getUserId().equals(userId)) {
+            throw new BusinessException("You are not authorized to view this order");
+        }
 
         List<OrderDetail> details = orderDetailRepository.findByOrder_OrderId(orderId);
         Payment payment = paymentRepository.findByOrder_OrderId(orderId).orElse(null);
