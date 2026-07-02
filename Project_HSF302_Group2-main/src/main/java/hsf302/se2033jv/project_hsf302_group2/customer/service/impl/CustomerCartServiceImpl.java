@@ -110,10 +110,9 @@ public class CustomerCartServiceImpl implements CustomerCartService {
         CartItem item = cartItemRepository.findById(request.getCartItemId())
                 .orElseThrow(() -> new ResourceNotFoundException("Cart item not found: " + request.getCartItemId()));
 
-        // ⭐ BỎ QUA KIỂM TRA QUYỀN (tạm thời để test)
-        // if (!item.getCart().getCustomer().getUserId().equals(userId)) {
-        //     throw new BusinessException("You are not authorized to update this cart item");
-        // }
+        if (!item.getCart().getCustomer().getUserId().equals(userId)) {
+            throw new BusinessException("You are not authorized to update this cart item");
+        }
 
         int newQuantity = item.getQuantity();
         if ("increase".equals(request.getAction())) {
@@ -145,10 +144,9 @@ public class CustomerCartServiceImpl implements CustomerCartService {
         CartItem item = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart item not found"));
 
-        // ⭐ BỎ QUA KIỂM TRA QUYỀN (tạm thời để test)
-        // if (!item.getCart().getCustomer().getUserId().equals(userId)) {
-        //     throw new BusinessException("You are not authorized to remove this cart item");
-        // }
+        if (!item.getCart().getCustomer().getUserId().equals(userId)) {
+            throw new BusinessException("You are not authorized to remove this cart item");
+        }
 
         cartItemRepository.delete(item);
         log.info("Removed cart item: id={}", cartItemId);

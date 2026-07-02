@@ -2,6 +2,7 @@
 package hsf302.se2033jv.project_hsf302_group2.customer.controller;
 
 import hsf302.se2033jv.project_hsf302_group2.common.entity.CartItem;
+import hsf302.se2033jv.project_hsf302_group2.common.exception.BusinessException;
 import hsf302.se2033jv.project_hsf302_group2.common.util.SecurityUtils;
 import hsf302.se2033jv.project_hsf302_group2.customer.dto.request.AddToCartRequest;
 import hsf302.se2033jv.project_hsf302_group2.customer.dto.request.CartUpdateRequest;
@@ -174,12 +175,11 @@ public class CustomerCartController {
 
             List<CartItem> selectedItems = cartItemRepository.findAllById(itemIds);
 
-            // ⭐ BỎ QUA KIỂM TRA QUYỀN (tạm thời để test)
-            // for (CartItem item : selectedItems) {
-            //     if (!item.getCart().getCustomer().getUserId().equals(userId)) {
-            //         throw new BusinessException("You are not authorized to access this item");
-            //     }
-            // }
+            for (CartItem item : selectedItems) {
+                if (!item.getCart().getCustomer().getUserId().equals(userId)) {
+                    throw new BusinessException("You are not authorized to access this item");
+                }
+            }
 
             if (selectedItems.isEmpty()) {
                 response.put("success", false);

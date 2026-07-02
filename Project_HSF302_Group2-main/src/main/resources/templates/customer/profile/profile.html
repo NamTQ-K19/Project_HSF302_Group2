@@ -181,7 +181,7 @@
                     </button>
 
                     <!-- Add form (hidden by default) -->
-                    <div id="addAddressForm" class="hidden mt-6 bg-surface-container border border-outline-variant rounded-2xl p-6" th:classappend="${showAddressForm} ? '!block'">
+                    <div id="addAddressForm" class="hidden mt-6 bg-surface-container border border-outline-variant rounded-2xl p-6" th:classappend="${showAddressForm != null ? showAddressForm : (param.addAddress != null)} ? '!block'">
                         <h3 class="font-bold text-body-lg text-primary mb-5 m-0">Thêm địa chỉ mới</h3>
                         <form th:action="@{/customer/profile/address/add}" th:object="${addressForm}" method="post">
                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
