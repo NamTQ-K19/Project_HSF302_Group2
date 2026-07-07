@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Đặt bàn mới – BrewMaster</title>
+
+    <!-- Tailwind CSS config -->
+    <div th:replace="~{catalog/tailwind-head :: tailwind-head}"></div>
+
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <!-- CSRF -->
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
+
+    <!-- ⭐ CSS riêng -->
+    <link rel="stylesheet" th:href="@{/css/reservation/create-reservation.css}" />
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased">
+
+<div th:replace="~{catalog/navbar :: navbar}"></div>
+
+<main class="max-w-max-width mx-auto px-margin-desktop py-12 min-h-[70vh]">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl overflow-hidden shadow-sm">
+            <div class="px-8 py-5 border-b border-outline-variant bg-surface-container-low/50 flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary text-[28px]">event_available</span>
+                <h2 class="font-headline-sm text-primary m-0">Đặt bàn mới</h2>
+            </div>
+            <div class="p-8">
+                <form th:action="@{/customer/reservations/new}" method="post" id="reservationForm" class="space-y-6" th:object="${request}">
+
+                    <div th:if="${#fields.hasErrors('*')}" class="bg-error/10 text-error p-4 rounded-xl mb-6 border border-error/20">
+                        <ul class="list-none m-0 p-0">
+                            <li th:each="err : ${#fields.allErrors()}" th:text="${err.defaultMessage}"></li>
+                        </ul>
+                    </div>
+
+                    <!-- Step 1: Thông tin cơ bản -->
+                    <div id="stepInfo">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold text-on-surface mb-2">Ngày đặt bàn <span class="text-error">*</span></label>
+                                <input type="date" th:field="*{reservationDate}" th:min="${minDate}" th:max="${maxDate}" id="reservationDate"
+                                       class="w-full bg-surface-container border border-outline rounded-xl p-3 text-body-md focus:border-primary outline-none focus:ring-2 focus:ring-primary/20" required />
+                                <p th:if="${#fields.hasErrors('reservationDate')}" th:errors="*{reservationDate}" class="text-error text-sm mt-1"></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-on-surface mb-2">Giờ đặt bàn <span class="text-error">*</span></label>
+                                <input type="time" th:field="*{reservationTime}" th:min="${openingTime}" th:max="${closingTime}" id="reservationTime"
+                                       class="w-full bg-surface-container border border-outline rounded-xl p-3 text-body-md focus:border-primary outline-none focus:ring-2 focus:ring-primary/20" required />
+                                <p th:if="${#fields.hasErrors('reservationTime')}" th:errors="*{reservationTime}" class="text-error text-sm mt-1"></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-on-surface mb-2">Số lượng khách <span class="text-error">*</span></label>
+                                <input type="number" th:field="*{partySize}" min="1" max="10" id="partySize"
+                                       class="w-full bg-surface-container border border-outline rounded-xl p-3 text-body-md focus:border-primary outline-none focus:ring-2 focus:ring-primary/20" required />
+                                <p th:if="${#fields.hasErrors('partySize')}" th:errors="*{partySize}" class="text-error text-sm mt-1"></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-on-surface mb-2">Thời gian dự kiến</label>
+                                <select th:field="*{durationMinutes}" class="w-full bg-surface-container border border-outline rounded-xl p-3 text-body-md focus:border-primary outline-none focus:ring-2 focus:ring-primary/20">
+                                    <option value="60">60 phút</option>
+                                    <option value="90">90 phút</option>
+                                    <option value="120" selected>120 phút (2 giờ)</option>
+                                    <option value="150">150 phút (2.5 giờ)</option>
+                                    <option value="180">180 phút (3 giờ)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <label class="block text-sm font-bold text-on-surface mb-2">Ghi chú đặc biệt</label>
+                            <textarea th:field="*{note}" rows="2" placeholder="Nhập ghi chú đặc biệt..." maxlength="500" id="note"
+                                      class="w-full bg-surface-container border border-outline rounded-xl p-3 text-body-md focus:border-primary outline-none focus:ring-2 focus:ring-primary/20 resize-y"></textarea>
+                        </div>
+
+                        <!-- Nút xem map -->
+                        <div class="mt-4 flex gap-4">
+                            <button type="button" onclick="toggleMap()"
+                                    class="bg-primary hover:opacity-90 text-white px-6 py-3 rounded-xl font-bold text-body-sm transition-opacity border-none cursor-pointer shadow-sm flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px]">map</span> Xem sơ đồ bàn
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Map và chọn bàn -->
+                    <div id="stepMap" style="display:none;" class="border-t border-outline-variant pt-6 mt-6">
+                        <h3 class="text-lg font-bold text-on-surface mb-4">Chọn bàn trên sơ đồ</h3>
+
+                        <!-- Chọn tầng -->
+                        <div class="mb-4 flex items-center gap-4 flex-wrap">
+                            <span class="text-sm font-bold text-on-surface">Tầng:</span>
+                            <div id="mapSelector" class="flex gap-2">
+                                <button type="button" onclick="loadMap(1)" class="map-selector-btn active" data-map="1">Tầng 1</button>
+                                <button type="button" onclick="loadMap(2)" class="map-selector-btn" data-map="2">Tầng 2</button>
+                            </div>
+                        </div>
+
+                        <!-- Map image -->
+                        <div class="map-container">
+                            <img id="mapImage" th:src="@{/images/map/floor1.png}" alt="Sơ đồ bàn tầng 1" />
+                        </div>
+
+                        <!-- Legend -->
+                        <div class="mt-4 map-legend">
+                            <span class="legend-item"><span class="legend-color available"></span> Còn trống</span>
+                            <span class="legend-item"><span class="legend-color booked"></span> Đã đặt</span>
+                            <span class="legend-item"><span class="legend-color selected"></span> Đang chọn</span>
+                        </div>
+
+                        <!-- Danh sách bàn -->
+                        <div id="tableList" class="table-container">
+                            <div class="col-span-full text-center py-8 text-on-surface-variant">Đang tải danh sách bàn...</div>
+                        </div>
+
+                        <!-- Selected table -->
+                        <div id="selectedTableInfo" class="mt-4 p-4 bg-primary/5 rounded-xl border border-primary/20 text-center" style="display:none;">
+                            <p class="text-sm text-on-surface-variant mb-1">Bạn đã chọn</p>
+                            <p class="text-xl font-bold text-primary" id="selectedTableName">Bàn 1</p>
+                            <p class="text-sm text-on-surface-variant" id="selectedTableCapacity">Sức chứa: 4 khách</p>
+                        </div>
+
+                        <!-- Hidden field để lưu bàn được chọn -->
+                        <input type="hidden" name="selectedTableId" id="selectedTableId" value="" />
+
+                        <div class="flex gap-4 mt-4">
+                            <button type="button" onclick="hideMap()" class="bg-surface-container-high hover:bg-surface-container text-on-surface px-6 py-3 rounded-xl font-bold text-body-sm transition-colors border border-outline cursor-pointer">
+                                Ẩn sơ đồ
+                            </button>
+                            <button type="button" onclick="clearSelection()" class="bg-surface-container-high hover:bg-surface-container text-on-surface px-6 py-3 rounded-xl font-bold text-body-sm transition-colors border border-outline cursor-pointer">
+                                Bỏ chọn bàn
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Submit -->
+                    <div class="flex gap-4 pt-4 border-t border-outline-variant">
+                        <button type="submit" id="submitBtn"
+                                class="flex-1 bg-primary hover:opacity-90 text-white px-6 py-3 rounded-xl font-bold text-body-sm transition-opacity border-none cursor-pointer shadow-sm flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-[18px]">check</span> Xác nhận đặt bàn
+                        </button>
+                        <a th:href="@{/customer/reservations}" class="flex-1 bg-surface-container-high hover:bg-surface-container text-on-surface px-6 py-3 rounded-xl font-bold text-body-sm transition-colors border border-outline text-center no-underline">Quay lại</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{catalog/footer :: footer}"></div>
+
+<!-- ⭐ JS riêng -->
+<script th:src="@{/js/reservation/create-reservation.js}"></script>
+
+</body>
+</html> 

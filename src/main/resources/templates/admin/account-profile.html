@@ -79,9 +79,15 @@
                     </div>
                     <div>
                         <h2 class="font-display-sm text-on-surface m-0 font-bold mb-2" th:text="${account.fullName}">Nguyễn Văn A</h2>
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-body-sm font-bold uppercase tracking-wider"
-                              th:classappend="${account.role == 'ADMIN' ? 'bg-error/10 text-error' : (account.role == 'STAFF' ? 'bg-[#3b82f6]/10 text-[#3b82f6]' : 'bg-primary/10 text-primary')}"
-                              th:text="${account.role}">ADMIN</span>
+                        <span th:switch="${account.role}">
+                            <span th:case="'Admin'" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-red-100 text-red-700">Quản trị viên</span>
+                            <span th:case="'Manager'" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-yellow-100 text-yellow-700">Quản lý</span>
+                            <span th:case="'Staff'" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-blue-100 text-blue-700">Nhân viên</span>
+                            <span th:case="'Cashier'" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-purple-100 text-purple-700">Thu ngân</span>
+                            <span th:case="'Barista'" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-green-100 text-green-700">Pha chế</span>
+                            <span th:case="'Customer'" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700">Khách hàng</span>
+                            <span th:case="*" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-gray-100 text-gray-700" th:text="${account.role}">Khác</span>
+                        </span>
                     </div>
                 </div>
                 <div>

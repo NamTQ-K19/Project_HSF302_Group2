@@ -5,10 +5,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BrewMaster - Quản lý người dùng</title>
-    
+
     <!-- Tailwind CSS config -->
     <div th:replace="~{catalog/tailwind-head :: tailwind-head}"></div>
-    
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <meta name="_csrf" th:content="${_csrf?.token}" />
@@ -63,7 +63,7 @@
                     Quản lý tài khoản người dùng trong hệ thống
                 </div>
             </div>
-            
+
             <div>
                 <a href="/admin/accounts/create" class="inline-flex items-center gap-2 bg-[#22c55e] hover:bg-[#16a34a] text-white px-5 py-2.5 rounded-full font-bold text-body-sm transition-colors border-none cursor-pointer no-underline shadow-sm">
                     <span class="material-symbols-outlined text-[18px]">add</span> Tạo mới
@@ -79,11 +79,11 @@
                         <label class="block text-body-sm font-bold text-on-surface mb-2">Vai trò</label>
                         <select name="role" class="w-full bg-surface-container border border-outline rounded-xl p-3 text-body-md focus:border-primary outline-none appearance-none">
                             <option value="">Tất cả</option>
-                            <option value="ADMIN" th:selected="${filterRequest.role == 'ADMIN'}">Admin</option>
-                            <option value="MANAGER" th:selected="${filterRequest.role == 'MANAGER'}">Manager</option>
-                            <option value="CASHIER" th:selected="${filterRequest.role == 'CASHIER'}">Cashier</option>
-                            <option value="BARISTA" th:selected="${filterRequest.role == 'BARISTA'}">Barista</option>
-                            <option value="CUSTOMER" th:selected="${filterRequest.role == 'CUSTOMER'}">Customer</option>
+                            <option value="Admin" th:selected="${filterRequest.role == 'Admin'}">Quản trị viên</option>
+                            <option value="Manager" th:selected="${filterRequest.role == 'Manager'}">Quản lý</option>
+                            <option value="Cashier" th:selected="${filterRequest.role == 'Cashier'}">Thu ngân</option>
+                            <option value="Barista" th:selected="${filterRequest.role == 'Barista'}">Pha chế</option>
+                            <option value="Customer" th:selected="${filterRequest.role == 'Customer'}">Khách hàng</option>
                         </select>
                     </div>
                     <div class="flex-1 min-w-[200px]">
@@ -138,9 +138,15 @@
                                 </td>
                                 <td class="py-4 px-6 text-body-sm text-on-surface-variant" th:text="${account.email}">Email</td>
                                 <td class="py-4 px-6">
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider"
-                                          th:classappend="${account.role == 'ADMIN' ? 'bg-error/10 text-error' : (account.role == 'STAFF' ? 'bg-[#3b82f6]/10 text-[#3b82f6]' : 'bg-primary/10 text-primary')}"
-                                          th:text="${account.role}">Vai trò</span>
+                                    <span th:switch="${account.role}">
+                                        <span th:case="'Admin'" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-red-100 text-red-700">Quản trị viên</span>
+                                        <span th:case="'Manager'" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-yellow-100 text-yellow-700">Quản lý</span>
+                                        <span th:case="'Staff'" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-blue-100 text-blue-700">Nhân viên</span>
+                                        <span th:case="'Cashier'" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-purple-100 text-purple-700">Thu ngân</span>
+                                        <span th:case="'Barista'" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-green-100 text-green-700">Pha chế</span>
+                                        <span th:case="'Customer'" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700">Khách hàng</span>
+                                        <span th:case="*" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-gray-100 text-gray-700" th:text="${account.role}">Khác</span>
+                                    </span>
                                 </td>
                                 <td class="py-4 px-6">
                                     <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-body-sm font-bold"
@@ -204,7 +210,7 @@
                 <span class="material-symbols-outlined text-[20px]">close</span>
             </button>
         </div>
-        
+
         <div class="mb-8 text-on-surface-variant">
             <p id="modalMessage" class="m-0 mb-4 text-body-md">Bạn có chắc chắn muốn thực hiện hành động này?</p>
 
@@ -212,7 +218,7 @@
                 <span class="material-symbols-outlined text-primary">person</span>
                 <span id="modalUserName" class="font-bold text-on-surface">---</span>
             </div>
-            
+
             <div id="modalReasonGroup" class="mt-4">
                 <label for="modalReason" class="block text-body-sm font-bold text-on-surface mb-2">
                     Lý do <span class="text-error">*</span>
@@ -221,7 +227,7 @@
                 <span class="error hidden text-error text-body-sm mt-1" id="modalReasonError"></span>
             </div>
         </div>
-        
+
         <div class="flex items-center gap-3 justify-end">
             <button class="px-5 py-2.5 rounded-full border border-outline-variant bg-surface-container hover:bg-surface-container-high text-on-surface font-bold text-body-sm transition-colors cursor-pointer" onclick="closeConfirmModal()">Hủy</button>
             <button id="modalConfirmBtn" class="px-5 py-2.5 rounded-full bg-primary hover:opacity-90 text-white font-bold text-body-sm transition-opacity border-none cursor-pointer flex items-center gap-2" onclick="confirmAction()">

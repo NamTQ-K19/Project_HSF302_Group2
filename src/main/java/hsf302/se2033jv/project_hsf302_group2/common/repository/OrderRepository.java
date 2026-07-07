@@ -55,4 +55,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     List<Order> findByUser_UserIdOrderByCreatedAtDesc(Integer userId);
 
     List<Order> findByUser_UserIdAndOrderStatus(Integer userId, OrderStatus status);
+
+    @Query("SELECT o.table.tableId FROM Order o WHERE o.table IS NOT NULL AND o.orderStatus IN ('PENDING', 'CONFIRMED', 'PREPARING')")
+    List<Integer> findActiveOrderTableIds();
 }

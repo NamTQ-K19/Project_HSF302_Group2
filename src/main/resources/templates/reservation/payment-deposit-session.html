@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Xác nhận đặt bàn – BrewMaster</title>
+    <div th:replace="~{catalog/tailwind-head :: tailwind-head}"></div>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
+
+    <style>
+        .payment-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            align-items: start;
+        }
+
+        /* ---- Cột trái: Select ---- */
+        .payment-select-wrap {
+            position: relative;
+        }
+        .payment-select-wrap select {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e5e5e5;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            background: white;
+            color: #1a1c1c;
+            outline: none;
+            appearance: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234a4a4a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+        }
+        .payment-select-wrap select:hover {
+            border-color: #c8a882;
+        }
+        .payment-select-wrap select:focus {
+            border-color: #271310;
+            box-shadow: 0 0 0 3px rgba(39, 19, 16, 0.15);
+        }
+        .payment-select-wrap .select-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1c1c;
+            margin-bottom: 6px;
+        }
+
+        /* ---- Cột phải: QR Panel ---- */
+        .qr-panel {
+            background: #faf8f6;
+            border-radius: 16px;
+            border: 1px solid #e5e5e5;
+            padding: 32px 24px;
+            min-height: 380px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        /* Placeholder khi chưa chọn */
+        .qr-panel .qr-placeholder .material-symbols-outlined {
+            font-size: 72px;
+            color: #cbd5e1;
+            display: block;
+            margin-bottom: 12px;
+        }
+        .qr-panel .qr-placeholder p {
+            color: #94a3b8;
+            font-size: 15px;
+            margin: 0;
+        }
+
+        /* QR Content - ẢNH TO HƠN */
+        .qr-panel .qr-content {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        .qr-panel .qr-content.show {
+            display: flex;
+        }
+        .qr-panel .qr-content .qr-image-wrap {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+            border: 1px solid #e5e5e5;
+            width: 100%;
+            max-width: 360px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .qr-panel .qr-content .qr-image-wrap img {
+            width: 100%;
+            max-width: 320px;
+            height: auto;
+            display: block;
+            border-radius: 12px;
+        }
+        .qr-panel .qr-content .qr-label {
+            margin-top: 16px;
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1c1c;
+        }
+        .qr-panel .qr-content .qr-sub {
+            font-size: 14px;
+            color: #706d6c;
+            margin-top: 4px;
+        }
+
+        /* No QR */
+        .qr-panel .no-qr {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+        }
+        .qr-panel .no-qr.show {
+            display: flex;
+        }
+        .qr-panel .no-qr .material-symbols-outlined {
+            font-size: 64px;
+            color: #cbd5e1;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .qr-panel .no-qr .no-qr-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1c1c;
+        }
+        .qr-panel .no-qr .no-qr-desc {
+            color: #94a3b8;
+            font-size: 14px;
+            margin: 4px 0 0 0;
+        }
+
+        /* Selected method info */
+        #selectedMethodInfo {
+            margin-top: 16px;
+            padding: 14px 18px;
+            background: #f8f5f0;
+            border-radius: 12px;
+            border: 1px solid #e5e5e5;
+            display: none;
+            align-items: center;
+            gap: 12px;
+        }
+        #selectedMethodInfo.show {
+            display: flex;
+        }
+        #selectedMethodInfo .method-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(39, 19, 16, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        #selectedMethodInfo .method-icon .material-symbols-outlined {
+            font-size: 24px;
+            color: #271310;
+        }
+        #selectedMethodInfo .method-name {
+            font-weight: 600;
+            font-size: 15px;
+            color: #1a1c1c;
+        }
+        #selectedMethodInfo .method-desc {
+            font-size: 13px;
+            color: #706d6c;
+        }
+
+        @media (max-width: 768px) {
+            .payment-layout {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .qr-panel {
+                min-height: 280px;
+                padding: 24px 16px;
+            }
+            .qr-panel .qr-content .qr-image-wrap {
+                max-width: 260px;
+                padding: 16px;
+            }
+            .qr-panel .qr-content .qr-image-wrap img {
+                max-width: 220px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased">
+
+<div th:replace="~{catalog/navbar :: navbar}"></div>
+
+<main class="max-w-max-width mx-auto px-margin-desktop py-12 min-h-[70vh]">
+    <div class="max-w-5xl mx-auto">
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl overflow-hidden shadow-sm">
+            <div class="px-8 py-5 border-b border-outline-variant bg-surface-container-low/50 flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary text-[28px]">event_available</span>
+                <h2 class="font-headline-sm text-primary m-0">Xác nhận đặt bàn</h2>
+            </div>
+            <div class="p-8">
+
+                <!-- Thông tin đặt bàn từ Session -->
+                <div class="bg-surface-container-low rounded-xl p-6 mb-6 border border-outline-variant">
+                    <h3 class="text-sm font-bold text-on-surface mb-4 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">receipt_long</span>
+                        Thông tin đặt bàn
+                    </h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                        <span class="text-on-surface-variant">Khách hàng:</span>
+                        <span class="font-bold" th:text="${sessionData.customerName}"></span>
+                        <span class="text-on-surface-variant">Ngày:</span>
+                        <span th:text="${#temporals.format(sessionData.reservationDate, 'dd/MM/yyyy')} + ' - ' + ${#temporals.format(sessionData.reservationTime, 'HH:mm')}"></span>
+                        <span class="text-on-surface-variant">Số khách:</span>
+                        <span th:text="${sessionData.partySize} + ' khách'"></span>
+                        <span class="text-on-surface-variant">Bàn:</span>
+                        <span th:text="'Bàn ' + ${sessionData.selectedTableId}"></span>
+                        <span class="text-on-surface-variant">Thời gian:</span>
+                        <span th:text="${sessionData.durationMinutes} + ' phút'"></span>
+                    </div>
+                    <div th:if="${sessionData.note != null and !sessionData.note.isEmpty()}" class="mt-3 pt-3 border-t border-outline-variant">
+                        <span class="text-on-surface-variant text-sm">Ghi chú:</span>
+                        <p class="text-sm text-on-surface mt-1" th:text="${sessionData.note}"></p>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-outline-variant text-xs text-on-surface-variant">
+                        ⚠️ Bàn sẽ được giữ trong <span th:text="${holdMinutes}"></span> phút sau khi thanh toán thành công
+                    </div>
+                </div>
+
+                <!-- Deposit Amount -->
+                <div class="bg-primary/5 rounded-xl p-4 border border-primary/20 text-center mb-6">
+                    <p class="text-sm text-on-surface-variant mb-1">Số tiền cọc cần thanh toán</p>
+                    <p class="text-2xl font-bold text-primary">
+                        <span th:text="${#numbers.formatDecimal(depositAmount != null ? depositAmount : 50000, 0, 'COMMA', 0, 'POINT') + 'đ'}">50.000đ</span>
+                    </p>
+                </div>
+
+                <!-- ⭐ Bố cục 2 cột -->
+                <form th:action="@{/customer/reservations/payment/confirm}" method="post" id="paymentForm">
+                    <div class="payment-layout">
+                        <!-- Cột trái: Select -->
+                        <div>
+                            <div class="payment-select-wrap">
+                                <label class="select-label">Chọn phương thức thanh toán</label>
+                                <select id="paymentMethodSelect" name="paymentMethodId" onchange="onPaymentMethodChange(this)">
+                                    <option value="">-- Chọn phương thức --</option>
+                                    <option th:each="method : ${paymentMethods}"
+                                            th:value="${method.paymentMethodId}"
+                                            th:text="${method.name}"></option>
+                                </select>
+                            </div>
+                            <p id="paymentError" class="text-error text-sm mt-2 hidden">Vui lòng chọn phương thức thanh toán</p>
+
+                            <!-- Thông tin method được chọn -->
+                            <div id="selectedMethodInfo">
+                                <div class="method-icon">
+                                    <span class="material-symbols-outlined" id="methodIcon">payments</span>
+                                </div>
+                                <div>
+                                    <div class="method-name" id="methodName">VNPay</div>
+                                    <div class="method-desc" id="methodDesc">Quét mã QR để thanh toán</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cột phải: QR Panel -->
+                        <div class="qr-panel" id="qrPanel">
+                            <!-- Placeholder khi chưa chọn -->
+                            <div id="qrPlaceholder" class="qr-placeholder">
+                                <span class="material-symbols-outlined">qr_code</span>
+                                <p>Chọn phương thức thanh toán<br/>để xem mã QR</p>
+                            </div>
+
+                            <!-- QR Content - ẢNH TO -->
+                            <div id="qrContent" class="qr-content">
+                                <div class="qr-image-wrap">
+                                    <img id="qrImage" src="" alt="Mã QR thanh toán" />
+                                </div>
+                                <div class="qr-label" id="qrLabel">VNPay</div>
+                                <div class="qr-sub" id="qrSub">Quét mã QR bằng ứng dụng ngân hàng</div>
+                            </div>
+
+                            <!-- No QR -->
+                            <div id="noQrContent" class="no-qr">
+                                <span class="material-symbols-outlined">info</span>
+                                <p class="no-qr-title" id="noQrTitle">Thanh toán khi nhận bàn</p>
+                                <p class="no-qr-desc" id="noQrDesc">Bạn sẽ thanh toán trực tiếp tại quán</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 mt-6 pt-4 border-t border-outline-variant">
+                        <button type="submit" id="payBtn" class="flex-1 bg-primary hover:opacity-90 text-white px-6 py-3 rounded-xl font-bold text-body-sm transition-opacity border-none cursor-pointer shadow-sm flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-[18px]">check</span> Xác nhận & Thanh toán
+                        </button>
+                        <a th:href="@{/customer/reservations/payment/cancel}"
+                           class="flex-1 bg-surface-container-high hover:bg-surface-container text-on-surface px-6 py-3 rounded-xl font-bold text-body-sm transition-colors border border-outline text-center no-underline">
+                            Quay lại
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{catalog/footer :: footer}"></div>
+
+<script>
+    // Map methodId -> thông tin
+    const qrDataMap = {
+        1: {
+            icon: 'payments',
+            name: 'Tiền mặt',
+            desc: 'Thanh toán khi nhận bàn',
+            hasQR: false,
+            qrImage: null,
+            qrLabel: 'Thanh toán tiền mặt',
+            qrSub: 'Bạn sẽ thanh toán trực tiếp tại quán'
+        },
+        2: {
+            icon: 'qr_code_scanner',
+            name: 'VNPay',
+            desc: 'Quét mã QR qua VNPay',
+            hasQR: true,
+            qrImage: '/images/qr/vnpay-qr.png',
+            qrLabel: 'VNPay',
+            qrSub: 'Quét mã QR bằng ứng dụng VNPay'
+        },
+        3: {
+            icon: 'qr_code_scanner',
+            name: 'Momo',
+            desc: 'Quét mã QR qua Momo',
+            hasQR: true,
+            qrImage: '/images/qr/momo-qr.png',
+            qrLabel: 'Momo',
+            qrSub: 'Quét mã QR bằng ứng dụng Momo'
+        },
+        4: {
+            icon: 'qr_code_scanner',
+            name: 'ZaloPay',
+            desc: 'Quét mã QR qua ZaloPay',
+            hasQR: true,
+            qrImage: '/images/qr/zalopay-qr.png',
+            qrLabel: 'ZaloPay',
+            qrSub: 'Quét mã QR bằng ứng dụng ZaloPay'
+        },
+        5: {
+            icon: 'credit_card',
+            name: 'Thẻ Visa/Mastercard',
+            desc: 'Nhập thông tin thẻ',
+            hasQR: false,
+            qrImage: null,
+            qrLabel: 'Thẻ Visa/Mastercard',
+            qrSub: 'Nhập thông tin thẻ để thanh toán'
+        },
+        6: {
+            icon: 'qr_code_scanner',
+            name: 'ShopeePay',
+            desc: 'Quét mã QR qua ShopeePay',
+            hasQR: true,
+            qrImage: '/images/qr/shopeepay-qr.png',
+            qrLabel: 'ShopeePay',
+            qrSub: 'Quét mã QR bằng ứng dụng ShopeePay'
+        }
+    };
+
+    function onPaymentMethodChange(select) {
+        const methodId = parseInt(select.value);
+        const placeholder = document.getElementById('qrPlaceholder');
+        const qrContent = document.getElementById('qrContent');
+        const noQrContent = document.getElementById('noQrContent');
+        const methodInfo = document.getElementById('selectedMethodInfo');
+        const paymentError = document.getElementById('paymentError');
+
+        paymentError.classList.add('hidden');
+
+        if (!methodId) {
+            placeholder.style.display = 'block';
+            qrContent.classList.remove('show');
+            noQrContent.classList.remove('show');
+            methodInfo.classList.remove('show');
+            return;
+        }
+
+        const data = qrDataMap[methodId];
+        if (!data) return;
+
+        // Hiển thị thông tin method
+        document.getElementById('methodIcon').textContent = data.icon;
+        document.getElementById('methodName').textContent = data.name;
+        document.getElementById('methodDesc').textContent = data.desc;
+        methodInfo.classList.add('show');
+
+        // Ẩn tất cả
+        placeholder.style.display = 'none';
+        qrContent.classList.remove('show');
+        noQrContent.classList.remove('show');
+
+        if (data.hasQR && data.qrImage) {
+            // Có QR - hiển thị ảnh TO
+            qrContent.classList.add('show');
+            document.getElementById('qrImage').src = data.qrImage;
+            document.getElementById('qrLabel').textContent = data.qrLabel;
+            document.getElementById('qrSub').textContent = data.qrSub;
+        } else {
+            // Không có QR
+            noQrContent.classList.add('show');
+            document.getElementById('noQrTitle').textContent = data.name;
+            document.getElementById('noQrDesc').textContent = data.desc;
+        }
+    }
+
+    // Validate before submit
+    document.getElementById('paymentForm').addEventListener('submit', function(e) {
+        const select = document.getElementById('paymentMethodSelect');
+        if (!select.value) {
+            e.preventDefault();
+            document.getElementById('paymentError').classList.remove('hidden');
+        }
+    });
+</script>
+
+</body>
+</html>

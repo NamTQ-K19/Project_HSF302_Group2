@@ -33,10 +33,6 @@ public class CoffeeTable {
     @Column(name = "capacity")
     private Integer capacity;
 
-    @Column(name = "status", length = 15)
-    @Enumerated(EnumType.STRING)
-    private TableStatus status;
-
     @Column(name = "is_active")
     private Boolean isActive;
 
@@ -54,9 +50,6 @@ public class CoffeeTable {
      */
     @PrePersist
     protected void onCreate() {
-        if (status == null) {
-            status = TableStatus.AVAILABLE;
-        }
         if (isActive == null) {
             isActive = true;
         }

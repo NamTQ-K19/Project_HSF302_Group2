@@ -19,6 +19,10 @@ public class CustomUserDetails implements UserDetails {
         return this.user;
     }
 
+    public Integer getUserId() {
+        return (user != null) ? user.getUserId() : null;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (user != null) {
