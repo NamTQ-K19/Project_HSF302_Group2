@@ -6,19 +6,24 @@
      ============================================================ -->
 <footer th:fragment="footer" class="bg-surface-container border-t border-outline-variant mt-20">
     <div class="grid grid-cols-1 md:grid-cols-4 gap-12 px-margin-desktop py-20 max-w-max-width mx-auto">
-        
+
         <div class="space-y-8">
             <div class="flex items-center gap-2.5">
-                <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'wght' 500;">coffee</span>
-                <h5 class="font-headline-sm text-headline-sm text-primary m-0">BrewMaster</h5>
+                <img th:if="${siteLogo}" th:src="@{${siteLogo}}"
+                     alt="Logo" class="h-10 w-auto" />
+                <span th:unless="${siteLogo}" class="material-symbols-outlined text-primary text-2xl"
+                      style="font-variation-settings: 'wght' 500;">coffee</span>
+                <h5 class="font-headline-sm text-headline-sm text-primary m-0"
+                    th:text="${siteName}">BrewMaster</h5>
             </div>
-            <p class="text-on-surface-variant text-body-sm leading-relaxed m-0">Mỗi tách cà phê – một câu chuyện. Chúng tôi mang đến hương vị thượng hạng từ những hạt cà phê được tuyển chọn kỹ lưỡng nhất.</p>
+            <p class="text-on-surface-variant text-body-sm leading-relaxed m-0"
+               th:text="${siteDescription}">Mỗi tách cà phê – một câu chuyện. Chúng tôi mang đến hương vị thượng hạng từ những hạt cà phê được tuyển chọn kỹ lưỡng nhất.</p>
             <a th:href="@{/loyalty-policy}" class="inline-flex items-center text-primary font-bold text-body-sm group border-b border-primary pb-0.5 no-underline">
                 <span>Chính sách tích điểm</span>
                 <span class="material-symbols-outlined text-sm ml-1 group-hover:translate-x-1 transition-transform">arrow_forward</span>
             </a>
         </div>
-        
+
         <div>
             <h6 class="font-label-caps text-label-caps text-primary uppercase mb-8 tracking-[0.15em] m-0">Khám phá</h6>
             <ul class="space-y-4 list-none p-0 m-0">
@@ -28,25 +33,25 @@
                 <li><a th:href="@{/customer/reservations}" class="text-on-surface-variant hover:text-primary transition-colors text-body-sm font-medium no-underline">Đặt bàn</a></li>
             </ul>
         </div>
-        
+
         <div>
             <h6 class="font-label-caps text-label-caps text-primary uppercase mb-8 tracking-[0.15em] m-0">Liên hệ</h6>
             <ul class="space-y-6 list-none p-0 m-0">
                 <li class="flex items-start gap-4">
                     <span class="material-symbols-outlined text-primary text-xl">location_on</span>
-                    <span class="text-on-surface-variant text-body-sm">123 Đường Cà Phê, Quận 1, TP.HCM</span>
+                    <span class="text-on-surface-variant text-body-sm" th:text="${siteAddress}">123 Đường Cà Phê, Quận 1, TP.HCM</span>
                 </li>
                 <li class="flex items-center gap-4">
                     <span class="material-symbols-outlined text-primary text-xl">call</span>
-                    <span class="text-on-surface-variant text-body-sm">0901 234 567</span>
+                    <span class="text-on-surface-variant text-body-sm" th:text="${sitePhone}">0901 234 567</span>
                 </li>
                 <li class="flex items-center gap-4">
                     <span class="material-symbols-outlined text-primary text-xl">mail</span>
-                    <span class="text-on-surface-variant text-body-sm">hello@cafe-aroma.vn</span>
+                    <span class="text-on-surface-variant text-body-sm" th:text="${siteEmail}">hello@cafe-aroma.vn</span>
                 </li>
             </ul>
         </div>
-        
+
         <div>
             <h6 class="font-label-caps text-label-caps text-primary uppercase mb-8 tracking-[0.15em] m-0">Bản tin</h6>
             <p class="text-on-surface-variant text-body-sm mb-6 m-0">Nhận ưu đãi và tin tức mới nhất từ BrewMaster.</p>
@@ -57,11 +62,11 @@
                 </button>
             </div>
         </div>
-        
+
     </div>
     <div class="border-t border-outline-variant py-8">
         <div class="max-w-max-width mx-auto px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-6">
-            <p class="text-on-surface-variant/50 text-[13px] m-0">© 2026 BrewMaster. All rights reserved.</p>
+            <p class="text-on-surface-variant/50 text-[13px] m-0" th:text="'© ' + ${#dates.format(#dates.createNow(), 'yyyy')} + ' ' + ${siteName} + '. All rights reserved.'">© 2026 BrewMaster. All rights reserved.</p>
             <div class="flex gap-8">
                 <a href="#" class="text-on-surface-variant/40 hover:text-primary transition-colors no-underline"><span class="material-symbols-outlined text-xl">public</span></a>
                 <a href="#" class="text-on-surface-variant/40 hover:text-primary transition-colors no-underline"><span class="material-symbols-outlined text-xl">photo_camera</span></a>

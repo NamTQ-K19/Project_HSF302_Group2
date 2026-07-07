@@ -8,14 +8,19 @@
      ============================================================ -->
 <header th:fragment="navbar" class="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-outline-variant">
     <div class="flex justify-between items-center w-full px-margin-desktop py-5 max-w-max-width mx-auto">
-        
+
         <!-- Logo / Home Link -->
         <div class="flex items-center gap-12">
             <a th:href="@{/}" class="flex items-center gap-2.5 no-underline">
-                <span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'wght' 500;">coffee</span>
-                <h1 class="font-headline-md text-headline-md tracking-tight text-primary m-0">BrewMaster</h1>
+                <!-- Logo -->
+                <img th:if="${siteLogo}" th:src="@{${siteLogo}}"
+                     alt="Logo" class="h-10 w-auto" />
+                <span th:unless="${siteLogo}" class="material-symbols-outlined text-primary text-3xl"
+                      style="font-variation-settings: 'wght' 500;">coffee</span>
+                <h1 class="font-headline-md text-headline-md tracking-tight text-primary m-0"
+                    th:text="${siteName}">BrewMaster</h1>
             </a>
-            
+
             <!-- Search Bar -->
             <form th:action="@{/search}" method="get" class="hidden md:flex items-center bg-surface-container-low border border-outline-variant rounded-full px-5 py-2.5 w-96 m-0">
                 <button type="submit" class="bg-transparent border-none p-0 flex items-center justify-center cursor-pointer">
@@ -24,7 +29,7 @@
                 <input name="keyword" th:value="${keyword}" class="bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-on-surface-variant/40 font-body-sm w-full p-0 outline-none" placeholder="Tìm kiếm đồ uống..." type="text"/>
             </form>
         </div>
-        
+
         <!-- Navigation -->
         <nav class="flex items-center gap-10">
             <!-- Desktop Links -->
@@ -33,7 +38,7 @@
                 <a th:href="@{/loyalty-policy}" class="text-on-surface-variant font-medium text-body-sm transition-opacity hover:opacity-100 hover:text-primary no-underline">Offers</a>
                 <a th:href="@{/customer/cart}" class="text-on-surface-variant font-medium text-body-sm transition-opacity hover:opacity-100 hover:text-primary no-underline">Cart</a>
             </div>
-            
+
             <!-- Actions -->
             <div class="flex items-center gap-5">
                 <!-- Cart Button -->
@@ -41,13 +46,13 @@
                     <span class="material-symbols-outlined text-2xl" data-icon="shopping_cart">shopping_cart</span>
                     <span class="absolute -top-1.5 -right-1.5 bg-primary text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center" id="cartBadge" style="display:none;"><span id="cartCount">0</span></span>
                 </a>
-                
+
                 <!-- Guest Actions -->
                 <div sec:authorize="isAnonymous()" class="flex gap-4">
                     <a th:href="@{/auth/login}" class="text-on-surface-variant font-medium text-body-sm hover:text-primary transition-colors no-underline px-4 py-2">Đăng nhập</a>
                     <a th:href="@{/register}" class="bg-primary text-white font-medium text-body-sm hover:opacity-90 transition-opacity no-underline px-6 py-2 rounded-full">Đăng ký</a>
                 </div>
-                
+
                 <!-- Logged In User Dropdown -->
                 <div sec:authorize="isAuthenticated()" class="relative group" tabindex="0">
                     <div class="flex items-center gap-2 cursor-pointer hover:opacity-70 transition-opacity">
@@ -57,7 +62,7 @@
                         <span sec:authentication="name" class="hidden sm:block text-on-surface font-semibold text-body-sm truncate max-w-[100px]">User</span>
                         <span class="material-symbols-outlined text-on-surface-variant text-sm">expand_more</span>
                     </div>
-                    
+
                     <!-- Dropdown Menu -->
                     <div class="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl border border-outline-variant shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                         <div class="p-2 flex flex-col gap-1">
