@@ -9,10 +9,9 @@
 
         <div class="space-y-8">
             <div class="flex items-center gap-2.5">
-                <img th:if="${siteLogo}" th:src="@{${siteLogo}}"
-                     alt="Logo" class="h-10 w-auto" />
-                <span th:unless="${siteLogo}" class="material-symbols-outlined text-primary text-2xl"
-                      style="font-variation-settings: 'wght' 500;">coffee</span>
+                <div class="text-primary text-3xl flex items-center justify-center">
+                    <i class="fas fa-mug-hot"></i>
+                </div>
                 <h5 class="font-headline-sm text-headline-sm text-primary m-0"
                     th:text="${siteName}">BrewMaster</h5>
             </div>

@@ -12,11 +12,9 @@
         <!-- Logo / Home Link -->
         <div class="flex items-center gap-12">
             <a th:href="@{/}" class="flex items-center gap-2.5 no-underline">
-                <!-- Logo -->
-                <img th:if="${siteLogo}" th:src="@{${siteLogo}}"
-                     alt="Logo" class="h-10 w-auto" />
-                <span th:unless="${siteLogo}" class="material-symbols-outlined text-primary text-3xl"
-                      style="font-variation-settings: 'wght' 500;">coffee</span>
+                <div class="text-primary text-3xl flex items-center justify-center">
+                    <i class="fas fa-mug-hot"></i>
+                </div>
                 <h1 class="font-headline-md text-headline-md tracking-tight text-primary m-0"
                     th:text="${siteName}">BrewMaster</h1>
             </a>
