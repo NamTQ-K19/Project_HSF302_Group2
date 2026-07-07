@@ -10,6 +10,7 @@ import hsf302.se2033jv.project_hsf302_group2.admin.dto.response.PageResponse;
 import hsf302.se2033jv.project_hsf302_group2.admin.service.interfaces.AccountService;
 import hsf302.se2033jv.project_hsf302_group2.admin.service.interfaces.DashboardService;
 import hsf302.se2033jv.project_hsf302_group2.common.entity.User;
+import hsf302.se2033jv.project_hsf302_group2.common.exception.BusinessException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -55,13 +56,16 @@ public class AdminController {
 
             String username = authentication != null ? authentication.getName() : "Admin";
             String displayName = username;
+            String adminEmail = "";
             if (authentication != null) {
                 AccountResponse user = accountService.getAccountByUsername(username);
                 if (user != null) {
-                    displayName = user.getFirstName() + " "  + user.getLastName();
+                    displayName = user.getFirstName() + " " + user.getLastName();
+                    adminEmail = user.getEmail() != null ? user.getEmail() : "";
                 }
             }
             model.addAttribute("displayName", displayName);
+            model.addAttribute("adminEmail", adminEmail); // Thêm adminEmail vào model
 
             String currentDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd 'Tháng' M, yyyy"));
             int hour = LocalDateTime.now().getHour();
@@ -89,10 +93,10 @@ public class AdminController {
             model.addAttribute("pageTitle", "Tổng quan");
 
             // ===== 1. THỐNG KÊ NGƯỜI DÙNG =====
-            model.addAttribute("totalUsers", dashboardService.getTotalUsers());      // 1. Tổng tài khoản
-            model.addAttribute("newUsersToday", dashboardService.getNewUsersToday()); // 2. Mới hôm nay
-            model.addAttribute("activeUsers", dashboardService.getActiveUsers());    // 3. Đang hoạt động
-            model.addAttribute("lockedUsers", dashboardService.getLockedUsers());    // (thêm)
+            model.addAttribute("totalUsers", dashboardService.getTotalUsers());
+            model.addAttribute("newUsersToday", dashboardService.getNewUsersToday());
+            model.addAttribute("activeUsers", dashboardService.getActiveUsers());
+            model.addAttribute("lockedUsers", dashboardService.getLockedUsers());
 
             // ===== 5. PHÂN BỐ THEO VAI TRÒ =====
             model.addAttribute("roleStats", dashboardService.getRoleStats());
@@ -161,7 +165,8 @@ public class AdminController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
-            Model model) {
+            Model model,
+            Authentication authentication) {
         log.info("Loading account list page");
 
         try {
@@ -173,6 +178,15 @@ public class AdminController {
 
             Pageable pageable = PageRequest.of(page, 10, Sort.by("userId").descending());
             PageResponse<?> pageResponse = accountService.getAccounts(filterRequest, pageable);
+
+            String adminEmail = "";
+            if (authentication != null) {
+                AccountResponse admin = accountService.getAccountByUsername(authentication.getName());
+                if (admin != null) {
+                    adminEmail = admin.getEmail() != null ? admin.getEmail() : "";
+                }
+            }
+            model.addAttribute("adminEmail", adminEmail);
 
             model.addAttribute("accounts", pageResponse.getContent());
             model.addAttribute("currentPage", pageResponse.getPageNumber());
@@ -193,13 +207,22 @@ public class AdminController {
             model.addAttribute("roleParam", "");
             model.addAttribute("statusParam", "");
             model.addAttribute("keywordParam", "");
+            model.addAttribute("adminEmail", "");
         }
 
         return "admin/accounts";
     }
 
     @GetMapping("/accounts/create")
-    public String createAccountForm(Model model) {
+    public String createAccountForm(Model model, Authentication authentication) {
+        String adminEmail = "";
+        if (authentication != null) {
+            AccountResponse admin = accountService.getAccountByUsername(authentication.getName());
+            if (admin != null) {
+                adminEmail = admin.getEmail() != null ? admin.getEmail() : "";
+            }
+        }
+        model.addAttribute("adminEmail", adminEmail);
         model.addAttribute("request", new CreateInternalAccountRequest());
         model.addAttribute("pageTitle", "Tạo tài khoản mới");
         return "admin/create-account";
@@ -207,9 +230,21 @@ public class AdminController {
 
     @PostMapping("/accounts/create")
     public String createAccountSubmit(@Valid @ModelAttribute("request") CreateInternalAccountRequest request,
-                                      RedirectAttributes redirectAttributes) {
+                                      RedirectAttributes redirectAttributes,
+                                      Authentication authentication) {
         log.info("Creating internal account for email: {}", request.getEmail());
         try {
+            String adminEmail = "";
+            if (authentication != null) {
+                AccountResponse admin = accountService.getAccountByUsername(authentication.getName());
+                if (admin != null) {
+                    adminEmail = admin.getEmail() != null ? admin.getEmail() : "";
+                }
+            }
+
+            // Set admin email vào request
+            request.setAdminEmail(adminEmail);
+
             accountService.createInternalAccount(request);
             redirectAttributes.addAttribute("email", request.getEmail());
             return "redirect:/admin/accounts/verify-otp";
@@ -224,9 +259,17 @@ public class AdminController {
     @GetMapping("/accounts/verify-otp")
     public String verifyOtpForm(@RequestParam String email,
                                 @RequestParam(required = false) String error,
-                                Model model) {
+                                Model model,
+                                Authentication authentication) {
+        String adminEmail = "";
+        if (authentication != null) {
+            AccountResponse admin = accountService.getAccountByUsername(authentication.getName());
+            if (admin != null) {
+                adminEmail = admin.getEmail() != null ? admin.getEmail() : "";
+            }
+        }
         model.addAttribute("email", email);
-        model.addAttribute("adminEmail", "luugiang205@gmail.com");
+        model.addAttribute("adminEmail", adminEmail);
         model.addAttribute("request", new OtpVerificationRequest());
         model.addAttribute("pageTitle", "Xác thực OTP");
         if (error != null) {
@@ -235,36 +278,59 @@ public class AdminController {
         return "admin/verify-otp";
     }
 
-    // ===== POST - XỬ LÝ VERIFY OTP (CHỈ CÓ 1 METHOD NÀY) =====
     @PostMapping("/accounts/verify-otp")
     @ResponseBody
     public Map<String, Object> verifyOtpSubmit(@RequestParam String email,
-                                               @RequestParam String otpCode) {
+                                               @RequestParam String otpCode,
+                                               Authentication authentication) {
         log.info("Verifying OTP for email: {}", email);
         Map<String, Object> response = new HashMap<>();
         try {
+            String adminEmail = "";
+            if (authentication != null) {
+                AccountResponse admin = accountService.getAccountByUsername(authentication.getName());
+                if (admin != null) {
+                    adminEmail = admin.getEmail() != null ? admin.getEmail() : "";
+                }
+            }
+
             OtpVerificationRequest request = new OtpVerificationRequest();
             request.setEmail(email);
             request.setOtpCode(otpCode);
+            request.setAdminEmail(adminEmail);
             accountService.verifyOtpAndCreateAccount(request);
             response.put("success", true);
             response.put("message", "Tài khoản đã được tạo thành công!");
             return response;
+        } catch (BusinessException e) {
+            log.error("Business error verifying OTP: ", e);
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return response;
         } catch (Exception e) {
             log.error("Error verifying OTP: ", e);
             response.put("success", false);
-            response.put("message", e.getMessage());
+            response.put("message", "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.");
             return response;
         }
     }
 
-    // ===== GET - RESEND OTP =====
     @GetMapping("/accounts/resend-otp")
     public String resendOtp(@RequestParam String email,
-                            RedirectAttributes redirectAttributes) {
+                            RedirectAttributes redirectAttributes,
+                            Authentication authentication) {
         log.info("Resending OTP for email: {}", email);
         try {
-            accountService.resendOtp(email);
+            // Lấy email admin đang đăng nhập
+            String adminEmail = "";
+            if (authentication != null) {
+                AccountResponse admin = accountService.getAccountByUsername(authentication.getName());
+                if (admin != null) {
+                    adminEmail = admin.getEmail() != null ? admin.getEmail() : "";
+                }
+            }
+
+            accountService.resendOtp(email, adminEmail);
             redirectAttributes.addFlashAttribute("message", "Mã OTP mới đã được gửi đến email của bạn");
             redirectAttributes.addFlashAttribute("messageType", "success");
         } catch (Exception e) {
@@ -275,14 +341,22 @@ public class AdminController {
         return "redirect:/admin/accounts/verify-otp";
     }
 
-    // ===== POST - RESEND OTP (CHO AJAX) =====
     @PostMapping("/accounts/resend-otp")
     @ResponseBody
-    public Map<String, Object> resendOtpSubmit(@RequestParam String email) {
+    public Map<String, Object> resendOtpSubmit(@RequestParam String email,
+                                               Authentication authentication) {
         log.info("Resending OTP for email: {}", email);
         Map<String, Object> response = new HashMap<>();
         try {
-            accountService.resendOtp(email);
+            String adminEmail = "";
+            if (authentication != null) {
+                AccountResponse admin = accountService.getAccountByUsername(authentication.getName());
+                if (admin != null) {
+                    adminEmail = admin.getEmail() != null ? admin.getEmail() : "";
+                }
+            }
+
+            accountService.resendOtp(email, adminEmail);
             response.put("success", true);
             response.put("message", "Mã OTP mới đã được gửi đến email của bạn");
             return response;
@@ -295,11 +369,21 @@ public class AdminController {
     }
 
     @GetMapping("/accounts/profile/{userId}")
-    public String accountProfile(@PathVariable Integer userId, Model model) {
+    public String accountProfile(@PathVariable Integer userId, Model model, Authentication authentication) {
         try {
             var account = accountService.getAccountById(userId);
             model.addAttribute("account", account);
             model.addAttribute("pageTitle", "Hồ sơ người dùng");
+
+            String adminEmail = "";
+            if (authentication != null) {
+                AccountResponse admin = accountService.getAccountByUsername(authentication.getName());
+                if (admin != null) {
+                    adminEmail = admin.getEmail() != null ? admin.getEmail() : "";
+                }
+            }
+            model.addAttribute("adminEmail", adminEmail);
+
         } catch (Exception e) {
             log.error("Error loading account profile: ", e);
             model.addAttribute("error", "Không tìm thấy người dùng");
@@ -313,16 +397,25 @@ public class AdminController {
             @RequestParam boolean lock,
             @RequestParam(required = false) String reason,
             RedirectAttributes redirectAttributes,
-            HttpServletRequest request) {
+            HttpServletRequest request,
+            Authentication authentication) {
         log.info("Toggling account status for user: {}, lock: {}, reason: {}", userId, lock, reason);
 
         try {
+            String adminEmail = "";
+            if (authentication != null) {
+                AccountResponse admin = accountService.getAccountByUsername(authentication.getName());
+                if (admin != null) {
+                    adminEmail = admin.getEmail() != null ? admin.getEmail() : "";
+                }
+            }
+
             if (lock) {
-                accountService.lockAccount(userId, reason);
+                accountService.lockAccount(userId, reason, adminEmail);
                 redirectAttributes.addFlashAttribute("message", "Tài khoản đã bị khóa thành công!");
                 redirectAttributes.addFlashAttribute("messageType", "success");
             } else {
-                accountService.unlockAccount(userId, reason);
+                accountService.unlockAccount(userId, reason, adminEmail);
                 redirectAttributes.addFlashAttribute("message", "Tài khoản đã được mở khóa thành công!");
                 redirectAttributes.addFlashAttribute("messageType", "success");
             }
@@ -338,8 +431,6 @@ public class AdminController {
         }
         return "redirect:" + referer;
     }
-
-    // ===================== HELPER METHODS =====================
 
     private void setDefaultModelAttributes(Model model) {
         model.addAttribute("greeting", "Chào buổi chiều, John! ☀️");
@@ -361,6 +452,7 @@ public class AdminController {
         model.addAttribute("chartLabels", new ArrayList<>());
         model.addAttribute("chartSalesData", new ArrayList<>());
         model.addAttribute("chartOrderCounts", new ArrayList<>());
+        model.addAttribute("adminEmail", "");
     }
 
     private String formatCurrency(BigDecimal amount) {

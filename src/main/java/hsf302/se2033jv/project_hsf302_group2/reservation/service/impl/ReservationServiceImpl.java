@@ -1,17 +1,16 @@
 package hsf302.se2033jv.project_hsf302_group2.reservation.service.impl;
 
-import hsf302.se2033jv.project_hsf302_group2.common.config.ReservationConfig;
 import hsf302.se2033jv.project_hsf302_group2.common.entity.*;
 import hsf302.se2033jv.project_hsf302_group2.common.enums.*;
 import hsf302.se2033jv.project_hsf302_group2.common.exception.*;
 import hsf302.se2033jv.project_hsf302_group2.common.repository.*;
+import hsf302.se2033jv.project_hsf302_group2.common.service.interfaces.ConfigService;
 import hsf302.se2033jv.project_hsf302_group2.reservation.dto.request.CancelReservationRequest;
 import hsf302.se2033jv.project_hsf302_group2.reservation.dto.request.CreateReservationRequest;
 import hsf302.se2033jv.project_hsf302_group2.reservation.dto.request.DepositPaymentRequest;
 import hsf302.se2033jv.project_hsf302_group2.reservation.dto.request.TableAvailabilityRequest;
 import hsf302.se2033jv.project_hsf302_group2.reservation.dto.response.*;
 import hsf302.se2033jv.project_hsf302_group2.reservation.service.interfaces.ReservationService;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -43,7 +42,7 @@ public class ReservationServiceImpl implements ReservationService {
     private final UserRepository userRepository;
     private final PaymentMethodRepository paymentMethodRepository;
     private final SystemLogRepository systemLogRepository;
-    private final ReservationConfig reservationConfig;
+    private final ConfigService configService;
     private final OrderRepository orderRepository;
     private final MapRepository mapRepository;
 
@@ -114,12 +113,7 @@ public class ReservationServiceImpl implements ReservationService {
         validateDateTime(request.getReservationDate(), request.getReservationTime());
         validatePartySize(request.getPartySize());
 
-        log.info("=== checkAvailability ===");
-        log.info("Date: {}, Time: {}, PartySize: {}",
-                request.getReservationDate(), request.getReservationTime(), request.getPartySize());
-
         List<Reservation> activeReservations = reservationRepository.findActiveReservationsByDate(request.getReservationDate());
-        log.info("Active reservations in date: {}", activeReservations.size());
 
         Set<Integer> reservedTableIds = activeReservations.stream()
                 .filter(r -> {
@@ -132,15 +126,11 @@ public class ReservationServiceImpl implements ReservationService {
                 .map(CoffeeTable::getTableId)
                 .collect(Collectors.toSet());
 
-        log.info("Reserved table IDs: {}", reservedTableIds);
-
         List<Integer> activeOrderTableIds = orderRepository.findActiveOrderTableIds();
-        log.info("Active order table IDs: {}", activeOrderTableIds);
 
         Set<Integer> occupiedTableIds = new HashSet<>();
         occupiedTableIds.addAll(reservedTableIds);
         occupiedTableIds.addAll(activeOrderTableIds);
-        log.info("Occupied table IDs: {}", occupiedTableIds);
 
         List<CoffeeTable> allTables = tableRepository.findAllActiveTables();
 
@@ -148,8 +138,6 @@ public class ReservationServiceImpl implements ReservationService {
                 .filter(table -> table.getCapacity() >= request.getPartySize())
                 .filter(table -> !occupiedTableIds.contains(table.getTableId()))
                 .collect(Collectors.toList());
-
-        log.info("Available tables: {}", availableTables.stream().map(CoffeeTable::getTableId).collect(Collectors.toList()));
 
         boolean available = !availableTables.isEmpty();
 
@@ -179,25 +167,16 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     @Transactional
     public ReservationConfirmationResponse createReservation(CreateReservationRequest request, Integer customerId) {
-        log.info("=== CREATE RESERVATION SERVICE ===");
-        log.info("CustomerId: {}", customerId);
-        log.info("Date: {}", request.getReservationDate());
-        log.info("Time: {}", request.getReservationTime());
-        log.info("PartySize: {}", request.getPartySize());
-        log.info("SelectedTableId: {}", request.getSelectedTableId());
-
         try {
             int count = reservationRepository.countReservationsByCustomerAndDate(customerId, request.getReservationDate());
-            if (count >= 3) {
-                throw new ReservationException("Bạn đã đạt giới hạn 3 lần đặt bàn trong ngày");
+            if (count >= configService.getReservationMaxPerDay()) {
+                throw new ReservationException("Bạn đã đạt giới hạn " + configService.getReservationMaxPerDay() + " lần đặt bàn trong ngày");
             }
 
             validateDateTime(request.getReservationDate(), request.getReservationTime());
             validatePartySize(request.getPartySize());
-            log.info("Validation passed");
 
             List<Reservation> activeReservations = reservationRepository.findActiveReservationsByDate(request.getReservationDate());
-            log.info("Active reservations in date: {}", activeReservations.size());
 
             Set<Integer> reservedTableIds = activeReservations.stream()
                     .filter(r -> {
@@ -210,24 +189,17 @@ public class ReservationServiceImpl implements ReservationService {
                     .map(CoffeeTable::getTableId)
                     .collect(Collectors.toSet());
 
-            log.info("!!! RESERVED TABLE IDs (createReservation): {}", reservedTableIds);
-
             List<Integer> activeOrderTableIds = orderRepository.findActiveOrderTableIds();
-            log.info("Active order table IDs: {}", activeOrderTableIds);
 
             Set<Integer> occupiedTableIds = new HashSet<>();
             occupiedTableIds.addAll(reservedTableIds);
             occupiedTableIds.addAll(activeOrderTableIds);
-            log.info("Occupied table IDs: {}", occupiedTableIds);
-
             List<CoffeeTable> allTables = tableRepository.findAllActiveTables();
 
             List<CoffeeTable> availableTables = allTables.stream()
                     .filter(table -> table.getCapacity() >= request.getPartySize())
                     .filter(table -> !occupiedTableIds.contains(table.getTableId()))
                     .collect(Collectors.toList());
-
-            log.info("Available tables found: {}", availableTables.stream().map(CoffeeTable::getTableId).collect(Collectors.toList()));
 
             if (availableTables.isEmpty()) {
                 throw new TableNotAvailableException("Không có bàn trống cho thời gian và số lượng khách này");
@@ -242,7 +214,6 @@ public class ReservationServiceImpl implements ReservationService {
                 log.info("User selected table: {}", selectedTable.getTableId());
             } else {
                 selectedTable = findBestTable(availableTables, request.getPartySize());
-                log.info("System auto-selected table: {}", selectedTable.getTableId());
             }
 
             User customer = userRepository.findById(customerId)
@@ -259,7 +230,6 @@ public class ReservationServiceImpl implements ReservationService {
                     .pointsEarned(0)
                     .build();
             Order savedOrder = orderRepository.save(tempOrder);
-            log.info("Created temporary order: {}", savedOrder.getOrderId());
 
             Reservation reservation = Reservation.builder()
                     .customer(customer)
@@ -278,9 +248,8 @@ public class ReservationServiceImpl implements ReservationService {
 
             reservation.getTables().add(selectedTable);
             Reservation savedReservation = reservationRepository.save(reservation);
-            log.info("Reservation saved: {}", savedReservation.getReservationId());
 
-            BigDecimal depositAmount = reservationConfig.getDefaultDepositAmount();
+            BigDecimal depositAmount = BigDecimal.valueOf(configService.getReservationDepositAmount());
             ReservationDeposit deposit = ReservationDeposit.builder()
                     .reservation(savedReservation)
                     .depositAmount(depositAmount)
@@ -296,7 +265,6 @@ public class ReservationServiceImpl implements ReservationService {
             return buildConfirmationResponse(savedReservation, selectedTable, depositAmount);
 
         } catch (Exception e) {
-            log.error("!!! ERROR in createReservation service: {}", e.getMessage(), e);
             throw e;
         }
     }
@@ -427,14 +395,15 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     @Transactional
     public void releaseExpiredHolds() {
-        LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(reservationConfig.getHoldDurationMinutes());
+        int holdMinutes = configService.getReservationHoldMinutes();  // ⭐ Lấy từ database
+        LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(holdMinutes);
         List<Reservation> expiredReservations = reservationRepository
                 .findByStatusAndCreatedAtBefore(ReservationStatus.PENDING, expiryTime);
 
         for (Reservation reservation : expiredReservations) {
             releaseTables(reservation);
             reservation.setStatus(ReservationStatus.CANCELLED);
-            reservation.setCancellationReason("Hết thời gian giữ bàn (" + reservationConfig.getHoldDurationMinutes() + " phút)");
+            reservation.setCancellationReason("Hết thời gian giữ bàn (" + holdMinutes + " phút)");
             reservation.setCancelledAt(LocalDateTime.now());
             reservationRepository.save(reservation);
             log.info("Released expired hold for reservation {}", reservation.getReservationId());
@@ -564,8 +533,10 @@ public class ReservationServiceImpl implements ReservationService {
             throw new InvalidReservationTimeException("Ngày đặt bàn phải là ngày trong tương lai");
         }
 
-        LocalTime opening = reservationConfig.getOpeningTime();
-        LocalTime closing = reservationConfig.getClosingTime();
+        String hours = configService.getSiteHours();
+        String[] parts = hours.split(" - ");
+        LocalTime opening = LocalTime.parse(parts[0].trim());
+        LocalTime closing = LocalTime.parse(parts[1].trim());
 
         if (time.isBefore(opening) || time.isAfter(closing)) {
             throw new InvalidReservationTimeException(
@@ -573,11 +544,11 @@ public class ReservationServiceImpl implements ReservationService {
             );
         }
 
-        // Kiểm tra ngày tối đa
-        LocalDate maxDate = LocalDate.now().plusDays(reservationConfig.getMaxAdvanceDays());
+        int maxAdvanceDays = configService.getReservationMaxAdvanceDays();
+        LocalDate maxDate = LocalDate.now().plusDays(maxAdvanceDays);
         if (date.isAfter(maxDate)) {
             throw new InvalidReservationTimeException(
-                    "Chỉ có thể đặt bàn trước tối đa " + reservationConfig.getMaxAdvanceDays() + " ngày"
+                    "Chỉ có thể đặt bàn trước tối đa " + maxAdvanceDays + " ngày"
             );
         }
     }
@@ -586,8 +557,9 @@ public class ReservationServiceImpl implements ReservationService {
         if (partySize < 1) {
             throw new IllegalArgumentException("Số lượng khách phải lớn hơn 0");
         }
-        if (partySize > reservationConfig.getMaxPartySize()) {
-            throw new IllegalArgumentException("Số lượng khách tối đa là " + reservationConfig.getMaxPartySize());
+        int maxPartySize = configService.getReservationMaxPartySize();
+        if (partySize > maxPartySize) {
+            throw new IllegalArgumentException("Số lượng khách tối đa là " + maxPartySize);
         }
     }
 
@@ -603,6 +575,11 @@ public class ReservationServiceImpl implements ReservationService {
         LocalTime currentTime = request.getReservationTime();
         LocalDate currentDate = request.getReservationDate();
 
+        String hours = configService.getSiteHours();
+        String[] parts = hours.split(" - ");
+        LocalTime opening = LocalTime.parse(parts[0].trim());
+        LocalTime closing = LocalTime.parse(parts[1].trim());
+
         LocalTime[] alternatives = {
                 currentTime.minusHours(1),
                 currentTime.plusHours(1),
@@ -611,15 +588,12 @@ public class ReservationServiceImpl implements ReservationService {
         };
 
         for (LocalTime altTime : alternatives) {
-            if (altTime.isBefore(reservationConfig.getOpeningTime()) ||
-                    altTime.isAfter(reservationConfig.getClosingTime())) {
+            if (altTime.isBefore(opening) || altTime.isAfter(closing)) {
                 continue;
             }
 
-            // Lấy tất cả reservation active trong ngày
             List<Reservation> activeReservations = reservationRepository.findActiveReservationsByDate(currentDate);
 
-            // Lọc reservation trùng thời gian bằng Java
             Set<Integer> reservedTableIds = activeReservations.stream()
                     .filter(r -> {
                         LocalTime start = r.getReservationTime();
@@ -685,7 +659,7 @@ public class ReservationServiceImpl implements ReservationService {
                 .message("Đặt bàn thành công! Vui lòng thanh toán tiền cọc để xác nhận.")
                 .reservation(convertToResponse(reservation))
                 .depositAmount(depositAmount)
-                .holdMinutes(reservationConfig.getHoldDurationMinutes())
+                .holdMinutes(configService.getReservationHoldMinutes())
                 .paymentUrl("/customer/reservations/" + reservation.getReservationId() + "/deposit")
                 .build();
     }

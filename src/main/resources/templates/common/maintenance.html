@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Bảo trì hệ thống</title>
+    <div th:replace="~{catalog/tailwind-head :: tailwind-head}"></div>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased flex items-center justify-center min-h-screen">
+<div class="text-center p-12 bg-surface-container-lowest rounded-3xl shadow-xl max-w-md border border-outline-variant">
+    <div class="text-7xl mb-6">🔧</div>
+    <h1 class="text-3xl font-bold text-on-surface mb-4">Hệ thống đang bảo trì</h1>
+    <p class="text-on-surface-variant text-lg mb-6" th:text="${message}">Vui lòng quay lại sau!</p>
+    <p class="text-sm text-on-surface-variant/50">Chúng tôi sẽ trở lại sớm nhất có thể.</p>
+    <div class="mt-8 pt-6 border-t border-outline-variant">
+        <p class="text-sm text-on-surface-variant/40" th:text="${siteName}">BrewMaster Coffee Shop</p>
+    </div>
+</div>
+</body>
+</html>

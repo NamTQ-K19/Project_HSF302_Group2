@@ -1,0 +1,866 @@
+/* ============================================================
+   SYSTEM CONFIG - LIGHT THEME - CLEAR LAYOUT
+   ============================================================ */
+
+/* ── Base ────────────────────────────────────────────────── */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.config-body {
+    background: #f8f5f0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #1e293b;
+    min-height: 100vh;
+}
+
+/* ── Scrollbar ───────────────────────────────────────────── */
+.config-body::-webkit-scrollbar {
+    width: 6px;
+}
+.config-body::-webkit-scrollbar-track {
+    background: #f1f0ed;
+    border-radius: 10px;
+}
+.config-body::-webkit-scrollbar-thumb {
+    background: #c8a882;
+    border-radius: 10px;
+}
+.config-body::-webkit-scrollbar-thumb:hover {
+    background: #b8946e;
+}
+
+/* ── Container ────────────────────────────────────────────── */
+.config-container {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 24px 32px 40px;
+}
+
+/* ════════════════════════════════════════════════════════════ */
+/* PHẦN 1: HEADER + STATS */
+/* ════════════════════════════════════════════════════════════ */
+
+/* ── Header ────────────────────────────────────────────────── */
+.config-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 20px;
+    padding: 24px 32px;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    border: 1px solid #f1f0ed;
+}
+
+.config-header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.config-header-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #c8a882, #b8946e);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 4px 12px rgba(200, 168, 130, 0.3);
+}
+
+.config-header-icon .material-symbols-outlined {
+    font-size: 28px;
+}
+
+.config-header-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1e293b;
+    letter-spacing: -0.5px;
+}
+
+.config-header-desc {
+    font-size: 14px;
+    color: #64748b;
+    margin-top: 2px;
+    font-weight: 400;
+}
+
+.config-header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.config-search {
+    padding: 10px 18px 10px 44px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 14px;
+    background: #faf8f6;
+    color: #1e293b;
+    transition: all 0.3s ease;
+    outline: none;
+    min-width: 240px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 14px center;
+}
+
+.config-search::placeholder {
+    color: #94a3b8;
+}
+
+.config-search:focus {
+    border-color: #c8a882;
+    background-color: white;
+    box-shadow: 0 0 0 4px rgba(200, 168, 130, 0.1);
+    min-width: 300px;
+}
+
+.config-shortcut {
+    font-size: 11px;
+    color: #94a3b8;
+    background: #f1f0ed;
+    padding: 4px 12px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* ── Stats ─────────────────────────────────────────────────── */
+.config-stats {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    padding: 16px 24px;
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #f1f0ed;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.stat-item {
+    background: #faf8f6;
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    font-size: 13px;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+    background: #f1f0ed;
+    transform: translateY(-1px);
+}
+
+.stat-item .material-symbols-outlined {
+    font-size: 18px;
+    color: #c8a882;
+}
+
+.stat-item strong {
+    color: #1e293b;
+    font-weight: 700;
+}
+
+.stat-item .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.dot-general { background: #3b82f6; }
+.dot-system { background: #8b5cf6; }
+.dot-reservation { background: #f59e0b; }
+
+/* ════════════════════════════════════════════════════════════ */
+/* PHẦN 2: FLASH MESSAGES */
+/* ════════════════════════════════════════════════════════════ */
+
+.flash-msg {
+    padding: 14px 20px;
+    border-radius: 14px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 500;
+    font-size: 14px;
+    animation: slideDown 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.flash-success {
+    background: #f0fdf4;
+    color: #166534;
+    border: 1px solid #86efac;
+}
+
+.flash-success .material-symbols-outlined {
+    color: #22c55e;
+}
+
+.flash-error {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+}
+
+.flash-error .material-symbols-outlined {
+    color: #ef4444;
+}
+
+/* ════════════════════════════════════════════════════════════ */
+/* PHẦN 3: CONFIG GROUPS - MỖI NHÓM LÀ 1 CARD LỚN */
+/* ════════════════════════════════════════════════════════════ */
+
+.config-grid-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    margin-bottom: 24px;
+}
+
+/* ── Card nhóm chính ────────────────────────────────────────── */
+.config-card {
+    background: #ffffff;
+    border-radius: 20px;
+    border: 1px solid #f1f0ed;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.config-card:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* Border màu cho từng nhóm */
+.card-general {
+    border-left: 4px solid #3b82f6;
+}
+
+.card-system {
+    border-left: 4px solid #8b5cf6;
+}
+
+.card-reservation {
+    border-left: 4px solid #f59e0b;
+}
+
+/* ── Card Header ─────────────────────────────────────────────── */
+.config-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    border-bottom: 1px solid #f1f0ed;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.3s ease;
+    background: #fafbfc;
+}
+
+.config-card-header:hover {
+    background: #f1f2f4;
+}
+
+.config-card-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.config-card-title .icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+}
+
+.card-general .icon-wrapper {
+    background: #eff6ff;
+}
+.card-general .icon-wrapper .material-symbols-outlined {
+    color: #3b82f6;
+}
+
+.card-system .icon-wrapper {
+    background: #f5f3ff;
+}
+.card-system .icon-wrapper .material-symbols-outlined {
+    color: #8b5cf6;
+}
+
+.card-reservation .icon-wrapper {
+    background: #fffbeb;
+}
+.card-reservation .icon-wrapper .material-symbols-outlined {
+    color: #f59e0b;
+}
+
+.config-card-title .icon-wrapper .material-symbols-outlined {
+    font-size: 24px;
+}
+
+.config-card-title .name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
+    letter-spacing: 0.3px;
+}
+
+.config-card-title .count {
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 400;
+    background: #f1f0ed;
+    padding: 2px 12px;
+    border-radius: 12px;
+}
+
+/* ── Badges ────────────────────────────────────────────────── */
+.badge {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: white;
+}
+
+.badge-general {
+    background: #3b82f6;
+}
+.badge-system {
+    background: #8b5cf6;
+}
+.badge-reservation {
+    background: #f59e0b;
+}
+
+/* ── Toggle Button ─────────────────────────────────────────── */
+.btn-toggle {
+    font-size: 12px;
+    color: #64748b;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    cursor: pointer;
+    padding: 5px 16px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-toggle:hover {
+    background: #f1f0ed;
+    color: #1e293b;
+}
+
+.btn-toggle .material-symbols-outlined {
+    font-size: 18px;
+}
+
+/* ── Card Body - Grid 2 cột ────────────────────────────────── */
+.card-body {
+    padding: 0;
+    max-height: 800px;
+    overflow-y: auto;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-body.collapsed {
+    max-height: 0;
+    overflow: hidden;
+}
+
+/* Grid 2 cột bên trong mỗi card */
+.config-items-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+}
+
+@media (max-width: 768px) {
+    .config-items-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ════════════════════════════════════════════════════════════ */
+/* ── CONFIG ITEM - CÓ VIỀN KẺ RÕ RÀNG ─────────────────────── */
+/* ════════════════════════════════════════════════════════════ */
+
+.config-item {
+    padding: 16px 20px;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: background 0.3s ease;
+
+    /* Viền kẻ rõ ràng */
+    border-bottom: 2px solid #f1f0ed;
+    border-right: 2px solid #f1f0ed;
+
+    /* Thêm bóng nhẹ để nổi bật */
+    position: relative;
+}
+
+/* Bỏ border-right cho item chẵn (cột 2) */
+.config-item:nth-child(even) {
+    border-right: none;
+}
+
+/* Item cuối mỗi hàng - bỏ border-bottom */
+.config-item:nth-last-child(2):nth-child(even) {
+    border-bottom: none;
+}
+
+/* Item cuối cùng - bỏ border-bottom */
+.config-item:last-child {
+    border-bottom: none;
+}
+
+/* Thêm viền trên cho hàng đầu tiên (đã có border-bottom từ header) */
+.config-item:first-child {
+    border-top: none;
+}
+
+/* Hover effect - đổi màu nền */
+.config-item:hover {
+    background: #f8f9fa;
+}
+
+/* Thêm hiệu ứng khi hover - highlight border */
+.config-item:hover {
+    border-bottom-color: #c8a882;
+    border-right-color: #c8a882;
+}
+
+/* ── Label ──────────────────────────────────────────────────── */
+.config-item .field-label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.config-item .field-label .label-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e293b;
+    line-height: 1.4;
+}
+
+.config-item .field-label .label-code {
+    font-size: 11px;
+    color: #64748b;
+    font-family: 'Fira Code', 'Courier New', monospace;
+    background: #f1f0ed;
+    padding: 2px 10px;
+    border-radius: 4px;
+    display: inline-block;
+    width: fit-content;
+}
+
+.config-item .field-label .label-desc {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 2px;
+}
+
+/* ── Input ──────────────────────────────────────────────────── */
+.config-item .field-input {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.config-item .field-input input,
+.config-item .field-input textarea {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 13px;
+    transition: all 0.3s ease;
+    background: #faf8f6;
+    color: #1e293b;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+    width: 100%;
+}
+
+.config-item .field-input input:hover,
+.config-item .field-input textarea:hover {
+    background: #ffffff;
+}
+
+.config-item .field-input input:focus,
+.config-item .field-input textarea:focus {
+    border-color: #c8a882;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(200, 168, 130, 0.1);
+}
+
+.config-item .field-input textarea {
+    resize: vertical;
+    min-height: 42px;
+    max-height: 120px;
+}
+
+/* ── Toggle Switch ─────────────────────────────────────────── */
+.toggle-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+}
+
+.toggle-switch {
+    position: relative;
+    width: 48px;
+    height: 26px;
+    flex-shrink: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #e2e8f0;
+    border-radius: 26px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toggle-slider::before {
+    content: "";
+    position: absolute;
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background: #ffffff;
+    border-radius: 50%;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background: #c8a882;
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(22px);
+}
+
+.toggle-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #64748b;
+    transition: color 0.3s ease;
+}
+
+.toggle-switch input:checked ~ .toggle-label {
+    color: #1e293b;
+}
+
+/* ── Group Actions ────────────────────────────────────────── */
+.group-actions {
+    padding: 16px 24px;
+    border-top: 2px solid #f1f0ed;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    background: #fafbfc;
+}
+
+.btn-save-group {
+    padding: 10px 28px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #c8a882;
+    color: #4a2c1b;
+    letter-spacing: 0.3px;
+}
+
+.btn-save-group:hover {
+    background: #b8946e;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(200, 168, 130, 0.3);
+}
+
+.btn-save-group:active {
+    transform: translateY(0);
+}
+
+.btn-save-group .material-symbols-outlined {
+    font-size: 18px;
+}
+
+.btn-reset-group {
+    padding: 10px 28px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    background: #ffffff;
+    color: #64748b;
+}
+
+.btn-reset-group:hover {
+    background: #fef2f2;
+    border-color: #fca5a5;
+    color: #dc2626;
+}
+
+.btn-reset-group .material-symbols-outlined {
+    font-size: 18px;
+}
+
+/* ── Group Label Badge ────────────────────────────────────── */
+.group-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.group-badge-general {
+    background: #eff6ff;
+    color: #3b82f6;
+}
+
+.group-badge-system {
+    background: #f5f3ff;
+    color: #8b5cf6;
+}
+
+.group-badge-reservation {
+    background: #fffbeb;
+    color: #f59e0b;
+}
+
+/* ════════════════════════════════════════════════════════════ */
+/* INFO BOX */
+/* ════════════════════════════════════════════════════════════ */
+
+.info-box {
+    margin-top: 20px;
+    padding: 18px 24px;
+    background: #eff6ff;
+    border-radius: 14px;
+    border: 1px solid #bfdbfe;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: #1e40af;
+}
+
+.info-box .material-symbols-outlined {
+    font-size: 22px;
+    color: #3b82f6;
+}
+
+/* ── Empty State ───────────────────────────────────────────── */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-state .material-symbols-outlined {
+    font-size: 56px;
+    color: #e2e8f0;
+    margin-bottom: 16px;
+}
+
+.empty-state h3 {
+    font-size: 18px;
+    color: #64748b;
+    margin-bottom: 8px;
+}
+
+.empty-state p {
+    font-size: 14px;
+    color: #94a3b8;
+}
+
+/* ════════════════════════════════════════════════════════════ */
+/* RESPONSIVE */
+/* ════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1024px) {
+    .config-items-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .config-item {
+        border-right: none !important;
+    }
+
+    .config-item:nth-child(even) {
+        border-right: none;
+    }
+
+    .config-item:last-child {
+        border-bottom: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .config-container {
+        padding: 16px;
+    }
+
+    .config-header {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 20px;
+    }
+
+    .config-header-right {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .config-search {
+        width: 100%;
+        min-width: unset;
+    }
+
+    .config-search:focus {
+        min-width: unset;
+    }
+
+    .config-stats {
+        padding: 12px 16px;
+        gap: 8px;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+    }
+
+    .stat-item {
+        font-size: 12px;
+        padding: 6px 14px;
+        white-space: nowrap;
+    }
+
+    .group-actions {
+        flex-direction: column;
+    }
+
+    .btn-save-group,
+    .btn-reset-group {
+        justify-content: center;
+    }
+
+    .config-card-header {
+        padding: 14px 16px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .config-card-title .name {
+        font-size: 16px;
+    }
+
+    .config-item {
+        padding: 14px 16px;
+        border-right: none !important;
+    }
+
+    .config-item:last-child {
+        border-bottom: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .config-header-title {
+        font-size: 20px;
+    }
+
+    .config-header-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .config-header-icon .material-symbols-outlined {
+        font-size: 22px;
+    }
+
+    .config-card {
+        border-radius: 14px;
+    }
+
+    .config-item {
+        padding: 12px 14px;
+    }
+
+    .config-card-title .icon-wrapper {
+        width: 32px;
+        height: 32px;
+    }
+
+    .config-card-title .icon-wrapper .material-symbols-outlined {
+        font-size: 18px;
+    }
+}

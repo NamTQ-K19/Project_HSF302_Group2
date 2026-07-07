@@ -22,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -34,6 +35,9 @@ public class AccountServiceImpl implements AccountService {
     private final PasswordEncoder passwordEncoder;
     private final OtpUtil otpUtil;
     private final EmailService emailService;
+
+    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     @Override
     public PageResponse<AccountResponse> getAccounts(AccountFilterRequest filterRequest, Pageable pageable) {
@@ -93,19 +97,28 @@ public class AccountServiceImpl implements AccountService {
 
         // ===== TẠO OTP =====
         String otp = otpUtil.generateOtp();
-
-        // Sử dụng email người dùng nhập làm key để lưu OTP
         String userEmail = request.getEmail();
 
         // Lưu OTP với email người dùng
         otpUtil.saveOtpWithData(userEmail, otp, request);
 
         // ===== GỬI OTP ĐẾN EMAIL ADMIN (để admin xác nhận) =====
-        String adminEmail = "luugiang205@gmail.com";
-        String userName = "Luu Giang";
+        String adminEmail = request.getAdminEmail() != null ? request.getAdminEmail() : "admin@brewmaster.com";
+        String userName = request.getFirstName() + " " + request.getLastName();
         String subject = "Mã OTP xác nhận tạo tài khoản - BrewMaster";
-        String body = EmailUtil.getOtpContent(userName, otp);
+        String body = EmailUtil.getOtpContentForAdmin(userName, otp, request.getEmail(), request.getUsername());
         emailService.sendEmail(adminEmail, subject, body);
+
+        // Gửi email thông báo cho admin
+        String notificationSubject = "Yêu cầu tạo tài khoản mới - BrewMaster";
+        String notificationBody = EmailUtil.getAccountCreationRequestContent(
+                request.getFirstName() + " " + request.getLastName(),
+                request.getUsername(),
+                request.getEmail(),
+                request.getPhone(),
+                request.getRole()
+        );
+        emailService.sendEmail(adminEmail, notificationSubject, notificationBody);
 
         log.info("📧 OTP sent to admin email: {}", adminEmail);
         log.info("🔐 OTP code: {}, for user email: {}", otp, userEmail);
@@ -136,7 +149,9 @@ public class AccountServiceImpl implements AccountService {
         Role role = roleRepository.findByRoleNameIgnoreCase(userRequest.getRole())
                 .orElseThrow(() -> new BusinessException("Vai trò không hợp lệ: " + userRequest.getRole()));
 
-        String defaultPassword = generateDefaultPassword();
+        // ===== TẠO PASSWORD NGẪU NHIÊN AN TOÀN =====
+        String defaultPassword = generateSecureRandomPassword(12);
+        log.info("🔑 Generated password for user: {}", defaultPassword);
 
         User user = new User();
         user.setFirstName(userRequest.getFirstName());
@@ -152,11 +167,23 @@ public class AccountServiceImpl implements AccountService {
 
         userRepository.save(user);
 
-        // Gửi email thông báo tạo tài khoản thành công cho người dùng
+        // ===== GỬI EMAIL THÔNG BÁO CHO NGƯỜI DÙNG =====
         String userName = user.getFirstName() + " " + user.getLastName();
         String subject = "Tài khoản của bạn đã được tạo - BrewMaster";
         String body = EmailUtil.getAccountCreatedContent(userName, user.getUsername(), defaultPassword);
         emailService.sendEmail(user.getEmail(), subject, body);
+
+        // ===== GỬI EMAIL THÔNG BÁO CHO ADMIN =====
+        String adminEmail = request.getAdminEmail() != null ? request.getAdminEmail() : "admin@brewmaster.com";
+        String adminSubject = "Tài khoản mới đã được tạo thành công - BrewMaster";
+        String adminBody = EmailUtil.getAccountCreationSuccessContent(
+                userName,
+                user.getUsername(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getRole().getRoleName()
+        );
+        emailService.sendEmail(adminEmail, adminSubject, adminBody);
 
         // Xóa OTP khỏi cache
         otpUtil.removeOtp(request.getEmail());
@@ -166,7 +193,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     @Transactional
-    public void resendOtp(String email) {
+    public void resendOtp(String email, String adminEmail) {
         log.info("Resending OTP for email: {}", email);
 
         if (!otpUtil.hasOtp(email)) {
@@ -184,19 +211,19 @@ public class AccountServiceImpl implements AccountService {
         otpUtil.saveOtpWithData(email, newOtp, userRequest);
 
         // Gửi lại OTP đến admin
-        String adminEmail = "luugiang205@gmail.com";
+        String adminEmailTo = adminEmail != null ? adminEmail : "admin@brewmaster.com";
         String userName = userRequest.getFirstName() + " " + userRequest.getLastName();
-        String subject = "Mã OTP xác nhận tạo tài khoản - BrewMaster";
-        String body = EmailUtil.getOtpContent(userName, newOtp);
-        emailService.sendEmail(adminEmail, subject, body);
+        String subject = "Mã OTP xác nhận tạo tài khoản - BrewMaster (Gửi lại)";
+        String body = EmailUtil.getOtpContentForAdmin(userName, newOtp, userRequest.getEmail(), userRequest.getUsername());
+        emailService.sendEmail(adminEmailTo, subject, body);
 
-        log.info("📧 OTP resent to admin email: {}", adminEmail);
+        log.info("📧 OTP resent to admin email: {}", adminEmailTo);
         log.info("🔐 New OTP code: {}, for user email: {}", newOtp, email);
     }
 
     @Override
     @Transactional
-    public void lockAccount(Integer userId, String reason) {
+    public void lockAccount(Integer userId, String reason, String adminEmail) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException("Không tìm thấy người dùng với ID: " + userId));
 
@@ -212,7 +239,7 @@ public class AccountServiceImpl implements AccountService {
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
 
-        // Gửi email thông báo khóa với lý do
+        // Gửi email thông báo khóa cho người dùng
         String userName = user.getFirstName() + " " + user.getLastName();
         String finalReason = reason != null && !reason.isEmpty() ? reason : "Tài khoản bị khóa do vi phạm chính sách sử dụng.";
 
@@ -220,12 +247,18 @@ public class AccountServiceImpl implements AccountService {
         String body = EmailUtil.getAccountLockedContent(userName, finalReason);
         emailService.sendEmail(user.getEmail(), subject, body);
 
-        log.info("✅ Account locked: {}, reason: {}", userId, finalReason);
+        // Gửi email thông báo cho admin
+        String adminEmailTo = adminEmail != null ? adminEmail : "admin@brewmaster.com";
+        String adminSubject = "Đã khóa tài khoản người dùng - BrewMaster";
+        String adminBody = EmailUtil.getAccountLockedAdminContent(userName, user.getEmail(), finalReason);
+        emailService.sendEmail(adminEmailTo, adminSubject, adminBody);
+
+        log.info("✅ Account locked: {}, by admin: {}, reason: {}", userId, adminEmailTo, finalReason);
     }
 
     @Override
     @Transactional
-    public void unlockAccount(Integer userId, String reason) {
+    public void unlockAccount(Integer userId, String reason, String adminEmail) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException("Không tìm thấy người dùng với ID: " + userId));
 
@@ -240,20 +273,27 @@ public class AccountServiceImpl implements AccountService {
         String userName = user.getFirstName() + " " + user.getLastName();
         String finalReason = reason != null && !reason.isEmpty() ? reason : "Tài khoản đã được mở khóa sau khi xem xét.";
 
+        // Gửi email thông báo mở khóa cho người dùng
         String subject = "Tài khoản của bạn đã được mở khóa - BrewMaster";
         String body = EmailUtil.getAccountUnlockedContent(userName, finalReason);
         emailService.sendEmail(user.getEmail(), subject, body);
 
-        log.info("✅ Account unlocked: {}, reason: {}", userId, finalReason);
+        // Gửi email thông báo cho admin
+        String adminEmailTo = adminEmail != null ? adminEmail : "admin@brewmaster.com";
+        String adminSubject = "Đã mở khóa tài khoản người dùng - BrewMaster";
+        String adminBody = EmailUtil.getAccountUnlockedAdminContent(userName, user.getEmail(), finalReason);
+        emailService.sendEmail(adminEmailTo, adminSubject, adminBody);
+
+        log.info("✅ Account unlocked: {}, by admin: {}, reason: {}", userId, adminEmailTo, finalReason);
     }
 
     @Override
     @Transactional
-    public void toggleAccountStatus(Integer userId, boolean lock) {
+    public void toggleAccountStatus(Integer userId, boolean lock, String adminEmail) {
         if (lock) {
-            lockAccount(userId, null);
+            lockAccount(userId, null, adminEmail);
         } else {
-            unlockAccount(userId, null);
+            unlockAccount(userId, null, adminEmail);
         }
     }
 
@@ -322,8 +362,6 @@ public class AccountServiceImpl implements AccountService {
         log.info("✅ Avatar updated for user: {}", username);
     }
 
-    // Trong AccountServiceImpl.java - convertToResponse
-
     private AccountResponse convertToResponse(User user) {
         return AccountResponse.builder()
                 .userId(user.getUserId())
@@ -341,7 +379,20 @@ public class AccountServiceImpl implements AccountService {
                 .build();
     }
 
-    private String generateDefaultPassword() {
-        return "G123@123";
+    /**
+     * Tạo mật khẩu ngẫu nhiên an toàn
+     * @param length độ dài mật khẩu (mặc định 12)
+     * @return mật khẩu ngẫu nhiên
+     */
+    private String generateSecureRandomPassword(int length) {
+        if (length < 8) {
+            length = 8;
+        }
+        StringBuilder password = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            int randomIndex = RANDOM.nextInt(CHARACTERS.length());
+            password.append(CHARACTERS.charAt(randomIndex));
+        }
+        return password.toString();
     }
 }

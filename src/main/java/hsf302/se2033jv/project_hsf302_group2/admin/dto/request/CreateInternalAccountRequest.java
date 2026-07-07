@@ -39,4 +39,6 @@ public class CreateInternalAccountRequest {
 
     @NotNull(message = "Vai trò không được để trống")
     private String role;
+
+    private String adminEmail;
 }

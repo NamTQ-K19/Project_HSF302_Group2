@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Cấu hình hệ thống – BrewMaster Admin</title>
+
+    <div th:replace="~{catalog/tailwind-head :: tailwind-head}"></div>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+    <link rel="stylesheet" th:href="@{/css/admin/system-config.css}" />
+
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
+</head>
+<body class="config-body flex h-screen overflow-hidden">
+
+<!-- Sidebar -->
+<div th:replace="~{admin/fragments/sidebar :: sidebar(currentPage='config')}"></div>
+
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto">
+    <div class="config-container">
+
+        <!-- ════════════════════════════════════════════════════════ -->
+        <!-- PHẦN 1: HEADER + STATS                                   -->
+        <!-- ════════════════════════════════════════════════════════ -->
+
+        <div class="config-header">
+            <div class="config-header-left">
+                <div class="config-header-icon">
+                    <span class="material-symbols-outlined">settings</span>
+                </div>
+                <div>
+                    <h1 class="config-header-title">Cấu hình hệ thống</h1>
+                    <p class="config-header-desc">Quản lý các tham số cấu hình của hệ thống</p>
+                </div>
+            </div>
+            <div class="config-header-right">
+                <input type="text" id="configSearch" placeholder="Tìm kiếm cấu hình..." class="config-search" />
+                <span class="config-shortcut">
+                    <span class="material-symbols-outlined" style="font-size:16px;">keyboard_command_key</span>S
+                </span>
+            </div>
+        </div>
+
+        <div class="config-stats">
+            <span class="stat-item">
+                <span class="material-symbols-outlined">apps</span>
+                Tổng: <strong th:text="${groupedConfigs != null ? groupedConfigs.size() : 0}">0</strong> nhóm
+            </span>
+            <span class="stat-item" th:if="${groupedConfigs != null}" th:each="key : ${groupedConfigs.keySet()}">
+                <span class="dot" th:classappend="${key == 'general'} ? 'dot-general' : (${key == 'system'} ? 'dot-system' : 'dot-reservation')"></span>
+                <span th:text="${key}"></span>: <strong th:text="${groupedConfigs.get(key).size()}"></strong>
+            </span>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════ -->
+        <!-- PHẦN 2: FLASH MESSAGES                                   -->
+        <!-- ════════════════════════════════════════════════════════ -->
+
+        <div th:if="${successMessage}" class="flash-msg flash-success">
+            <span class="material-symbols-outlined">check_circle</span>
+            <span th:text="${successMessage}"></span>
+        </div>
+        <div th:if="${errorMessage}" class="flash-msg flash-error">
+            <span class="material-symbols-outlined">error</span>
+            <span th:text="${errorMessage}"></span>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════ -->
+        <!-- PHẦN 3: CONFIG CARDS - MỖI NHÓM 1 CARD RIÊNG          -->
+        <!-- ════════════════════════════════════════════════════════ -->
+
+        <div th:if="${groupedConfigs != null and !groupedConfigs.isEmpty()}">
+            <div class="config-grid-wrapper">
+
+                <!-- ===== GENERAL CONFIG ===== -->
+                <div th:if="${groupedConfigs.containsKey('general')}" class="config-card card-general">
+                    <div class="config-card-header">
+                        <div class="config-card-title">
+                            <div class="icon-wrapper">
+                                <span class="material-symbols-outlined">settings</span>
+                            </div>
+                            <span class="name">Thông tin chung</span>
+                            <span class="badge badge-general">General</span>
+                            <span class="count">(<span th:text="${groupedConfigs.get('general').size()}"></span> cấu hình)</span>
+                        </div>
+                        <button type="button" class="btn-toggle">
+                            <span class="material-symbols-outlined">expand_less</span> Thu gọn
+                        </button>
+                    </div>
+
+                    <form th:action="@{/admin/config/general/update}" method="post" th:object="${generalConfig}">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                        <div class="card-body">
+                            <div class="config-items-grid">
+                                <!-- siteName -->
+                                <div class="config-item">
+                                    <div class="field-label">
+                                        <span class="label-text">Tên cửa hàng</span>
+                                        <code class="label-code">site_name</code>
+                                    </div>
+                                    <div class="field-input">
+                                        <div style="width:100%;">
+                                            <input type="text"
+                                                   th:field="*{siteName}"
+                                                   placeholder="Nhập tên cửa hàng..." />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- sitePhone -->
+                                <div class="config-item">
+                                    <div class="field-label">
+                                        <span class="label-text">Số điện thoại</span>
+                                        <code class="label-code">site_phone</code>
+                                    </div>
+                                    <div class="field-input">
+                                        <div style="width:100%;">
+                                            <input type="text"
+                                                   th:field="*{sitePhone}"
+                                                   placeholder="Nhập số điện thoại..." />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- siteEmail -->
+                                <div class="config-item">
+                                    <div class="field-label">
+                                        <span class="label-text">Email</span>
+                                        <code class="label-code">site_email</code>
+                                    </div>
+                                    <div class="field-input">
+                                        <div style="width:100%;">
+                                            <input type="email"
+                                                   th:field="*{siteEmail}"
+                                                   placeholder="Nhập email..." />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- siteAddress -->
+                                <div class="config-item">
+                                    <div class="field-label">
+                                        <span class="label-text">Địa chỉ</span>
+                                        <code class="label-code">site_address</code>
+                                    </div>
+                                    <div class="field-input">
+                                        <div style="width:100%;">
+                                            <input type="text"
+                                                   th:field="*{siteAddress}"
+                                                   placeholder="Nhập địa chỉ..." />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- siteHours -->
+                                <div class="config-item">
+                                    <div class="field-label">
+                                        <span class="label-text">Giờ làm việc</span>
+                                        <code class="label-code">site_hours</code>
+                                    </div>
+                                    <div class="field-input">
+                                        <div style="width:100%;">
+                                            <input type="text"
+                                                   th:field="*{siteHours}"
+                                                   placeholder="Nhập giờ làm việc..." />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- siteLogo -->
+                                <div class="config-item">
+                                    <div class="field-label">
+                                        <span class="label-text">Logo</span>
+                                        <code class="label-code">site_logo</code>
+                                    </div>
+                                    <div class="field-input">
+                                        <div style="width:100%;">
+                                            <input type="text"
+                                                   th:field="*{siteLogo}"
+                                                   placeholder="Nhập đường dẫn logo..." />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- siteFavicon -->
+                                <div class="config-item">
+                                    <div class="field-label">
+                                        <span class="label-text">Favicon</span>
+                                        <code class="label-code">site_favicon</code>
+                                    </div>
+                                    <div class="field-input">
+                                        <div style="width:100%;">
+                                            <input type="text"
+                                                   th:field="*{siteFavicon}"
+                                                   placeholder="Nhập đường dẫn favicon..." />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- siteDescription -->
+                                <div class="config-item">
+                                    <div class="field-label">
+                                        <span class="label-text">Mô tả</span>
+                                        <code class="label-code">site_description</code>
+                                    </div>
+                                    <div class="field-input">
+                                        <div style="width:100%;">
+                                            <textarea th:field="*{siteDescription}" rows="2" placeholder="Nhập mô tả..."></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="group-actions">
+                            <button type="submit" class="btn-save-group">
+                                <span class="material-symbols-outlined">save</span>
+                                Lưu nhóm General
+                            </button>
+                            <button type="button" class="btn-reset-group" onclick="resetGroup(this, 'general')">
+                                <span class="material-symbols-outlined">restart_alt</span>
+                                Reset nhóm
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- ===== SYSTEM CONFIG ===== -->
+                <div th:if="${groupedConfigs.containsKey('system')}" class="config-card card-system">
+                    <div class="config-card-header">
+                        <div class="config-card-title">
+                            <div class="icon-wrapper">
+                                <span class="material-symbols-outlined">computer</span>
+                            </div>
+                            <span class="name">Cấu hình hệ thống</span>
+                            <span class="badge badge-system">System</span>
+                            <span class="count">(<span th:text="${groupedConfigs.get('system').size()}"></span> cấu hình)</span>
+                        </div>
+                        <button type="button" class="btn-toggle">
+                            <span class="material-symbols-outlined">expand_less</span> Thu gọn
+                        </button>
+                    </div>
+
+                    <form th:action="@{/admin/config/system/update}" method="post" th:object="${systemConfig}">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                        <div class="card-body">
+                            <div class="config-items-grid">
+                                <!-- maintenanceMode -->
+                                <div class="config-item">
+                                    <div class="field-label">
+                                        <span class="label-text">Chế độ bảo trì</span>
+                                        <code class="label-code">maintenance_mode</code>
+                                    </div>
+                                    <div class="field-input">
+                                        <div style="width:100%;">
+                                            <div class="toggle-wrapper">
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox"
+                                                           th:field="*{maintenanceMode}" />
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                                <span class="toggle-label"
+                                                      th:text="*{maintenanceMode} ? '🟢 Đang bảo trì' : '⚪ Bình thường'"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- maintenanceMessage -->
+                                <div class="config-item">
+                                    <div class="field-label">
+                                        <span class="label-text">Thông báo bảo trì</span>
+                                        <code class="label-code">maintenance_message</code>
+                                    </div>
+                                    <div class="field-input">
+                                        <div style="width:100%;">
+                                            <textarea th:field="*{maintenanceMessage}" rows="2" placeholder="Nhập thông báo bảo trì..."></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- logRetentionDays -->
+                                <div class="config-item">
+                                    <div class="field-label">
+                                        <span class="label-text">Số ngày lưu log</span>
+                                        <code class="label-code">log_retention_days</code>
+                                    </div>
+                                    <div class="field-input">
+                                        <div style="width:100%;">
+                                            <input type="number"
+                                                   th:field="*{logRetentionDays}"
+                                                   placeholder="Nhập số ngày..." />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- defaultLanguage -->
+                                <div class="config-item">
+                                    <div class="field-label">
+                                        <span class="label-text">Ngôn ngữ mặc định</span>
+                                        <code class="label-code">default_language</code>
+                                    </div>
+                                    <div class="field-input">
+                                        <div style="width:100%;">
+                                            <input type="text"
+                                                   th:field="*{defaultLanguage}"
+                                                   placeholder="Nhập ngôn ngữ..." />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- itemsPerPage -->
+                                <div class="config-item">
+                                    <div class="field-label">
+                                        <span class="label-text">Số item mỗi trang</span>
+                                        <code class="label-code">items_per_page</code>
+                                    </div>
+                                    <div class="field-input">
+                                        <div style="width:100%;">
+                                            <input type="number"
+                                                   th:field="*{itemsPerPage}"
+                                                   placeholder="Nhập số item..." />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="group-actions">
+                            <button type="submit" class="btn-save-group">
+                                <span class="material-symbols-outlined">save</span>
+                                Lưu nhóm System
+                            </button>
+                            <button type="button" class="btn-reset-group" onclick="resetGroup(this, 'system')">
+                                <span class="material-symbols-outlined">restart_alt</span>
+                                Reset nhóm
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- ===== RESERVATION CONFIG ===== -->
+                <div th:if="${groupedConfigs.containsKey('reservation')}" class="config-card card-reservation">
+                    <div class="config-card-header">
+                        <div class="config-card-title">
+                            <div class="icon-wrapper">
+                                <span class="material-symbols-outlined">calendar_month</span>
+                            </div>
+                            <span class="name">Cấu hình đặt bàn</span>
+                            <span class="badge badge-reservation">Reservation</span>
+                            <span class="count">(<span th:text="${groupedConfigs.get('reservation').size()}"></span> cấu hình)</span>
+                        </div>
+                        <button type="button" class="btn-toggle">
+                            <span class="material-symbols-outlined">expand_less</span> Thu gọn
+                        </button>
+                    </div>
+
+                    <form th:action="@{/admin/config/reservation/update}" method="post" th:object="${reservationConfig}">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                        <div class="card-body">
+                            <div class="config-items-grid">
+                                <!-- depositAmount -->
+                                <div class="config-item">
+                                    <div class="field-label">
+                                        <span class="label-text">Tiền đặt cọc</span>
+                                        <code class="label-code">reservation_deposit_amount</code>
+                                    </div>
+                                    <div class="field-input">
+                                        <div style="width:100%;">
+                                            <input type="number"
+                                                   th:field="*{depositAmount}"
+                                                   placeholder="Nhập số tiền đặt cọc..." />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- holdMinutes -->
+                                <div class="config-item">
+                                    <div class="field-label">
+                                        <span class="label-text">Thời gian giữ bàn (phút)</span>
+                                        <code class="label-code">reservation_hold_minutes</code>
+                                    </div>
+                                    <div class="field-input">
+                                        <div style="width:100%;">
+                                            <input type="number"
+                                                   th:field="*{holdMinutes}"
+                                                   placeholder="Nhập thời gian giữ bàn..." />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- maxPerDay -->
+                                <div class="config-item">
+                                    <div class="field-label">
+                                        <span class="label-text">Số lượng đặt tối đa/ngày</span>
+                                        <code class="label-code">reservation_max_per_day</code>
+                                    </div>
+                                    <div class="field-input">
+                                        <div style="width:100%;">
+                                            <input type="number"
+                                                   th:field="*{maxPerDay}"
+                                                   placeholder="Nhập số lượng..." />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- maxAdvanceDays -->
+                                <div class="config-item">
+                                    <div class="field-label">
+                                        <span class="label-text">Số ngày đặt trước tối đa</span>
+                                        <code class="label-code">reservation_max_advance_days</code>
+                                    </div>
+                                    <div class="field-input">
+                                        <div style="width:100%;">
+                                            <input type="number"
+                                                   th:field="*{maxAdvanceDays}"
+                                                   placeholder="Nhập số ngày..." />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- minAdvanceHours -->
+                                <div class="config-item">
+                                    <div class="field-label">
+                                        <span class="label-text">Số giờ đặt trước tối thiểu</span>
+                                        <code class="label-code">reservation_min_advance_hours</code>
+                                    </div>
+                                    <div class="field-input">
+                                        <div style="width:100%;">
+                                            <input type="number"
+                                                   th:field="*{minAdvanceHours}"
+                                                   placeholder="Nhập số giờ..." />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- maxPartySize -->
+                                <div class="config-item">
+                                    <div class="field-label">
+                                        <span class="label-text">Số khách tối đa mỗi bàn</span>
+                                        <code class="label-code">reservation_max_party_size</code>
+                                    </div>
+                                    <div class="field-input">
+                                        <div style="width:100%;">
+                                            <input type="number"
+                                                   th:field="*{maxPartySize}"
+                                                   placeholder="Nhập số khách..." />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- cancelBeforeMinutes -->
+                                <div class="config-item">
+                                    <div class="field-label">
+                                        <span class="label-text">Thời gian hủy trước (phút)</span>
+                                        <code class="label-code">reservation_cancel_before_minutes</code>
+                                    </div>
+                                    <div class="field-input">
+                                        <div style="width:100%;">
+                                            <input type="number"
+                                                   th:field="*{cancelBeforeMinutes}"
+                                                   placeholder="Nhập thời gian hủy..." />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="group-actions">
+                            <button type="submit" class="btn-save-group">
+                                <span class="material-symbols-outlined">save</span>
+                                Lưu nhóm Reservation
+                            </button>
+                            <button type="button" class="btn-reset-group" onclick="resetGroup(this, 'reservation')">
+                                <span class="material-symbols-outlined">restart_alt</span>
+                                Reset nhóm
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Empty -->
+        <div th:if="${groupedConfigs == null or groupedConfigs.isEmpty()}">
+            <div class="config-card empty-state">
+                <span class="material-symbols-outlined">settings_overscan</span>
+                <h3>Không tìm thấy cấu hình nào</h3>
+                <p>Vui lòng kiểm tra dữ liệu trong database</p>
+            </div>
+        </div>
+
+        <!-- Info Box -->
+        <div class="info-box">
+            <span class="material-symbols-outlined">info</span>
+            <span>Các thay đổi cấu hình sẽ được áp dụng ngay lập tức mà không cần khởi động lại server.</span>
+        </div>
+    </div>
+</main>
+
+<script th:src="@{/js/admin/system-config.js}"></script>
+<script th:src="@{/js/admin/sidebar.js}"></script>
+</body>
+</html>

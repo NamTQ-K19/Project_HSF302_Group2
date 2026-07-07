@@ -5,11 +5,7 @@ import hsf302.se2033jv.project_hsf302_group2.admin.dto.request.CreateInternalAcc
 import hsf302.se2033jv.project_hsf302_group2.admin.dto.request.OtpVerificationRequest;
 import hsf302.se2033jv.project_hsf302_group2.admin.dto.response.AccountResponse;
 import hsf302.se2033jv.project_hsf302_group2.admin.dto.response.PageResponse;
-import hsf302.se2033jv.project_hsf302_group2.common.entity.User;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.Optional;
 
 public interface AccountService {
 
@@ -21,15 +17,15 @@ public interface AccountService {
 
     void verifyOtpAndCreateAccount(OtpVerificationRequest request);
 
-    void resendOtp(String email);
+    void resendOtp(String email, String adminEmail);
 
-    void lockAccount(Integer userId, String reason);
+    void lockAccount(Integer userId, String reason, String adminEmail);
 
-    void unlockAccount(Integer userId, String reason);
+    void unlockAccount(Integer userId, String reason, String adminEmail);
 
-    void toggleAccountStatus(Integer userId, boolean lock);
+    void toggleAccountStatus(Integer userId, boolean lock, String adminEmail);
 
-    AccountResponse getAccountByUsername(String userName);
+    AccountResponse getAccountByUsername(String username);
 
     void updateProfile(String username, String firstName, String lastName, String phone);
 
