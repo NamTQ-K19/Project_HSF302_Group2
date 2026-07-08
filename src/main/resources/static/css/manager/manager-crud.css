@@ -1,0 +1,280 @@
+/* ═══════════════════════════════════════════
+   Manager CRUD Screens CSS
+   ═══════════════════════════════════════════ */
+
+/* ── Split Layout (Used for Category) ────── */
+.split-container {
+    display: flex;
+    gap: 28px;
+    align-items: flex-start;
+}
+
+.split-main {
+    flex: 2;
+    min-width: 0; /* Prevents flexbox overflow issues */
+}
+
+.split-side {
+    flex: 1;
+    min-width: 320px;
+    position: sticky;
+    top: 80px; /* Keeps form visible while scrolling */
+}
+
+@media (max-width: 992px) {
+    .split-container {
+        flex-direction: column;
+    }
+    .split-side {
+        width: 100%;
+        min-width: 100%;
+        position: static;
+    }
+}
+
+/* ── Table & CRUD Elements ───────────────── */
+.crud-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.crud-table th {
+    background: var(--coffee-pale);
+    padding: 12px 14px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--coffee-dark);
+    border-bottom: 2px solid var(--coffee-border);
+    white-space: nowrap;
+}
+
+.crud-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--coffee-border);
+    vertical-align: middle;
+}
+
+.crud-table tr:hover {
+    background: var(--coffee-cream);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+/* ── Coffee Tables Grid ───────────────────── */
+.tables-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+}
+
+.table-card {
+    background: var(--white);
+    border: 1px solid var(--coffee-border);
+    border-radius: var(--radius-lg);
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.table-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--coffee-medium);
+}
+
+.table-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--coffee-cream);
+    padding-bottom: 10px;
+}
+
+.table-number {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--coffee-dark);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.table-capacity {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.table-details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.table-status-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.table-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
+    border-top: 1px solid var(--coffee-pale);
+    padding-top: 14px;
+    justify-content: flex-end;
+}
+
+/* ── Badges ──────────────────────────────── */
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-available {
+    background: #eafaf1;
+    color: #1e8449;
+    border: 1px solid #a9dfbf;
+}
+
+.status-occupied {
+    background: #fdedec;
+    color: #c0392b;
+    border: 1px solid #fadbd8;
+}
+
+.status-reserved {
+    background: #eaf4fb;
+    color: #1a5276;
+    border: 1px solid #aed6f1;
+}
+
+.status-maintenance {
+    background: #f2f3f4;
+    color: #717d7e;
+    border: 1px solid #d5dbdb;
+}
+
+.active-badge {
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 4px;
+}
+
+.active-yes {
+    background: #eafaf1;
+    color: #27ae60;
+}
+
+.active-no {
+    background: #fdf0ee;
+    color: #c0392b;
+}
+
+/* ── Modal Overlay & Modals ──────────────── */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(44, 26, 14, 0.45); /* coffee-tinted backdrop */
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+    transition: opacity 0.2s ease;
+}
+
+.modal-overlay.visible {
+    display: flex;
+}
+
+.modal-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--coffee-border);
+    animation: slideUp 0.25s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-card-header {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--coffee-dark);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--coffee-pale);
+    padding-bottom: 10px;
+}
+
+.modal-card-body {
+    margin-bottom: 24px;
+}
+
+.modal-card-footer {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    border-top: 1px solid var(--coffee-pale);
+    padding-top: 16px;
+}
+
+.crud-header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* ── Inline controls ─────────────────────── */
+.form-check-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.form-check-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.form-check-control {
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+    accent-color: var(--coffee-medium);
+}

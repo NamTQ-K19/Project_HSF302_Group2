@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Quản lý danh mục - BrewMaster</title>
+    <!-- Tailwind CSS config -->
+    <div th:replace="~{catalog/tailwind-head :: tailwind-head}"></div>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
+</head>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed antialiased flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <th:block th:replace="~{manager/reservation/manager-layout :: sidebar(activePage='categories')}"></th:block>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col overflow-y-auto">
+        <!-- Top Bar -->
+        <header class="sticky top-0 z-30 bg-surface-container-lowest/80 backdrop-blur-md border-b border-outline-variant px-8 py-5 flex items-center justify-between">
+            <div>
+                <h1 class="font-headline-sm text-on-surface m-0 font-bold flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-[28px]">folder</span>
+                    Quản lý danh mục
+                </h1>
+                <div class="text-body-sm text-on-surface-variant mt-1">
+                    Thêm, sửa và xóa các nhóm danh mục sản phẩm của cửa hàng
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-6">
+                <div class="hidden md:flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-body-sm font-medium">
+                    <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                    Hệ thống hoạt động bình thường
+                </div>
+                <div class="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center overflow-hidden shrink-0">
+                    <span class="material-symbols-outlined text-primary text-[24px]">account_circle</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="p-8 max-w-[1400px] w-full mx-auto flex flex-col gap-6">
+            <!-- Notifications -->
+            <div th:if="${successMessage}" class="flex items-center gap-3 bg-[#eafaf1] border-l-4 border-success p-4 rounded-xl text-success text-body-sm font-medium">
+                <span class="material-symbols-outlined text-[20px]">check_circle</span>
+                <span th:text="${successMessage}">Thành công</span>
+            </div>
+            <div th:if="${errorMessage}" class="flex items-center gap-3 bg-[#fdf0ee] border-l-4 border-error p-4 rounded-xl text-error text-body-sm font-medium">
+                <span class="material-symbols-outlined text-[20px]">error</span>
+                <span th:text="${errorMessage}">Lỗi</span>
+            </div>
+
+            <!-- Split Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                
+                <!-- Left Side: Table List -->
+                <div class="lg:col-span-2 bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-5 border-b border-outline-variant flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">list_alt</span>
+                            <h2 class="font-headline-sm text-on-surface font-bold">Danh sách danh mục</h2>
+                        </div>
+                        <span class="text-body-sm text-on-surface-variant font-medium bg-surface-container px-3 py-1 rounded-full" th:text="${#lists.size(categories)} + ' danh mục'">0 danh mục</span>
+                    </div>
+
+                    <div class="p-6">
+                        <div th:if="${#lists.isEmpty(categories)}" class="flex flex-col items-center justify-center py-12 text-on-surface-variant">
+                            <span class="material-symbols-outlined text-[48px] mb-2 opacity-50">folder_off</span>
+                            <p class="text-body-md font-medium">Chưa có danh mục nào được tạo.</p>
+                        </div>
+
+                        <div th:unless="${#lists.isEmpty(categories)}" class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="border-b border-outline-variant">
+                                        <th class="py-3 px-4 text-body-sm font-bold text-on-surface-variant w-[80px]">STT</th>
+                                        <th class="py-3 px-4 text-body-sm font-bold text-on-surface-variant w-[100px]">Mã số</th>
+                                        <th class="py-3 px-4 text-body-sm font-bold text-on-surface-variant">Tên danh mục</th>
+                                        <th class="py-3 px-4 text-body-sm font-bold text-on-surface-variant text-center w-[180px]">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-outline-variant">
+                                    <tr th:each="cat, stat : ${categories}" class="hover:bg-surface-container-low transition-colors">
+                                        <td class="py-3.5 px-4 text-body-md font-medium text-on-surface-variant" th:text="${stat.count}">1</td>
+                                        <td class="py-3.5 px-4 text-body-md font-medium text-on-surface-variant" th:text="${cat.id}">123</td>
+                                        <td class="py-3.5 px-4 text-body-md font-semibold text-on-surface" th:text="${cat.name}">Cà phê</td>
+                                        <td class="py-3.5 px-4">
+                                            <div class="flex items-center justify-center gap-2">
+                                                <button type="button" 
+                                                        class="inline-flex items-center gap-1.5 bg-surface-container border border-outline hover:border-primary text-on-surface-variant hover:text-primary px-3 py-1.5 rounded-lg text-body-sm font-semibold transition-all cursor-pointer"
+                                                        th:data-id="${cat.id}"
+                                                        th:data-name="${cat.name}"
+                                                        onclick="editCategory(this.getAttribute('data-id'), this.getAttribute('data-name'))">
+                                                    <span class="material-symbols-outlined text-[16px]">edit</span>
+                                                    Sửa
+                                                </button>
+                                                <a th:href="@{/manager/categories/delete/{id}(id=${cat.id})}"
+                                                   class="inline-flex items-center gap-1.5 bg-error/10 border border-transparent hover:border-error text-error px-3 py-1.5 rounded-lg text-body-sm font-semibold transition-all cursor-pointer no-underline"
+                                                   onclick="return confirm('Bạn có chắc chắn muốn xóa danh mục này? Hành động này không thể hoàn tác!')">
+                                                    <span class="material-symbols-outlined text-[16px]">delete</span>
+                                                    Xóa
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Side: Creation / Editing Card Form -->
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-5 border-b border-outline-variant flex items-center gap-2">
+                        <span id="form-icon" class="material-symbols-outlined text-primary">add_circle</span>
+                        <h2 id="form-title" class="font-headline-sm text-on-surface font-bold">Thêm danh mục mới</h2>
+                    </div>
+
+                    <div class="p-6">
+                        <form th:action="@{/manager/categories/create}" method="post" id="categoryForm" class="flex flex-col gap-5">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <input type="hidden" name="id" id="categoryId"/>
+
+                            <div class="flex flex-col gap-2">
+                                <label class="text-body-sm font-bold text-on-surface flex items-center gap-1" for="categoryNameInput">
+                                    Tên danh mục <span class="text-error">*</span>
+                                </label>
+                                <input type="text" 
+                                       name="name" 
+                                       id="categoryNameInput" 
+                                       class="w-full bg-surface-container border border-outline rounded-xl p-3 text-body-md focus:border-primary focus:bg-background outline-none transition-all" 
+                                       placeholder="Nhập tên danh mục (VD: Cà phê, Trà sữa...)" 
+                                       required 
+                                       maxlength="100"/>
+                            </div>
+
+                            <div class="flex items-center gap-3 mt-2">
+                                <button type="submit" class="flex-1 inline-flex items-center justify-center gap-2 bg-primary hover:opacity-90 text-white py-3 rounded-xl font-bold text-body-sm transition-all border-none cursor-pointer">
+                                    <span class="material-symbols-outlined text-[18px]">save</span>
+                                    Lưu danh mục
+                                </button>
+                                <button type="button" 
+                                        id="cancel-edit-btn" 
+                                        class="hidden inline-flex items-center justify-center gap-2 bg-surface-container hover:bg-surface-container-high border border-outline text-on-surface-variant py-3 px-4 rounded-xl font-semibold text-body-sm transition-all cursor-pointer" 
+                                        onclick="cancelEdit()">
+                                    Hủy
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function editCategory(id, name) {
+            document.getElementById('form-icon').innerText = 'edit_note';
+            document.getElementById('form-title').innerText = 'Cập nhật danh mục';
+            document.getElementById('categoryForm').action = '/manager/categories/update/' + id;
+            document.getElementById('categoryId').value = id;
+            document.getElementById('categoryNameInput').value = name;
+            
+            const cancelBtn = document.getElementById('cancel-edit-btn');
+            cancelBtn.classList.remove('hidden');
+            cancelBtn.classList.add('inline-flex');
+            
+            document.getElementById('categoryNameInput').focus();
+        }
+
+        function cancelEdit() {
+            document.getElementById('form-icon').innerText = 'add_circle';
+            document.getElementById('form-title').innerText = 'Thêm danh mục mới';
+            document.getElementById('categoryForm').action = '/manager/categories/create';
+            document.getElementById('categoryId').value = '';
+            document.getElementById('categoryNameInput').value = '';
+            
+            const cancelBtn = document.getElementById('cancel-edit-btn');
+            cancelBtn.classList.add('hidden');
+            cancelBtn.classList.remove('inline-flex');
+        }
+    </script>
+</body>
+</html>

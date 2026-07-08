@@ -1,31 +1,69 @@
-<aside th:fragment="sidebar(activePage)" class="manager-sidebar">
-    <div class="sidebar-brand">
-        <span class="brand-icon">☕</span>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
+</head>
+<body>
+<!-- Manager Sidebar Fragment -->
+<aside th:fragment="sidebar(activePage)" class="w-72 shrink-0 bg-surface-container-lowest border-r border-outline-variant flex flex-col h-screen sticky top-0 overflow-y-auto">
+    <!-- Logo -->
+    <div class="p-6 flex items-center gap-3">
+        <span class="material-symbols-outlined text-primary text-[32px]">coffee</span>
         <div>
-            <div class="brand-name">CafeShop</div>
-            <div class="brand-role">Quản lý</div>
+            <span class="font-headline-md text-primary font-bold m-0 tracking-tight block">BrewMaster</span>
+            <span class="text-[11px] font-bold text-on-surface-variant/60 uppercase tracking-widest block -mt-1">Quản lý</span>
         </div>
     </div>
 
-    <nav class="sidebar-nav">
-        <a th:href="@{/manager/dashboard}" th:classappend="${activePage == 'dashboard'} ? ' active'" class="sidebar-nav-item">
-            <span class="nav-icon">📊</span><span>Tổng quan</span>
-        </a>
-        <a th:href="@{/manager/reservations}" th:classappend="${activePage == 'reservations'} ? ' active'" class="sidebar-nav-item">
-            <span class="nav-icon">📅</span><span>Lịch đặt bàn</span>
-        </a>
-        <a th:href="@{/manager/products}" th:classappend="${activePage == 'products'} ? ' active'" class="sidebar-nav-item">
-            <span class="nav-icon">☕</span><span>Sản phẩm</span>
-        </a>
-        <a th:href="@{/manager/reports}" th:classappend="${activePage == 'reports'} ? ' active'" class="sidebar-nav-item">
-            <span class="nav-icon">📈</span><span>Báo cáo</span>
-        </a>
-    </nav>
+    <!-- Navigation -->
+    <nav class="flex-1 px-4 pb-6 flex flex-col gap-6">
+        <!-- Main Section -->
+        <div class="flex flex-col gap-2">
+            <div class="text-[11px] font-bold text-on-surface-variant/60 uppercase tracking-widest px-4 mb-1">Chính</div>
+            <a th:href="@{/manager/reservations}" 
+               class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors no-underline"
+               th:classappend="${activePage == 'reservations' or activePage == 'dashboard'} ? 'bg-primary/10 text-primary font-bold' : 'text-on-surface-variant hover:bg-surface-container hover:text-primary'">
+                <span class="material-symbols-outlined text-[20px]">calendar_month</span>
+                Lịch đặt bàn
+            </a>
+        </div>
 
-    <div class="sidebar-footer">
-        <form th:action="@{/logout}" method="post">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-            <button type="submit" class="btn-sidebar-logout"><span>🚪</span> Đăng xuất</button>
-        </form>
-    </div>
+        <!-- Management Section -->
+        <div class="flex flex-col gap-2">
+            <div class="text-[11px] font-bold text-on-surface-variant/60 uppercase tracking-widest px-4 mb-1 border-t border-outline-variant pt-6">Quản lý</div>
+            <a th:href="@{/manager/products}" 
+               class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors no-underline"
+               th:classappend="${activePage == 'products'} ? 'bg-primary/10 text-primary font-bold' : 'text-on-surface-variant hover:bg-surface-container hover:text-primary'">
+                <span class="material-symbols-outlined text-[20px]">local_cafe</span>
+                Sản phẩm
+            </a>
+            <a th:href="@{/manager/categories}" 
+               class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors no-underline"
+               th:classappend="${activePage == 'categories'} ? 'bg-primary/10 text-primary font-bold' : 'text-on-surface-variant hover:bg-surface-container hover:text-primary'">
+                <span class="material-symbols-outlined text-[20px]">folder</span>
+                Danh mục
+            </a>
+            <a th:href="@{/manager/tables}" 
+               class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors no-underline"
+               th:classappend="${activePage == 'tables'} ? 'bg-primary/10 text-primary font-bold' : 'text-on-surface-variant hover:bg-surface-container hover:text-primary'">
+                <span class="material-symbols-outlined text-[20px]">table_restaurant</span>
+                Quản lý bàn
+            </a>
+        </div>
+
+        <!-- Account Section -->
+        <div class="mt-auto flex flex-col gap-2 pt-6 border-t border-outline-variant">
+            <div class="text-[11px] font-bold text-on-surface-variant/60 uppercase tracking-widest px-4 mb-1">Tài khoản</div>
+            <form th:action="@{/logout}" method="post" class="m-0">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-error hover:bg-error/10 transition-colors border-none cursor-pointer bg-transparent">
+                    <span class="material-symbols-outlined text-[20px]">logout</span>
+                    Đăng xuất
+                </button>
+            </form>
+        </div>
+    </nav>
 </aside>
+</body>
+</html>

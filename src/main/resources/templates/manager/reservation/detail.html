@@ -1,123 +1,175 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title th:text="|Chi tiết đặt bàn #${res.reservationId} – CafeShop Manager|">Chi tiết Đặt bàn</title>
-
-    <link th:href="@{/css/manager/manager-layout.css}" rel="stylesheet"/>
-    <link th:href="@{/css/manager/reservation-schedule.css}" rel="stylesheet"/>
-
-    <style>
-        .detail-wrapper { max-width: 1000px; margin: 0 auto; }
-        .back-link { display: inline-flex; align-items: center; gap: 5px; color: var(--text-light); margin-bottom: 15px; font-weight: 600; text-decoration: none; }
-        .back-link:hover { color: var(--accent); }
-        .detail-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .detail-header h1 { margin: 0; color: var(--brown-dark); }
-        .detail-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; align-items: start; }
-        @media(max-width: 768px) { .detail-grid { grid-template-columns: 1fr; } }
-        .info-list { list-style: none; padding: 0; margin: 0; }
-        .info-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--border); }
-        .info-item:last-child { border-bottom: none; }
-        .info-label { color: var(--text-light); font-size: 0.9rem; font-weight: 600; }
-        .info-value { color: var(--text-dark); font-weight: 700; text-align: right; }
-        .note-box { background: var(--cream); padding: 15px; border-radius: var(--radius); border-left: 4px solid var(--accent); margin-top: 10px; font-size: 0.9rem; }
-        .cancel-box { background: #fdf0ee; border-left: 4px solid var(--danger); }
-        .table-chip { display: inline-block; background: var(--cream-mid); color: var(--brown-dark); border-radius: 20px; font-weight: 700; font-size: 0.85rem; border: 1px solid var(--border); }
-    </style>
+    <!-- Tailwind CSS config -->
+    <div th:replace="~{catalog/tailwind-head :: tailwind-head}"></div>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <meta name="_csrf" th:content="${_csrf?.token}" />
     <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
 </head>
-<body class="manager-body">
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed antialiased flex h-screen overflow-hidden">
 
-<div class="manager-app">
+    <!-- Sidebar -->
+    <th:block th:replace="~{manager/reservation/manager-layout :: sidebar(activePage='reservations')}"></th:block>
 
-    <div th:replace="~{manager/reservation/manager-layout :: sidebar('reservations')}"></div>
-
-    <main class="manager-main">
-        <div class="detail-wrapper">
-            <a th:href="@{/manager/reservations}" class="back-link">← Quay lại danh sách</a>
-
-            <div class="detail-header">
-                <h1>Chi tiết Đặt bàn #<span th:text="${res.reservationId}"></span></h1>
-                <span class="status-badge" th:classappend="${res.status != null ? 'status-' + res.status.name().toLowerCase() : ''}" th:text="${res.statusLabel}"></span>
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col overflow-y-auto">
+        <!-- Top Bar -->
+        <header class="sticky top-0 z-30 bg-surface-container-lowest/80 backdrop-blur-md border-b border-outline-variant px-8 py-5 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <a th:href="@{/manager/reservations}" class="inline-flex items-center justify-center w-10 h-10 rounded-full border border-outline bg-surface-container-lowest text-on-surface-variant hover:border-primary hover:text-primary transition-all no-underline">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                </a>
+                <div>
+                    <h1 class="font-headline-sm text-on-surface m-0 font-bold flex items-center gap-3">
+                        Chi tiết Đặt bàn #<span th:text="${res.reservationId}"></span>
+                        <span class="text-xs font-bold px-3 py-1 rounded-full border uppercase"
+                              th:classappend="${#strings.toString(res.status) == 'PENDING'} ? 'bg-amber-50 text-amber-600 border-amber-200' :
+                                             (${#strings.toString(res.status) == 'CONFIRMED'} ? 'bg-blue-50 text-blue-600 border-blue-200' :
+                                             (${#strings.toString(res.status) == 'ARRIVED'} ? 'bg-teal-50 text-teal-600 border-teal-200' :
+                                             (${#strings.toString(res.status) == 'COMPLETED'} ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
+                                             (${#strings.toString(res.status) == 'CANCELLED'} ? 'bg-red-50 text-red-600 border-red-200' :
+                                             'bg-slate-50 text-slate-500 border-slate-200'))))"
+                              th:text="${res.statusLabel}">
+                            Trạng thái
+                        </span>
+                    </h1>
+                </div>
             </div>
+            
+            <div class="flex items-center gap-6">
+                <div class="hidden md:flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-body-sm font-medium">
+                    <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                    Hệ thống hoạt động bình thường
+                </div>
+                <div class="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center overflow-hidden shrink-0">
+                    <span class="material-symbols-outlined text-primary text-[24px]">account_circle</span>
+                </div>
+            </div>
+        </header>
 
-            <div class="detail-grid">
-                <div class="left-col">
-                    <div class="card" style="margin-bottom: 20px;">
-                        <div class="card-header"><span>👤</span><h2>Thông tin khách hàng</h2></div>
-                        <div class="card-body">
-                            <ul class="info-list">
-                                <li class="info-item"><span class="info-label">Tên:</span><span class="info-value" th:text="${res.customerName}"></span></li>
-                                <li class="info-item"><span class="info-label">SĐT:</span><span class="info-value" th:text="${res.customerPhone}"></span></li>
-                                <li class="info-item"><span class="info-label">Tài khoản:</span><span class="info-value" th:text="'@' + ${res.username}"></span></li>
-                                <li class="info-item"><span class="info-label">Email:</span><span class="info-value" th:text="${res.customerEmail}"></span></li>
+        <div class="p-8 max-w-[1200px] w-full mx-auto flex flex-col gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                
+                <!-- Left Column -->
+                <div class="flex flex-col gap-6">
+                    <!-- Customer Information Card -->
+                    <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-sm overflow-hidden">
+                        <div class="px-6 py-5 border-b border-outline-variant flex items-center gap-2 bg-surface-container-low/55">
+                            <span class="material-symbols-outlined text-primary">person</span>
+                            <h2 class="font-headline-sm text-on-surface font-bold">Thông tin khách hàng</h2>
+                        </div>
+                        <div class="p-6">
+                            <ul class="flex flex-col gap-4">
+                                <li class="flex justify-between items-center py-2 border-b border-outline-variant/60">
+                                    <span class="text-body-sm font-semibold text-on-surface-variant">Tên khách hàng:</span>
+                                    <span class="text-body-md font-bold text-on-surface" th:text="${res.customerName}"></span>
+                                </li>
+                                <li class="flex justify-between items-center py-2 border-b border-outline-variant/60">
+                                    <span class="text-body-sm font-semibold text-on-surface-variant">Số điện thoại:</span>
+                                    <span class="text-body-md font-bold text-on-surface" th:text="${res.customerPhone}"></span>
+                                </li>
+                                <li class="flex justify-between items-center py-2 border-b border-outline-variant/60">
+                                    <span class="text-body-sm font-semibold text-on-surface-variant">Tài khoản:</span>
+                                    <span class="text-body-md font-semibold text-primary" th:text="'@' + ${res.username}"></span>
+                                </li>
+                                <li class="flex justify-between items-center py-2">
+                                    <span class="text-body-sm font-semibold text-on-surface-variant">Email:</span>
+                                    <span class="text-body-md font-semibold text-on-surface" th:text="${res.customerEmail}"></span>
+                                </li>
                             </ul>
                         </div>
                     </div>
 
-                    <div th:if="${res.status != null and res.status.name() == 'CANCELLED'}" class="card cancel-box">
-                        <div class="card-body">
-                            <h3 style="color: var(--danger); margin-top:0; font-size: 1rem;">🚫 Thông tin hủy</h3>
-                            <ul class="info-list">
-
-                                <li class="info-item">
-                                    <span class="info-label">Người hủy:</span>
-                                    <span class="info-value" th:text="${res.cancelledByName != null ? res.cancelledByName : 'Khách hàng'}"></span>
+                    <!-- Cancellation Information Card (If Cancelled) -->
+                    <div th:if="${res.status != null and res.status.name() == 'CANCELLED'}" class="bg-error/5 border border-error/25 rounded-2xl shadow-sm overflow-hidden">
+                        <div class="px-6 py-5 border-b border-error/25 flex items-center gap-2 bg-error/10">
+                            <span class="material-symbols-outlined text-error">block</span>
+                            <h2 class="font-headline-sm text-error font-bold">Thông tin hủy</h2>
+                        </div>
+                        <div class="p-6">
+                            <ul class="flex flex-col gap-4">
+                                <li class="flex justify-between items-center py-2 border-b border-error/15">
+                                    <span class="text-body-sm font-semibold text-error/80">Người hủy:</span>
+                                    <span class="text-body-md font-bold text-error" th:text="${res.cancelledByName != null ? res.cancelledByName : 'Khách hàng'}"></span>
                                 </li>
-
-                                <li class="info-item">
-                                    <span class="info-label">Vai trò:</span>
-                                    <span class="info-value" style="color: var(--brown-dark); font-weight: 700;"
-                                          th:text="${res.cancelledByRole != null ? res.cancelledByRole : 'Khách hàng'}"></span>
+                                <li class="flex justify-between items-center py-2 border-b border-error/15">
+                                    <span class="text-body-sm font-semibold text-error/80">Vai trò:</span>
+                                    <span class="text-body-md font-bold text-error uppercase text-xs border border-error/20 px-2 py-0.5 rounded" th:text="${res.cancelledByRole != null ? res.cancelledByRole : 'Khách hàng'}"></span>
                                 </li>
-
-                                <li class="info-item">
-                                    <span class="info-label">Thời gian:</span>
-                                    <span class="info-value" th:text="${#temporals.format(res.cancelledAt, 'dd/MM/yyyy HH:mm')}"></span>
+                                <li class="flex justify-between items-center py-2 border-b border-error/15">
+                                    <span class="text-body-sm font-semibold text-error/80">Thời gian hủy:</span>
+                                    <span class="text-body-md font-semibold text-on-surface" th:text="${#temporals.format(res.cancelledAt, 'dd/MM/yyyy HH:mm')}"></span>
                                 </li>
                             </ul>
-
-                            <div style="margin-top: 10px; font-size: 0.9rem;">
-                                <strong>Lý do:</strong> <span th:text="${res.cancellationReason}"></span>
+                            <div class="mt-4 p-4 bg-error/10 rounded-xl border border-error/10 text-body-sm text-on-surface">
+                                <strong class="text-error font-bold">Lý do hủy:</strong> 
+                                <span class="block mt-1 font-medium" th:text="${res.cancellationReason}"></span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="right-col">
-                    <div class="card" style="margin-bottom: 20px;">
-                        <div class="card-header"><span>📅</span><h2>Thông tin đặt bàn</h2></div>
-                        <div class="card-body">
-                            <ul class="info-list">
-                                <li class="info-item"><span class="info-label">Ngày đến:</span><span class="info-value" th:text="${#temporals.format(res.reservationDate, 'dd/MM/yyyy')}"></span></li>
-                                <li class="info-item"><span class="info-label">Giờ đến:</span><span class="info-value" th:text="${#temporals.format(res.reservationTime, 'HH:mm')}"></span></li>
-                                <li class="info-item"><span class="info-label">Số khách:</span><span class="info-value" th:text="${res.partySize} + ' người'"></span></li>
-                                <li class="info-item"><span class="info-label">Thời gian ngồi:</span><span class="info-value" th:text="${res.durationMinutes} + ' phút'"></span></li>
-                                <li class="info-item">
-                                    <span class="info-label">Bàn được xếp:</span>
-                                    <div style="text-align: right; max-width: 60%;">
-                                        <span th:if="${#lists.isEmpty(res.assignedTables)}" class="info-value">Chưa xếp bàn</span>
-                                        <span th:each="t : ${res.assignedTables}" class="table-chip info-value" th:text="'Bàn ' + ${t.tableId} + ' (' + ${t.capacity} + ' chỗ)'"></span>
-                                    </div>
-                                </li>
-                                <li class="info-item"><span class="info-label">Trạng thái cọc:</span><span class="info-value" th:text="${res.depositStatus}"></span></li>
-                                <li class="info-item" th:if="${res.depositAmount != null}"><span class="info-label">Số tiền cọc:</span><span class="info-value" th:text="${#numbers.formatDecimal(res.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span></li>
-                                <li class="info-item" th:if="${res.orderId != null}"><span class="info-label">Mã đơn hàng:</span><span class="info-value" style="color:var(--accent);">#[[${res.orderId}]]</span></li>
-                            </ul>
+                <!-- Right Column -->
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-5 border-b border-outline-variant flex items-center gap-2 bg-surface-container-low/55">
+                        <span class="material-symbols-outlined text-primary">calendar_today</span>
+                        <h2 class="font-headline-sm text-on-surface font-bold">Thông tin đặt bàn</h2>
+                    </div>
+                    <div class="p-6">
+                        <ul class="flex flex-col gap-4">
+                            <li class="flex justify-between items-center py-2 border-b border-outline-variant/60">
+                                <span class="text-body-sm font-semibold text-on-surface-variant">Ngày đến:</span>
+                                <span class="text-body-md font-bold text-on-surface" th:text="${#temporals.format(res.reservationDate, 'dd/MM/yyyy')}"></span>
+                            </li>
+                            <li class="flex justify-between items-center py-2 border-b border-outline-variant/60">
+                                <span class="text-body-sm font-semibold text-on-surface-variant">Giờ đến:</span>
+                                <span class="text-body-md font-bold text-on-surface" th:text="${#temporals.format(res.reservationTime, 'HH:mm')}"></span>
+                            </li>
+                            <li class="flex justify-between items-center py-2 border-b border-outline-variant/60">
+                                <span class="text-body-sm font-semibold text-on-surface-variant">Số khách:</span>
+                                <span class="text-body-md font-bold text-on-surface" th:text="${res.partySize} + ' người'"></span>
+                            </li>
+                            <li class="flex justify-between items-center py-2 border-b border-outline-variant/60">
+                                <span class="text-body-sm font-semibold text-on-surface-variant">Thời gian ngồi:</span>
+                                <span class="text-body-md font-semibold text-on-surface" th:text="${res.durationMinutes} + ' phút'"></span>
+                            </li>
+                            <li class="flex justify-between items-center py-2.5 border-b border-outline-variant/60">
+                                <span class="text-body-sm font-semibold text-on-surface-variant">Bàn được xếp:</span>
+                                <div class="flex flex-wrap gap-1.5 justify-end max-w-[60%]">
+                                    <span th:if="${#lists.isEmpty(res.assignedTables)}" class="text-body-md font-semibold text-on-surface-variant">Chưa xếp bàn</span>
+                                    <span th:each="t : ${res.assignedTables}" class="bg-primary/10 text-primary text-xs font-bold px-2.5 py-1 rounded-full border border-primary/20" th:text="'Bàn ' + ${t.tableId} + ' (' + ${t.capacity} + ' chỗ)'"></span>
+                                </div>
+                            </li>
+                            <li class="flex justify-between items-center py-2 border-b border-outline-variant/60">
+                                <span class="text-body-sm font-semibold text-on-surface-variant">Trạng thái cọc:</span>
+                                <span class="text-body-md font-bold text-on-surface" th:text="${res.depositStatus}"></span>
+                            </li>
+                            <li class="flex justify-between items-center py-2 border-b border-outline-variant/60" th:if="${res.depositAmount != null}">
+                                <span class="text-body-sm font-semibold text-on-surface-variant">Số tiền cọc:</span>
+                                <span class="text-body-md font-bold text-[#27ae60]" th:text="${#numbers.formatDecimal(res.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                            </li>
+                            <li class="flex justify-between items-center py-2" th:if="${res.orderId != null}">
+                                <span class="text-body-sm font-semibold text-on-surface-variant">Mã đơn hàng:</span>
+                                <span class="text-body-md font-bold text-primary">#[[${res.orderId}]]</span>
+                            </li>
+                        </ul>
 
-                            <div th:if="${res.note != null and !res.note.isBlank()}" class="note-box">
-                                <strong>Ghi chú của khách:</strong><br>
-                                <span th:text="${res.note}"></span>
-                            </div>
+                        <div th:if="${res.note != null and !res.note.isBlank()}" class="mt-6 p-4 bg-primary/5 rounded-xl border border-primary/10 text-body-sm text-on-surface">
+                            <strong class="text-primary font-bold">Ghi chú của khách:</strong>
+                            <p class="mt-1 font-medium leading-relaxed" th:text="${res.note}"></p>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </main>
 
-</div>
 </body>
 </html>
