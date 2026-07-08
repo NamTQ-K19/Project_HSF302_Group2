@@ -191,10 +191,7 @@ public class ConfigServiceImpl implements ConfigService {
         return configMap;
     }
 
-    // =============================================================
     // RESERVATION CONFIG
-    // =============================================================
-
     @Override
     public ReservationConfigRequest getReservationConfig() {
         ReservationConfigRequest request = new ReservationConfigRequest();
@@ -315,8 +312,9 @@ public class ConfigServiceImpl implements ConfigService {
     // Reservation
     @Override
     public long getReservationDepositAmount() {
+        String value = getConfig("reservation_deposit_amount", "50000");
         try {
-            return Long.parseLong(getConfig("reservation_deposit_amount", "50000"));
+            return Long.parseLong(value);
         } catch (NumberFormatException e) {
             return 50000;
         }

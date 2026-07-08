@@ -168,9 +168,13 @@ public class ReservationServiceImpl implements ReservationService {
     @Transactional
     public ReservationConfirmationResponse createReservation(CreateReservationRequest request, Integer customerId) {
         try {
+            int maxPerDay = configService.getReservationMaxPerDay();
+            long depositAmount = configService.getReservationDepositAmount();
+            int holdMinutes = configService.getReservationHoldMinutes();
+
             int count = reservationRepository.countReservationsByCustomerAndDate(customerId, request.getReservationDate());
-            if (count >= configService.getReservationMaxPerDay()) {
-                throw new ReservationException("Bạn đã đạt giới hạn " + configService.getReservationMaxPerDay() + " lần đặt bàn trong ngày");
+            if (count >= maxPerDay) {
+                throw new ReservationException("Bạn đã đạt giới hạn " + maxPerDay + " lần đặt bàn trong ngày");
             }
 
             validateDateTime(request.getReservationDate(), request.getReservationTime());
@@ -249,10 +253,10 @@ public class ReservationServiceImpl implements ReservationService {
             reservation.getTables().add(selectedTable);
             Reservation savedReservation = reservationRepository.save(reservation);
 
-            BigDecimal depositAmount = BigDecimal.valueOf(configService.getReservationDepositAmount());
+            BigDecimal depositAmountDecimal = BigDecimal.valueOf(depositAmount);
             ReservationDeposit deposit = ReservationDeposit.builder()
                     .reservation(savedReservation)
-                    .depositAmount(depositAmount)
+                    .depositAmount(depositAmountDecimal)
                     .paymentStatus(DepositPaymentStatus.PENDING)
                     .refundAmount(BigDecimal.ZERO)
                     .appliedToOrder(false)
@@ -262,7 +266,7 @@ public class ReservationServiceImpl implements ReservationService {
             logSystemAction(customer, "CREATE_RESERVATION", "reservations",
                     savedReservation.getReservationId(), "Tạo đặt bàn cho " + customer.getUsername());
 
-            return buildConfirmationResponse(savedReservation, selectedTable, depositAmount);
+            return buildConfirmationResponse(savedReservation, selectedTable, depositAmountDecimal, holdMinutes);
 
         } catch (Exception e) {
             throw e;
@@ -365,9 +369,11 @@ public class ReservationServiceImpl implements ReservationService {
         logSystemAction(customer, "PAY_DEPOSIT", "reservation_deposits",
                 deposit.getDepositId(), "Thanh toán tiền cọc đặt bàn thành công");
 
+        int holdMinutes = configService.getReservationHoldMinutes();
         return buildConfirmationResponse(reservation,
                 reservation.getTables().iterator().next(),
-                deposit.getDepositAmount());
+                deposit.getDepositAmount(),
+                holdMinutes);
     }
 
     @Override
@@ -395,7 +401,7 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     @Transactional
     public void releaseExpiredHolds() {
-        int holdMinutes = configService.getReservationHoldMinutes();  // ⭐ Lấy từ database
+        int holdMinutes = configService.getReservationHoldMinutes();
         LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(holdMinutes);
         List<Reservation> expiredReservations = reservationRepository
                 .findByStatusAndCreatedAtBefore(ReservationStatus.PENDING, expiryTime);
@@ -470,6 +476,8 @@ public class ReservationServiceImpl implements ReservationService {
         return paymentMethodRepository.findAll();
     }
 
+    // ==================== PRIVATE METHODS ====================
+
     private ReservationResponse mapToDTO(Reservation r) {
         ReservationDeposit deposit = reservationDepositRepository
                 .findByReservation_ReservationId(r.getReservationId())
@@ -533,6 +541,7 @@ public class ReservationServiceImpl implements ReservationService {
             throw new InvalidReservationTimeException("Ngày đặt bàn phải là ngày trong tương lai");
         }
 
+        // Lấy giờ làm việc từ ConfigService
         String hours = configService.getSiteHours();
         String[] parts = hours.split(" - ");
         LocalTime opening = LocalTime.parse(parts[0].trim());
@@ -564,7 +573,6 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     private CoffeeTable findBestTable(List<CoffeeTable> tables, Integer partySize) {
-        // Tìm bàn vừa vặn nhất với số lượng khách
         return tables.stream()
                 .filter(table -> table.getCapacity() >= partySize)
                 .min((t1, t2) -> Integer.compare(t1.getCapacity(), t2.getCapacity()))
@@ -575,6 +583,7 @@ public class ReservationServiceImpl implements ReservationService {
         LocalTime currentTime = request.getReservationTime();
         LocalDate currentDate = request.getReservationDate();
 
+        // Lấy giờ làm việc từ ConfigService
         String hours = configService.getSiteHours();
         String[] parts = hours.split(" - ");
         LocalTime opening = LocalTime.parse(parts[0].trim());
@@ -627,19 +636,17 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     private void releaseTables(Reservation reservation) {
-        // Giải phóng bàn: xóa khỏi reservation.tables
         reservation.getTables().clear();
         reservationRepository.save(reservation);
     }
 
     private boolean processPayment(DepositPaymentRequest request) {
         // TODO: Tích hợp Payment Gateway thực tế
-        // Giả định thanh toán thành công
         return true;
     }
 
     private ReservationConfirmationResponse buildConfirmationResponse(
-            Reservation reservation, CoffeeTable table, BigDecimal depositAmount) {
+            Reservation reservation, CoffeeTable table, BigDecimal depositAmount, int holdMinutes) {
 
         String formattedDateTime = "";
         try {
@@ -659,7 +666,7 @@ public class ReservationServiceImpl implements ReservationService {
                 .message("Đặt bàn thành công! Vui lòng thanh toán tiền cọc để xác nhận.")
                 .reservation(convertToResponse(reservation))
                 .depositAmount(depositAmount)
-                .holdMinutes(configService.getReservationHoldMinutes())
+                .holdMinutes(holdMinutes)
                 .paymentUrl("/customer/reservations/" + reservation.getReservationId() + "/deposit")
                 .build();
     }

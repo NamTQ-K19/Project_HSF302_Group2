@@ -9,6 +9,19 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <meta name="_csrf" th:content="${_csrf?.token}" />
   <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
+
+  <style>
+    .deposit-amount {
+      font-size: 42px;
+      font-weight: 700;
+      color: #271310;
+    }
+    @media (max-width: 480px) {
+      .deposit-amount {
+        font-size: 28px;
+      }
+    }
+  </style>
 </head>
 <body class="bg-background text-on-surface font-body-md antialiased">
 
@@ -22,9 +35,14 @@
         <h2 class="font-headline-sm text-primary m-0">Thanh toán tiền cọc</h2>
       </div>
       <div class="p-8">
-        <div th:if="${errorMessage}" class="bg-error/10 text-error p-4 rounded-xl mb-4 border border-error/20">
+
+        <!-- Thông báo lỗi -->
+        <div th:if="${errorMessage}" class="bg-error/10 text-error p-4 rounded-xl mb-4 border border-error/20 flex items-start gap-3">
+          <span class="material-symbols-outlined text-[20px]">error</span>
           <span th:text="${errorMessage}"></span>
         </div>
+
+        <!-- Thông tin đặt bàn -->
         <div class="bg-surface-container-low rounded-xl p-6 mb-6 border border-outline-variant">
           <h3 class="text-sm font-bold text-on-surface mb-4 flex items-center gap-2">
             <span class="material-symbols-outlined text-[18px]">receipt_long</span> Thông tin đặt bàn
@@ -44,20 +62,45 @@
             <p class="text-sm text-on-surface mt-1" th:text="${reservation.note}"></p>
           </div>
         </div>
+
         <div class="bg-primary/5 rounded-xl p-6 border border-primary/20 text-center mb-6">
           <p class="text-sm text-on-surface-variant mb-1">Số tiền cọc cần thanh toán</p>
-          <p class="text-4xl font-bold text-primary">
-            <span th:text="${#numbers.formatDecimal(depositAmount != null ? depositAmount : 50000, 0, 'COMMA', 0, 'POINT') + 'đ'}">50.000đ</span>
+          <p class="deposit-amount">
+            <span th:text="${#numbers.formatDecimal(depositAmount, 0, 'COMMA', 0, 'POINT') + 'đ'}">50.000đ</span>
           </p>
           <div class="flex items-center justify-center gap-2 mt-3 text-xs text-on-surface-variant bg-primary/10 rounded-full px-4 py-2 inline-block">
             <span class="material-symbols-outlined text-[16px]">info</span> Tiền cọc được hoàn trả khi bạn đến đúng giờ hoặc trừ vào hóa đơn
           </div>
+
+          <div class="mt-3 text-xs text-on-surface-variant/50 border-t border-primary/10 pt-3">
+            <span class="material-symbols-outlined text-[14px]">bug_report</span>
+            Giá trị từ database: <span th:text="${depositAmount}" class="font-mono font-bold"></span> VNĐ
+          </div>
+
+          <!-- Thông tin cấu hình khác -->
+          <div class="mt-3 grid grid-cols-3 gap-2 text-xs text-on-surface-variant/70">
+            <div class="bg-white/50 rounded-lg p-2">
+              <span class="block font-bold">Giữ bàn</span>
+              <span th:text="${holdMinutes} + ' phút'"></span>
+            </div>
+            <div class="bg-white/50 rounded-lg p-2">
+              <span class="block font-bold">Số khách tối đa</span>
+              <span th:text="${maxPartySize} + ' người'"></span>
+            </div>
+            <div class="bg-white/50 rounded-lg p-2">
+              <span class="block font-bold">Đặt trước</span>
+              <span th:text="${maxAdvanceDays} + ' ngày'"></span>
+            </div>
+          </div>
         </div>
+
+        <!-- Form thanh toán -->
         <form th:action="@{'/customer/reservations/' + ${reservation.reservationId} + '/deposit'}" method="post">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
           <div class="mb-6">
             <label class="block text-sm font-bold text-on-surface mb-3">Chọn phương thức thanh toán</label>
             <div class="grid grid-cols-2 gap-3">
-              <!-- ⭐ SỬA: method.paymentMethodId thay vì method.key -->
               <div th:each="method : ${paymentMethods}"
                    class="flex items-center gap-3 p-3 border border-outline rounded-xl hover:border-primary transition-all cursor-pointer payment-option"
                    onclick="selectPaymentMethod(this, ${method.paymentMethodId})">
@@ -68,7 +111,9 @@
             </div>
             <p id="paymentError" class="text-error text-sm mt-2 hidden">Vui lòng chọn phương thức thanh toán</p>
           </div>
+
           <input type="hidden" name="transactionRef" th:value="'DEP-' + ${reservation.reservationId} + '-' + ${#dates.format(#dates.createNow(), 'yyyyMMddHHmmss')}" />
+
           <div class="flex gap-4">
             <button type="submit" id="payBtn" class="flex-1 bg-primary hover:opacity-90 text-white px-6 py-3 rounded-xl font-bold text-body-sm transition-opacity border-none cursor-pointer shadow-sm flex items-center justify-center gap-2">
               <span class="material-symbols-outlined text-[18px]">check</span> Thanh toán
@@ -85,6 +130,7 @@
 
 <script>
   let selectedMethod = null;
+
   function selectPaymentMethod(element, methodId) {
     const container = element.closest('.grid');
     container.querySelectorAll('.payment-option').forEach(el => {
@@ -92,9 +138,13 @@
     });
     element.classList.add('border-primary', 'bg-primary/5');
     const radio = element.querySelector('input[type="radio"]');
-    if (radio) { radio.checked = true; selectedMethod = methodId; }
+    if (radio) {
+      radio.checked = true;
+      selectedMethod = methodId;
+    }
     document.getElementById('paymentError').classList.add('hidden');
   }
+
   document.querySelector('form').addEventListener('submit', function(e) {
     const checked = this.querySelector('input[name="paymentMethodId"]:checked');
     if (!checked) {
@@ -103,5 +153,6 @@
     }
   });
 </script>
+
 </body>
 </html>
