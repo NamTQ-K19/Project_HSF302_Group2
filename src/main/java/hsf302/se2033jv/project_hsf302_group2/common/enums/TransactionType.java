@@ -5,17 +5,14 @@ package hsf302.se2033jv.project_hsf302_group2.common.enums;
  */
 public enum TransactionType {
     EARN("EARN"),
-    REDEEM("REDEEM");
+    REDEEM("REDEEM"),
+    ADJUST("ADJUST");   // ← THÊM MỚI
 
     private final String value;
 
-    TransactionType(String value) {
-        this.value = value;
-    }
+    TransactionType(String value) { this.value = value; }
 
-    public String getValue() {
-        return value;
-    }
+    public String getValue() { return value; }
 
     public static TransactionType fromValue(String value) {
         if (value == null) return null;

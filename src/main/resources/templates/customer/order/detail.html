@@ -207,21 +207,45 @@
                 <div class="font-bold text-headline-sm text-primary mb-5 flex items-center gap-2">
                     <span class="material-symbols-outlined text-[20px]">payments</span> Thanh toán
                 </div>
-                
+
+                <div class="flex justify-between items-center mb-3 text-body-md">
+                    <span class="text-on-surface-variant">Mã thanh toán</span>
+                    <span class="text-on-surface font-semibold" th:text="'#' + ${order.payment.paymentId}">#16</span>
+                </div>
+
                 <div class="flex justify-between items-center mb-3 text-body-md">
                     <span class="text-on-surface-variant">Phương thức</span>
                     <strong class="text-on-surface" th:text="${order.payment.paymentMethod}">Tiền mặt</strong>
                 </div>
-                
-                <div class="flex justify-between items-center mb-3 text-body-md">
-                    <span class="text-on-surface-variant">Mã giao dịch</span>
+
+                <div class="flex justify-between items-center mb-3 text-body-md" th:if="${order.payment.transactionRef != null}">
+                    <span class="text-on-surface-variant">Mã giao dịch (Gateway)</span>
                     <span class="text-on-surface font-mono bg-surface-container px-2 py-0.5 rounded text-[13px]" th:text="${order.payment.transactionRef}">PAY-001</span>
                 </div>
-                
+
+                <div class="flex justify-between items-center mb-3 text-body-md" th:if="${order.payment.paidAt != null}">
+                    <span class="text-on-surface-variant">Thời gian thanh toán</span>
+                    <span class="text-on-surface font-semibold" th:text="${#temporals.format(order.payment.paidAt, 'dd/MM/yyyy HH:mm')}">07/07/2026 10:15</span>
+                </div>
+
                 <div class="flex justify-between items-center text-body-md pt-3 border-t border-outline-variant">
                     <span class="text-on-surface-variant">Trạng thái</span>
-                    <span th:class="'inline-flex px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider ' + (${order.payment.paymentStatus == 'SUCCESS'} ? 'bg-primary-container text-primary' : 'bg-[#fff3cd] text-[#856404]')"
+                    <span th:class="'inline-flex px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider ' +
+              (${order.payment.paymentStatus == 'SUCCESS'} ? 'bg-primary-container text-primary' :
+              (${order.payment.paymentStatus == 'FAILED'} ? 'bg-error-container text-on-error-container' :
+              (${order.payment.paymentStatus == 'REFUNDED'} ? 'bg-[#cce5ff] text-[#004085]' : 'bg-[#fff3cd] text-[#856404]')))"
                           th:text="${order.payment.paymentStatus}">PENDING</span>
+                </div>
+
+                <!-- Nút Thanh toán lại — CHỈ hiện với phương thức online (khác Tiền mặt), khi Payment PENDING/FAILED và Order PENDING/CONFIRMED -->
+                <div th:if="${order.payment.paymentMethod != 'Tiền mặt'
+                    and (order.payment.paymentStatus == 'PENDING' or order.payment.paymentStatus == 'FAILED')
+                    and (order.orderStatus == 'PENDING' or order.orderStatus == 'CONFIRMED')}"
+                     class="mt-5 pt-5 border-t border-outline-variant">
+                    <a th:href="@{/customer/payment/vnpay/retry/{orderId}(orderId=${order.orderId})}"
+                       class="w-full bg-error hover:bg-error/90 text-white px-6 py-3 rounded-full font-bold text-body-md flex items-center justify-center gap-2 no-underline transition-colors duration-200 shadow-sm hover:shadow-md">
+                        <span class="material-symbols-outlined text-[20px]">refresh</span> Thanh toán lại
+                    </a>
                 </div>
             </div>
 

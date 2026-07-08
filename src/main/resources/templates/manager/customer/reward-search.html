@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Điểm khách hàng – CafeShop Manager</title>
+    <link th:href="@{/css/manager/manager-layout.css}" rel="stylesheet"/>
+    <link th:href="@{/css/manager/reservation-schedule.css}" rel="stylesheet"/>
+    <link th:href="@{/css/manager/customer-reward.css}" rel="stylesheet"/>
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
+</head>
+<body class="manager-body">
+
+<div class="manager-app">
+
+    <div th:replace="~{manager/layout/manager-layout :: sidebar(${activePage})}"></div>
+
+    <main class="manager-main">
+
+        <div class="page-title">
+            <h1>🎁 Điểm khách hàng</h1>
+            <p>Tra cứu thông tin điểm tích lũy của khách hàng</p>
+        </div>
+
+        <div class="card" style="margin-bottom:20px;">
+            <div class="card-header">
+                <span>🔍</span><h2>Tìm kiếm khách hàng</h2>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/manager/customers/rewards}" method="get" id="searchForm">
+                    <div class="filter-grid" style="grid-template-columns: 1fr;">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label">Tên, tên đăng nhập, email hoặc số điện thoại</label>
+                            <input type="text" name="keyword" class="form-control"
+                                   placeholder="Nhập từ khóa tìm kiếm..." th:value="${keyword}"/>
+                        </div>
+                    </div>
+                    <div style="margin-top:16px; display:flex; gap:10px;">
+                        <button type="submit" class="btn btn-primary">🔍 Tìm kiếm</button>
+                        <a th:href="@{/manager/customers/rewards}" class="btn btn-secondary">✕ Xóa lọc</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span>📋</span><h2>Danh sách khách hàng</h2>
+                <span class="record-count"
+                      th:text="'(' + ${customerPage != null ? customerPage.totalElements : 0} + ' khách hàng)'"></span>
+            </div>
+            <div class="card-body">
+
+                <div th:if="${#lists.isEmpty(customers)}" class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <p>Không tìm thấy khách hàng nào phù hợp.</p>
+                </div>
+
+                <div th:unless="${#lists.isEmpty(customers)}" class="table-responsive">
+                    <table class="schedule-table">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Khách hàng</th>
+                            <th>Email</th>
+                            <th>Số điện thoại</th>
+                            <th>Trạng thái</th>
+                            <th class="text-center">
+                                <a th:href="@{/manager/customers/rewards(keyword=${keyword}, sort=${sort == 'points_asc' ? 'points_desc' : 'points_asc'}, page=0)}"
+                                   style="color:inherit; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+                                    Điểm hiện tại
+                                    <span th:if="${sort == 'points_asc'}" title="Đang sắp xếp tăng dần">▲</span>
+                                    <span th:if="${sort == 'points_desc'}" title="Đang sắp xếp giảm dần">▼</span>
+                                    <span th:if="${sort == null or sort.isEmpty()}" style="opacity:.35;" title="Nhấn để sắp xếp">⇅</span>
+                                </a>
+                            </th>
+                            <th>Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="c, stat : ${customers}"
+                            style="cursor: pointer;"
+                            th:data-url="@{/manager/customers/rewards/{id}(id=${c.customerId})}"
+                            onclick="window.location.href=this.getAttribute('data-url')">
+
+                            <td th:text="${currentPage * pageSize + stat.count}"></td>
+                            <td class="customer-name-cell">
+                                <div class="cust-fullname" th:text="${c.fullName}"></div>
+                                <div class="cust-username" th:text="'@' + ${c.username}"></div>
+                            </td>
+                            <td th:text="${c.email}"></td>
+                            <td th:text="${c.phone}"></td>
+                            <td>
+                                <span th:if="${c.status}" class="account-badge account-active">Hoạt động</span>
+                                <span th:unless="${c.status}" class="account-badge account-locked">Đã khóa</span>
+                            </td>
+                            <td class="text-center" style="font-weight:700;" th:text="${c.currentBalance}"></td>
+                            <td>
+                                <a th:href="@{/manager/customers/rewards/{id}(id=${c.customerId})}"
+                                   class="btn btn-primary btn-sm"
+                                   onclick="event.stopPropagation()">Xem chi tiết</a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Pagination -->
+                    <div th:if="${customerPage.totalPages > 1}" class="pagination-wrap">
+
+                        <!-- Nút Trước -->
+                        <a th:if="${currentPage > 0}"
+                           th:href="@{/manager/customers/rewards(keyword=${keyword}, sort=${sort}, page=${currentPage - 1})}"
+                           class="btn btn-secondary btn-sm">‹ Trước</a>
+                        <span th:unless="${currentPage > 0}" class="btn btn-secondary btn-sm disabled">‹ Trước</span>
+
+                        <!-- Số trang -->
+                        <span th:each="i : ${#numbers.sequence(0, customerPage.totalPages - 1)}">
+                            <a th:href="@{/manager/customers/rewards(keyword=${keyword}, sort=${sort}, page=${i})}"
+                               th:text="${i + 1}"
+                               th:classappend="${i == currentPage} ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm'"></a>
+                        </span>
+
+                        <!-- Nút Sau -->
+                        <a th:if="${currentPage < customerPage.totalPages - 1}"
+                           th:href="@{/manager/customers/rewards(keyword=${keyword}, sort=${sort}, page=${currentPage + 1})}"
+                           class="btn btn-secondary btn-sm">Sau ›</a>
+                        <span th:unless="${currentPage < customerPage.totalPages - 1}" class="btn btn-secondary btn-sm disabled">Sau ›</span>
+
+                        <span class="pagination-info">
+                            Trang <strong th:text="${currentPage + 1}"></strong> / <strong th:text="${customerPage.totalPages}"></strong>
+                            (tổng <strong th:text="${customerPage.totalElements}"></strong> khách hàng)
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+</body>
+</html>

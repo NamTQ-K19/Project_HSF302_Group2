@@ -37,8 +37,11 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     boolean existsByUsername(String username);
 
     @Query("SELECT u FROM User u WHERE " +
-            "(:keyword IS NULL OR :keyword = '' OR LOWER(CONCAT(u.firstName, ' ', u.lastName)) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-            "OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+            "(:keyword IS NULL OR :keyword = '' " +
+            "OR LOWER(CONCAT(u.firstName, ' ', u.lastName)) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "OR LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "OR u.phone LIKE CONCAT('%', :keyword, '%')) " +
             "AND (:role IS NULL OR :role = '' OR LOWER(u.role.roleName) = LOWER(:role)) " +
             "AND (:status IS NULL OR :status = '' OR " +
             "(:status = 'ACTIVE' AND u.status = true) OR " +

@@ -419,7 +419,13 @@
                 data: JSON.stringify(request),
                 success: function(response) {
                     if (response.success && response.data) {
-                        window.location.href = '/customer/orders/confirmation/' + response.data.orderId;
+                        if (response.data.paymentUrl) {
+                            // Có phương thức thanh toán online → chuyển ra VNPay Sandbox
+                            window.location.href = response.data.paymentUrl;
+                        } else {
+                            // Tiền mặt → đã xác nhận, vào thẳng trang xác nhận
+                            window.location.href = '/customer/orders/confirmation/' + response.data.orderId;
+                        }
                     } else {
                         Swal.fire({ icon: 'error', title: 'Lỗi!', text: response.message || 'Không thể đặt hàng' });
                         btn.prop('disabled', false);

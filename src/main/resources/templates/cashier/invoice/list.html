@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Danh sách hóa đơn – Café Shop Cashier</title>
+    <link th:href="@{/css/cashier/invoice.css}" rel="stylesheet"/>
+</head>
+<body>
+<div class="invoice-page">
+    <div class="page-title">
+        <h1>🧾 Danh sách đơn đã thanh toán</h1>
+        <p>Chọn một đơn hàng để xem và in hóa đơn</p>
+    </div>
+
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+
+    <table class="invoice-table">
+        <thead>
+        <tr>
+            <th>Mã đơn</th>
+            <th>Loại đơn</th>
+            <th>Bàn</th>
+            <th>Khách hàng</th>
+            <th>Phương thức TT</th>
+            <th>Thời gian thanh toán</th>
+            <th>Tổng tiền</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="inv : ${invoices}">
+            <td th:text="'#' + ${inv.orderId}"></td>
+            <td th:text="${inv.orderTypeLabel}"></td>
+            <td th:text="${inv.tableNumber} ?: '-'"></td>
+            <td th:text="${inv.customerName}"></td>
+            <td th:text="${inv.paymentMethodName}"></td>
+            <td th:text="${#temporals.format(inv.paidAt, 'dd/MM/yyyy HH:mm')}"></td>
+            <td th:text="${inv.totalAmount} + ' đ'"></td>
+            <td>
+                <a th:href="@{/cashier/invoices/{id}(id=${inv.orderId})}" class="btn-view">Xem hóa đơn</a>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(invoices)}">
+            <td colspan="8" class="empty-row">Chưa có đơn hàng nào đã thanh toán thành công</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

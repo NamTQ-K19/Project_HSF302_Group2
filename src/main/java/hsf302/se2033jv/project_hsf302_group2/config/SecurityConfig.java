@@ -54,15 +54,17 @@ public class SecurityConfig {
                 .csrf(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/","/login**", "/staff/login**", "/assets/**", "/css/**", "/images/**",
-                                "/js/**", "/forgot-password", "/products/**", "/set-password**",
-                                "/resend-otp", "/verify-email", "/register", "/home", "/login", "/uploads/**",
-                                "/api/banners", "/favicon.ico", "/webjars/**", "/search", "/loyalty-policy")
+                                "/js/**", "/forgot-password", "/products/**", "/set-password**", "/resend-otp",
+                                "/verify-email", "/register", "/home", "/login", "/uploads/**", "/api/banners",
+                                "/favicon.ico", "/webjars/**", "/search", "/loyalty-policy",
+                                "/customer/payment/vnpay/return")
                         .permitAll()
                         .requestMatchers("/admin/**").authenticated()
                         .requestMatchers("/customer/profile/**").authenticated()
                         .requestMatchers("/customer/points/**").authenticated()
                         .requestMatchers("/customer/reservations/**").authenticated()
                         .requestMatchers("/manager/**").authenticated()
+                        .requestMatchers("/cashier/**").authenticated()
                         .anyRequest().authenticated())
 
                 .formLogin(form -> form

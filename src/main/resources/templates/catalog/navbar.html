@@ -76,8 +76,11 @@
                             <a th:href="@{/customer/reviews}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-surface-container-low text-on-surface-variant hover:text-primary transition-colors no-underline text-body-sm font-medium">
                                 <span class="material-symbols-outlined text-[20px]">rate_review</span> Đánh giá
                             </a>
-                            <a th:href="@{/customer/reservations}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-surface-container-low text-on-surface-variant hover:text-primary transition-colors no-underline text-body-sm font-medium border-b border-outline-variant">
+                            <a th:href="@{/customer/reservations}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-surface-container-low text-on-surface-variant hover:text-primary transition-colors no-underline text-body-sm font-medium">
                                 <span class="material-symbols-outlined text-[20px]">calendar_month</span> Đặt bàn
+                            </a>
+                            <a th:href="@{/profile/changePassword}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-surface-container-low text-on-surface-variant hover:text-primary transition-colors no-underline text-body-sm font-medium">
+                                <span class="material-symbols-outlined text-[20px]">lock_reset</span> Đổi mật khẩu
                             </a>
                             <form th:action="@{/logout}" method="post" class="m-0 p-0">
                                 <button type="submit" class="w-full text-left flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-surface-container-low text-error transition-colors no-underline text-body-sm font-medium bg-transparent border-none cursor-pointer">

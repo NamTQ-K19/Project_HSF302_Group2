@@ -29,6 +29,29 @@
 <div th:replace="~{catalog/navbar :: navbar}"></div>
 
 <main class="max-w-max-width mx-auto px-margin-desktop py-12 min-h-[70vh]">
+
+    <div th:if="${errorMessage}"
+         class="max-w-3xl mx-auto mb-8 bg-error-container border border-error/20 rounded-3xl p-6 flex items-center gap-4">
+        <span class="material-symbols-outlined text-on-error-container text-[36px] shrink-0">error</span>
+        <div class="flex-1">
+            <div class="font-bold text-on-error-container">Không thể thực hiện thao tác</div>
+            <p class="text-on-error-container/80 text-body-sm m-0" th:text="${errorMessage}"></p>
+        </div>
+    </div>
+
+    <div th:if="${param.paymentFailed}"
+         class="max-w-3xl mx-auto mb-6 bg-red-50 border border-red-200 rounded-2xl p-6 flex items-center gap-4">
+        <span class="material-symbols-outlined text-red-500 text-[36px]">error</span>
+        <div class="flex-1">
+            <div class="font-bold text-red-700">Thanh toán không thành công</div>
+            <p class="text-red-600 text-body-sm m-0">Đơn hàng của bạn chưa được thanh toán. Vui lòng thử lại.</p>
+        </div>
+        <a th:href="@{/customer/payment/vnpay/retry/{orderId}(orderId=${order.orderId})}"
+           class="bg-red-600 text-white px-5 py-2.5 rounded-full font-bold text-body-sm no-underline whitespace-nowrap">
+            Thanh toán lại
+        </a>
+    </div>
+
     <div class="mb-12 relative z-10 flex justify-center items-center gap-4">
         <div class="flex flex-col items-center gap-2">
             <div class="w-10 h-10 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-body-md border border-outline-variant">1</div>
@@ -72,7 +95,8 @@
             <div class="bg-secondary text-white border-none rounded-3xl p-8 flex items-center justify-center gap-6 shadow-sm">
                 <span class="material-symbols-outlined text-[64px] text-white/90">workspace_premium</span>
                 <div>
-                    <div class="text-white/80 text-body-sm mb-1">Bạn đã nhận được</div>
+                    <div class="text-white/80 text-body-sm mb-1">Sau khi đơn hàng hoàn thành,</div>
+                    <div class="text-white/80 text-body-sm mb-1">bạn sẽ nhận được</div>
                     <div class="font-bold text-headline-lg leading-none" th:text="${order.pointsEarned}">5</div>
                     <div class="text-white/80 text-body-sm mt-1">điểm tích lũy</div>
                 </div>

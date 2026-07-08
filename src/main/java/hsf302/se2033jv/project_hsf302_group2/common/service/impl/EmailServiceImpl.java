@@ -13,6 +13,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -77,6 +78,22 @@ public class EmailServiceImpl implements EmailService {
                         + "Đặt bàn của bạn vào ngày " + date + " lúc " + time + " đã được hủy.\n\n"
                         + "Lý do: " + reason + "\n\n"
                         + "Nếu có thắc mắc, vui lòng liên hệ quán.\n\n"
+                        + "Trân trọng,\nHệ thống Quản lý Café Shop"
+        );
+        mailSender.send(message);
+    }
+
+    @Override
+    public void sendInvoiceEmail(String toEmail, String customerName, Integer orderId,
+                                 String itemsSummary, BigDecimal totalAmount) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(toEmail);
+        message.setSubject("[Café Shop] Hóa đơn đơn hàng #" + orderId);
+        message.setText(
+                "Xin chào " + customerName + ",\n\n"
+                        + "Cảm ơn bạn đã sử dụng dịch vụ tại Café Shop. Dưới đây là hóa đơn cho đơn hàng #" + orderId + ":\n\n"
+                        + itemsSummary + "\n\n"
+                        + "Tổng cộng: " + totalAmount + " đ\n\n"
                         + "Trân trọng,\nHệ thống Quản lý Café Shop"
         );
         mailSender.send(message);
