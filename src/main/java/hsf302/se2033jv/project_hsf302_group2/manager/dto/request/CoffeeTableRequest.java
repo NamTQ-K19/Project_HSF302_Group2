@@ -14,5 +14,4 @@ import lombok.Setter;
 public class CoffeeTableRequest {
     private Integer capacity;
     private boolean isActive;
-    private String status;
 }

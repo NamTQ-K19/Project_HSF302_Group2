@@ -6,7 +6,6 @@ import hsf302.se2033jv.project_hsf302_group2.common.exception.ResourceNotFoundEx
 import hsf302.se2033jv.project_hsf302_group2.manager.dto.request.CoffeeTableRequest;
 import hsf302.se2033jv.project_hsf302_group2.manager.dto.response.CoffeeTableResponse;
 import hsf302.se2033jv.project_hsf302_group2.manager.service.interfaces.ICoffeeTableService;
-import hsf302.se2033jv.project_hsf302_group2.common.enums.TableStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,9 +45,6 @@ public class CoffeeTableServiceImpl implements ICoffeeTableService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bàn với ID: " + id));
         table.setCapacity(dto.getCapacity());
         table.setIsActive(dto.isActive());
-        if (dto.getStatus() != null) {
-            table.setStatus(TableStatus.fromValue(dto.getStatus()));
-        }
         return mapToResponse(tableRepository.save(table));
     }
 
@@ -65,7 +61,6 @@ public class CoffeeTableServiceImpl implements ICoffeeTableService {
                 .id(table.getTableId())
                 .capacity(table.getCapacity())
                 .isActive(table.getIsActive() != null ? table.getIsActive() : true)
-                .status(table.getStatus() != null ? table.getStatus().name() : "AVAILABLE")
                 .build();
     }
 }
