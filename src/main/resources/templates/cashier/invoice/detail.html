@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title th:text="'Hóa đơn #' + ${invoice.orderId}">Hóa đơn</title>
+    <link th:href="@{/css/cashier/invoice.css}" rel="stylesheet"/>
+</head>
+<body>
+<div class="invoice-page">
+
+    <div class="no-print action-bar">
+        <a th:href="@{/cashier/invoices}" class="btn-back">← Quay lại danh sách</a>
+        <div>
+            <form th:if="${invoice.customerEmail}" th:action="@{/cashier/invoices/{id}/send-email(id=${invoice.orderId})}" method="post" style="display:inline;">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn-email">✉️ Gửi lại email hóa đơn</button>
+            </form>
+            <button type="button" class="btn-print" onclick="window.print()">🖨️ In hóa đơn</button>
+        </div>
+    </div>
+
+    <div th:if="${successMessage}" class="alert alert-success no-print" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert alert-error no-print" th:text="${errorMessage}"></div>
+
+    <div class="invoice-paper">
+        <div class="invoice-header">
+            <h2>CAFÉ SHOP</h2>
+            <p>Địa chỉ: 123 Đường ABC, Quận X, TP.HCM</p>
+            <h3>HÓA ĐƠN THANH TOÁN</h3>
+        </div>
+
+        <div class="invoice-info">
+            <p><strong>Mã đơn hàng:</strong> #<span th:text="${invoice.orderId}"></span></p>
+            <p><strong>Loại đơn:</strong> <span th:text="${invoice.orderTypeLabel}"></span></p>
+            <p th:if="${invoice.tableNumber}"><strong>Bàn:</strong> <span th:text="${invoice.tableNumber}"></span></p>
+            <p><strong>Thời gian đặt:</strong> <span th:text="${#temporals.format(invoice.orderDate, 'dd/MM/yyyy HH:mm')}"></span></p>
+            <p><strong>Khách hàng:</strong> <span th:text="${invoice.customerName}"></span></p>
+        </div>
+
+        <table class="invoice-items">
+            <thead>
+            <tr>
+                <th>Sản phẩm</th>
+                <th>Ghi chú</th>
+                <th>Đơn giá</th>
+                <th>SL</th>
+                <th>Thành tiền</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="item : ${invoice.items}">
+                <td>
+                    <span th:text="${item.productName}"></span>
+                    <span th:if="${item.variantName}" th:text="' (' + ${item.variantName} + ')'"></span>
+                </td>
+                <td th:text="${item.specialNote} ?: '-'"></td>
+                <td th:text="${item.unitPrice} + ' đ'"></td>
+                <td th:text="${item.quantity}"></td>
+                <td th:text="${item.itemTotal} + ' đ'"></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="invoice-summary">
+            <p><span>Tạm tính:</span> <span th:text="${invoice.subtotal} + ' đ'"></span></p>
+            <p th:if="${invoice.discountAmount != null and invoice.discountAmount.compareTo(T(java.math.BigDecimal).ZERO) > 0}">
+                <span>Giảm giá:</span> <span th:text="'-' + ${invoice.discountAmount} + ' đ'"></span>
+            </p>
+            <p class="total-line"><span>Tổng cộng:</span> <span th:text="${invoice.totalAmount} + ' đ'"></span></p>
+            <p><span>Điểm tích lũy:</span> <span th:text="${invoice.pointsEarned} + ' điểm'"></span></p>
+        </div>
+
+        <div class="invoice-payment">
+            <p><strong>Phương thức thanh toán:</strong> <span th:text="${invoice.paymentMethodName}"></span></p>
+            <p><strong>Trạng thái:</strong> <span th:text="${invoice.paymentStatusLabel}"></span></p>
+            <p th:if="${invoice.transactionRef}"><strong>Mã giao dịch:</strong> <span th:text="${invoice.transactionRef}"></span></p>
+            <p><strong>Thời gian thanh toán:</strong> <span th:text="${#temporals.format(invoice.paidAt, 'dd/MM/yyyy HH:mm')}"></span></p>
+        </div>
+
+        <div class="invoice-footer">
+            <p>Cảm ơn quý khách và hẹn gặp lại!</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

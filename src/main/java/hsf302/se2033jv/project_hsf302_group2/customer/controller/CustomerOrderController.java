@@ -2,7 +2,10 @@
 package hsf302.se2033jv.project_hsf302_group2.customer.controller;
 
 import hsf302.se2033jv.project_hsf302_group2.common.entity.CustomerAddress;
+import hsf302.se2033jv.project_hsf302_group2.common.entity.Order;
 import hsf302.se2033jv.project_hsf302_group2.common.entity.PaymentMethod;
+import hsf302.se2033jv.project_hsf302_group2.common.exception.ResourceNotFoundException;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.OrderRepository;
 import hsf302.se2033jv.project_hsf302_group2.common.util.SecurityUtils;
 import hsf302.se2033jv.project_hsf302_group2.customer.dto.request.PlaceOrderRequest;
 import hsf302.se2033jv.project_hsf302_group2.customer.dto.response.OrderConfirmationResponse;
@@ -10,6 +13,8 @@ import hsf302.se2033jv.project_hsf302_group2.customer.dto.response.OrderResponse
 import hsf302.se2033jv.project_hsf302_group2.common.repository.CustomerAddressRepository;
 import hsf302.se2033jv.project_hsf302_group2.common.repository.PaymentMethodRepository;
 import hsf302.se2033jv.project_hsf302_group2.customer.service.interfaces.CustomerOrderService;
+import hsf302.se2033jv.project_hsf302_group2.payment.service.interfaces.VNPayService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +37,8 @@ public class CustomerOrderController {
     private final CustomerOrderService orderService;
     private final CustomerAddressRepository addressRepository;
     private final PaymentMethodRepository paymentMethodRepository;
+    private final VNPayService vnPayService;
+    private final OrderRepository orderRepository;
 
     @GetMapping("/checkout")
     public String showCheckout(Model model) {
@@ -48,12 +55,22 @@ public class CustomerOrderController {
 
     @PostMapping("/place")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> placeOrder(@RequestBody PlaceOrderRequest request) {
+    public ResponseEntity<Map<String, Object>> placeOrder(
+            @RequestBody PlaceOrderRequest request,
+            HttpServletRequest httpRequest) {   // ← THÊM param này
         Map<String, Object> response = new HashMap<>();
         try {
             Integer userId = SecurityUtils.getCurrentUserId().intValue();
             log.info("Customer {} placing online order", userId);
             OrderConfirmationResponse orderResponse = orderService.placeOnlineOrder(userId, request);
+
+            // Nếu KHÔNG phải Tiền mặt → build URL redirect ra VNPay
+            if (!"Tiền mặt".equalsIgnoreCase(orderResponse.getPaymentMethodName().trim())) {
+                Order order = orderRepository.findById(orderResponse.getOrderId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+                String paymentUrl = vnPayService.createPaymentUrl(order, httpRequest);
+                orderResponse.setPaymentUrl(paymentUrl);
+            }
 
             response.put("success", true);
             response.put("data", orderResponse);

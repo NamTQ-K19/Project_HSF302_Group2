@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     FRAGMENT: sidebar-menu
+     Tham số bắt buộc: ${activePage}
+     Giá trị hợp lệ: 'profile' | 'orders' | 'reservations' | 'reviews' | 'points' | 'payment' | 'changePassword'
+     ═══════════════════════════════════════════════════════════ -->
+<div th:fragment="sidebar-menu(activePage)" class="flex flex-col w-full gap-2">
+
+    <a href="/customer/profile"
+       th:class="${activePage == 'profile'}
+                 ? 'flex items-center gap-3 px-4 py-3 bg-primary/10 text-primary font-semibold rounded-xl no-underline'
+                 : 'flex items-center gap-3 px-4 py-3 hover:bg-surface-container hover:text-primary text-on-surface-variant font-medium rounded-xl transition-colors no-underline'">
+        <span class="material-symbols-outlined">person</span> Thông tin cá nhân
+    </a>
+
+    <a href="/customer/points"
+       th:class="${activePage == 'points'}
+                 ? 'flex items-center gap-3 px-4 py-3 bg-primary/10 text-primary font-semibold rounded-xl no-underline'
+                 : 'flex items-center gap-3 px-4 py-3 hover:bg-surface-container hover:text-primary text-on-surface-variant font-medium rounded-xl transition-colors no-underline'">
+        <span class="material-symbols-outlined">stars</span> Điểm tích lũy
+    </a>
+
+    <a href="/customer/orders/history"
+       th:class="${activePage == 'orders'}
+                 ? 'flex items-center gap-3 px-4 py-3 bg-primary/10 text-primary font-semibold rounded-xl no-underline'
+                 : 'flex items-center gap-3 px-4 py-3 hover:bg-surface-container hover:text-primary text-on-surface-variant font-medium rounded-xl transition-colors no-underline'">
+        <span class="material-symbols-outlined">history</span> Lịch sử đơn hàng
+    </a>
+
+    <a href="/customer/reviews"
+       th:class="${activePage == 'reviews'}
+                 ? 'flex items-center gap-3 px-4 py-3 bg-primary/10 text-primary font-semibold rounded-xl no-underline'
+                 : 'flex items-center gap-3 px-4 py-3 hover:bg-surface-container hover:text-primary text-on-surface-variant font-medium rounded-xl transition-colors no-underline'">
+        <span class="material-symbols-outlined">rate_review</span> Đánh giá
+    </a>
+
+    <a href="/customer/reservations"
+       th:class="${activePage == 'reservations'}
+                 ? 'flex items-center gap-3 px-4 py-3 bg-primary/10 text-primary font-semibold rounded-xl no-underline'
+                 : 'flex items-center gap-3 px-4 py-3 hover:bg-surface-container hover:text-primary text-on-surface-variant font-medium rounded-xl transition-colors no-underline'">
+        <span class="material-symbols-outlined">calendar_month</span> Đặt bàn
+    </a>
+
+    <a href="/profile/changePassword"
+       th:class="${activePage == 'changePassword'}
+                 ? 'flex items-center gap-3 px-4 py-3 bg-primary/10 text-primary font-semibold rounded-xl no-underline'
+                 : 'flex items-center gap-3 px-4 py-3 hover:bg-surface-container hover:text-primary text-on-surface-variant font-medium rounded-xl transition-colors no-underline'">
+        <span class="material-symbols-outlined">lock_reset</span> Đổi mật khẩu
+    </a>
+
+    <form th:action="@{/logout}" method="post" class="m-0">
+        <button type="submit" class="w-full text-left flex items-center gap-3 px-4 py-3 hover:bg-error/10 text-error font-medium rounded-xl transition-colors border-none cursor-pointer bg-transparent">
+            <span class="material-symbols-outlined">logout</span> Đăng xuất
+        </button>
+    </form>
+
+</div>
+
+</body>
+</html>

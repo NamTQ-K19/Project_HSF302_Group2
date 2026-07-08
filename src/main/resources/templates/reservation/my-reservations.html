@@ -46,31 +46,8 @@
                     </div>
                 </div>
 
-                <div class="flex flex-col w-full gap-2 border-t border-outline-variant border-dashed pt-6 mt-6">
-                    <a href="/customer/profile" class="flex items-center gap-3 px-4 py-3 hover:bg-surface-container hover:text-primary text-on-surface-variant font-medium rounded-xl transition-colors no-underline">
-                        <span class="material-symbols-outlined">person</span> Thông tin cá nhân
-                    </a>
-                    <a href="/customer/orders/history" class="flex items-center gap-3 px-4 py-3 hover:bg-surface-container hover:text-primary text-on-surface-variant font-medium rounded-xl transition-colors no-underline">
-                        <span class="material-symbols-outlined">history</span> Lịch sử đơn hàng
-                    </a>
-                    <a href="/customer/reservations" class="flex items-center gap-3 px-4 py-3 bg-primary/10 text-primary font-semibold rounded-xl no-underline">
-                        <span class="material-symbols-outlined">calendar_month</span> Đặt bàn
-                    </a>
-                    <a href="/customer/reviews" class="flex items-center gap-3 px-4 py-3 hover:bg-surface-container hover:text-primary text-on-surface-variant font-medium rounded-xl transition-colors no-underline">
-                        <span class="material-symbols-outlined">rate_review</span> Đánh giá
-                    </a>
-                    <a href="/customer/points" class="flex items-center gap-3 px-4 py-3 hover:bg-surface-container hover:text-primary text-on-surface-variant font-medium rounded-xl transition-colors no-underline">
-                        <span class="material-symbols-outlined">stars</span> Điểm tích lũy
-                    </a>
-                    <a href="/profile/changePassword" class="flex items-center gap-3 px-4 py-3 hover:bg-surface-container hover:text-primary text-on-surface-variant font-medium rounded-xl transition-colors no-underline">
-                        <span class="material-symbols-outlined">lock_reset</span> Đổi mật khẩu
-                    </a>
-                    <form th:action="@{/logout}" method="post" class="m-0 mt-4">
-                        <button type="submit" class="w-full text-left flex items-center gap-3 px-4 py-3 hover:bg-error/10 text-error font-medium rounded-xl transition-colors border-none cursor-pointer bg-transparent">
-                            <span class="material-symbols-outlined">logout</span> Đăng xuất
-                        </button>
-                    </form>
-                </div>
+                <div th:replace="~{customer/sidebar-menu :: sidebar-menu('reservations')}"></div>
+
             </div>
         </aside>
 

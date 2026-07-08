@@ -1,0 +1,73 @@
+/* ═══════════════════════════════════════════
+   Customer Reward Points CSS (Manager)
+   Tái sử dụng biến màu & pattern từ reservation-schedule.css
+═══════════════════════════════════════════ */
+
+/* ── Customer info grid (trang chi tiết) ─── */
+.customer-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 24px;
+    font-size: 14px;
+}
+
+.customer-info-grid strong {
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin-right: 6px;
+}
+
+/* ── Stats grid riêng cho 3 thẻ (điểm) ────── */
+.stats-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+/* ── Badge cho trạng thái tài khoản khách hàng ─ */
+.account-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.account-active   { background: #eafaf1; color: #1e8449; }
+.account-locked   { background: #fdedec; color: #c0392b; }
+
+/* ── Badge cho loại giao dịch điểm ────────── */
+.txn-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.txn-earn   { background: #eafaf1; color: #1e8449; }
+.txn-redeem { background: #fdedec; color: #c0392b; }
+.txn-adjust { background: #eaf4fb; color: #1a5276; }
+
+/* ── Điểm dương/âm trong bảng lịch sử ─────── */
+.points-positive { color: var(--success); font-weight: 700; }
+.points-negative { color: var(--danger);  font-weight: 700; }
+
+/* ── Customer name cell (tên + username) ──── */
+.customer-name-cell .cust-fullname {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+.customer-name-cell .cust-username {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* ── Responsive ───────────────────────────── */
+@media (max-width: 1024px) {
+    .stats-grid-3 { grid-template-columns: 1fr 1fr; }
+    .customer-info-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+    .stats-grid-3 { grid-template-columns: 1fr; }
+}

@@ -39,6 +39,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
     private final PaymentRepository paymentRepository;
     private final LoyaltyPointRepository loyaltyPointRepository;
     private final ReviewRepository reviewRepository;  // ✅ THÊM DÒNG NÀY
+    private static final String CASH_PAYMENT_METHOD = "Tiền mặt";
 
     private static final Integer CUSTOMER_ROLE_ID = 5;
     private static final String DEFAULT_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Crect width='60' height='60' fill='%23f8f9fa'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='30' fill='%23dee2e6'%3E☕%3C/text%3E%3C/svg%3E";
@@ -145,17 +146,8 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
                 if (pointsToUse > 0) {
                     discountAmount = new BigDecimal(pointsToUse * 100);
                     pointsUsed = pointsToUse;
-
-                    LoyaltyPoint redeemPoint = LoyaltyPoint.builder()
-                            .customer(user)
-                            .transactionType(TransactionType.REDEEM)
-                            .points(-pointsToUse)
-                            .balanceAfter(getCurrentPoints(userId) - pointsToUse)
-                            .referenceType(ReferenceType.ORDER)
-                            .note("Đổi điểm giảm giá đơn hàng")
-                            .createdAt(LocalDateTime.now())
-                            .build();
-                    loyaltyPointRepository.save(redeemPoint);
+                    // ĐÃ CHUYỂN việc tạo LoyaltyPoint REDEEM xuống bước 8 (sau khi có savedOrder.getOrderId())
+                    // để tránh reference_id bị NULL
                 }
             }
         }
@@ -182,6 +174,21 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         Order savedOrder = orderRepository.save(order);
         log.info("Order created with ID: {}", savedOrder.getOrderId());
 
+        // ← THÊM: Tạo LoyaltyPoint REDEEM tại đây — LÚC NÀY đã có savedOrder.getOrderId()
+        if (pointsUsed > 0) {
+            LoyaltyPoint redeemPoint = LoyaltyPoint.builder()
+                    .customer(user)
+                    .transactionType(TransactionType.REDEEM)
+                    .points(-pointsUsed)
+                    .balanceAfter(getCurrentPoints(userId) - pointsUsed)
+                    .referenceType(ReferenceType.ORDER)
+                    .referenceId(savedOrder.getOrderId())   // ← FIX chính: gắn đúng order_id
+                    .note("Đổi điểm giảm giá đơn hàng #" + savedOrder.getOrderId())
+                    .createdAt(LocalDateTime.now())
+                    .build();
+            loyaltyPointRepository.save(redeemPoint);
+        }
+
         // 9. Save order details
         for (OrderDetail detail : orderDetails) {
             detail.setOrder(savedOrder);
@@ -195,26 +202,18 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         }
         log.info("Removed {} items from cart", itemsToRemove.size());
 
-        // 11. Create payment
+        // 11. Create payment — LUÔN PENDING khi khởi tạo, kể cả Tiền mặt
         String transactionRef = "PAY-" + savedOrder.getOrderId() + "-" + UUID.randomUUID().toString().substring(0, 8);
         Payment payment = createPayment(savedOrder, paymentMethod, finalAmount, transactionRef);
 
-        // 12. Lưu điểm nhận được
-        if (pointsEarned > 0) {
-            LoyaltyPoint loyaltyPoint = LoyaltyPoint.builder()
-                    .customer(user)
-                    .transactionType(TransactionType.EARN)
-                    .points(pointsEarned)
-                    .balanceAfter(getCurrentPoints(userId) - pointsUsed + pointsEarned)
-                    .referenceType(ReferenceType.ORDER)
-                    .referenceId(savedOrder.getOrderId())
-                    .note("Tích điểm từ đơn hàng #" + savedOrder.getOrderId())
-                    .createdAt(LocalDateTime.now())
-                    .build();
-            loyaltyPointRepository.save(loyaltyPoint);
-        }
+        // 12. KHÔNG tự động CONFIRMED, KHÔNG cộng điểm ở bước này.
+        // - Order.status luôn giữ PENDING; chỉ Cashier xác nhận mới chuyển CONFIRMED (use case khác, chưa implement).
+        // - Payment (Tiền mặt): giữ PENDING, chờ Cashier xác nhận thành SUCCESS/FAILED (use case khác).
+        // - Payment (Online/VNPay): sẽ được cập nhật SUCCESS/FAILED ngay khi có callback từ Gateway
+        //   (xử lý ở handleGatewayPaymentResult), nhưng KHÔNG kéo theo đổi Order.status.
+        // - Điểm tích lũy CHỈ cộng khi Order.status = COMPLETED (use case Cashier/Manager hoàn tất đơn — chưa implement).
 
-        Integer totalPoints = getCurrentPoints(userId) - pointsUsed + pointsEarned;
+        Integer totalPoints = getCurrentPoints(userId); // điểm hiện có, chưa cộng gì thêm ở bước này
 
         // 13. Build response
         return OrderConfirmationResponse.builder()
@@ -223,10 +222,11 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
                 .totalAmount(finalAmount)
                 .paymentStatus(payment.getPaymentStatus().name())
                 .transactionRef(transactionRef)
-                .pointsEarned(pointsEarned)
+                .pointsEarned(pointsEarned)   // chỉ hiển thị số điểm SẼ nhận, chưa thực ghi vào loyalty_points
                 .totalPoints(totalPoints)
                 .estimatedTime(LocalDateTime.now().plusMinutes(15))
-                .message("Đặt hàng thành công! Bạn đã nhận được " + pointsEarned + " điểm tích lũy.")
+                .message("Đặt hàng thành công! Đơn hàng của bạn đang chờ xác nhận từ nhân viên.")
+                .paymentMethodName(paymentMethod.getName())
                 .build();
     }
 
@@ -277,6 +277,15 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         if (payment != null && payment.getPaymentStatus() == PaymentStatus.PENDING) {
             payment.setPaymentStatus(PaymentStatus.REFUNDED);
             paymentRepository.save(payment);
+        }
+
+        // ← THÊM: Hoàn điểm đã dùng để giảm giá (nếu có), chỉ khi Payment CHƯA từng thành công.
+        // Nếu Payment đã SUCCESS (khách bấm Hủy sau khi VNPay đã báo thành công), đây là tình huống
+        // đã phát sinh giao dịch tiền thật — cần luồng hoàn tiền/hoàn điểm thủ công riêng, KHÔNG tự động ở đây.
+        if (payment == null || payment.getPaymentStatus() != PaymentStatus.SUCCESS) {
+            refundUsedPointsIfAny(order);
+        } else {
+            log.warn("Order {} cancelled while payment already SUCCESS — points NOT auto-refunded, requires manual handling", orderId);
         }
 
         log.info("Order {} cancelled successfully with {} items", orderId, details.size());
@@ -411,4 +420,99 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
 
         return response;
     }
+
+    @Override
+    @Transactional
+    public void handleGatewayPaymentResult(Integer orderId, boolean success, String transactionNo, String rawResponse) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + orderId));
+        Payment payment = paymentRepository.findByOrder_OrderId(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Payment not found for order: " + orderId));
+
+        // Chặn xử lý trùng nếu Payment đã có kết quả cuối cùng là SUCCESS
+        if (payment.getPaymentStatus() == PaymentStatus.SUCCESS) {
+            log.info("Order {} already processed as SUCCESS, skip", orderId);
+            return;
+        }
+
+        payment.setGatewayResponse(rawResponse);
+
+        if (success) {
+            payment.setPaymentStatus(PaymentStatus.SUCCESS);
+            payment.setPaidAt(LocalDateTime.now());
+            if (transactionNo != null) payment.setTransactionRef(transactionNo);
+            paymentRepository.save(payment);
+
+            // KHÔNG set order.status = CONFIRMED — chờ Cashier xác nhận (use case khác)
+            // KHÔNG cộng điểm — chỉ cộng khi Order.status = COMPLETED (use case khác)
+            log.info("Order {} payment SUCCESS via gateway, waiting for Cashier confirmation", orderId);
+        } else {
+            payment.setPaymentStatus(PaymentStatus.FAILED);
+            paymentRepository.save(payment);
+            // Order vẫn giữ PENDING
+
+            refundUsedPointsIfAny(order); // ← mục 6: hoàn điểm đã dùng để giảm giá (nếu có)
+            log.info("Order {} payment FAILED via gateway, refunded used points if any", orderId);
+        }
+    }
+
+    /**
+     * Cộng điểm tích lũy cho đơn hàng.
+     * ⚠️ CHƯA được gọi ở bất kỳ đâu trong use case Payment này.
+     * Sẽ được gọi từ use case "Cashier/Manager xác nhận hoàn tất đơn hàng"
+     * khi Order.status chuyển sang COMPLETED — use case đó chưa implement.
+     */
+    private void creditEarnedPoints(Order order) {
+        Integer pointsEarned = order.getPointsEarned();
+        if (pointsEarned == null || pointsEarned <= 0) return;
+
+        boolean alreadyCredited = loyaltyPointRepository.existsByReferenceTypeAndReferenceIdAndTransactionType(
+                ReferenceType.ORDER, order.getOrderId(), TransactionType.EARN);
+        if (alreadyCredited) return;
+
+        User customer = order.getUser();
+        Integer newBalance = getCurrentPoints(customer.getUserId()) + pointsEarned;
+
+        LoyaltyPoint earn = LoyaltyPoint.builder()
+                .customer(customer)
+                .transactionType(TransactionType.EARN)
+                .points(pointsEarned)
+                .balanceAfter(newBalance)
+                .referenceType(ReferenceType.ORDER)
+                .referenceId(order.getOrderId())
+                .note("Tích điểm từ đơn hàng #" + order.getOrderId())
+                .createdAt(LocalDateTime.now())
+                .build();
+        loyaltyPointRepository.save(earn);
+    }
+
+    private void refundUsedPointsIfAny(Order order) {
+        if (order.getDiscountAmount() == null || order.getDiscountAmount().compareTo(BigDecimal.ZERO) <= 0) return;
+
+        // ← THÊM: Chặn hoàn điểm 2 lần cho cùng 1 order — trường hợp VNPay báo fail
+        // (handleGatewayPaymentResult) RỒI khách còn bấm "Hủy đơn hàng" thủ công sau đó (cancelOrder)
+        boolean alreadyRefunded = loyaltyPointRepository.existsByReferenceTypeAndReferenceIdAndTransactionType(
+                ReferenceType.ORDER, order.getOrderId(), TransactionType.ADJUST);
+        if (alreadyRefunded) {
+            log.info("Order {} points already refunded before, skip duplicate refund", order.getOrderId());
+            return;
+        }
+
+        int pointsToRefund = order.getDiscountAmount().divide(new BigDecimal("100")).intValue();
+        User customer = order.getUser();
+        Integer newBalance = getCurrentPoints(customer.getUserId()) + pointsToRefund;
+
+        LoyaltyPoint refund = LoyaltyPoint.builder()
+                .customer(customer)
+                .transactionType(TransactionType.ADJUST)
+                .points(pointsToRefund)
+                .balanceAfter(newBalance)
+                .referenceType(ReferenceType.ORDER)
+                .referenceId(order.getOrderId())
+                .note("Hoàn điểm do thanh toán đơn hàng #" + order.getOrderId() + " không thành công")
+                .createdAt(LocalDateTime.now())
+                .build();
+        loyaltyPointRepository.save(refund);
+    }
+
 }

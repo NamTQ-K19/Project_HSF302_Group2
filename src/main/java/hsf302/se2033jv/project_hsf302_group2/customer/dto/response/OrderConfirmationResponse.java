@@ -18,4 +18,7 @@ public class OrderConfirmationResponse {
     private Integer totalPoints;
     private LocalDateTime estimatedTime;
     private String message;
+
+    private String paymentMethodName;
+    private String paymentUrl;
 }

@@ -41,7 +41,7 @@ public class AccountServiceImpl implements AccountService {
                 filterRequest.getRole(), filterRequest.getStatus(), filterRequest.getKeyword());
 
         Page<User> userPage = userRepository.searchUsers(
-                filterRequest.getKeyword(),
+                (filterRequest.getKeyword() != null) ? filterRequest.getKeyword().trim() : null,
                 filterRequest.getRole(),
                 filterRequest.getStatus(),
                 pageable

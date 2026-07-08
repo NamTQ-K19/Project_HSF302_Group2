@@ -8,6 +8,11 @@ import hsf302.se2033jv.project_hsf302_group2.customer.dto.response.OrderResponse
 public interface CustomerOrderService {
 
     OrderConfirmationResponse placeOnlineOrder(Integer userId, PlaceOrderRequest request);
+
     OrderResponse cancelOrder(Integer orderId, Integer userId, String reason);
+
     OrderResponse getOrderDetails(Integer orderId, Integer userId);
+
+    void handleGatewayPaymentResult(Integer orderId, boolean success, String transactionNo, String rawResponse);
+
 }

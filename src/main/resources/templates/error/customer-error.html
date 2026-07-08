@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${errorTitle} + ' | BrewMaster'">Lỗi | BrewMaster</title>
+    <div th:replace="~{catalog/tailwind-head :: tailwind-head}"></div>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased min-h-screen flex flex-col">
+
+<div th:replace="~{catalog/navbar :: navbar}"></div>
+
+<main class="flex-grow flex items-center justify-center py-16 px-4">
+    <div class="max-w-md w-full text-center">
+        <div class="w-24 h-24 mx-auto mb-6 rounded-full bg-error-container flex items-center justify-center">
+            <span class="material-symbols-outlined text-[48px] text-error">error_outline</span>
+        </div>
+        <h1 class="font-headline-lg text-primary mb-2" th:text="${errorTitle}">Đã xảy ra lỗi</h1>
+        <p class="text-on-surface-variant text-body-md mb-8" th:text="${errorMessage}">Vui lòng thử lại.</p>
+        <a th:href="${homeUrl != null ? homeUrl : '/'}"
+           class="inline-flex bg-primary text-white px-8 py-3 rounded-full font-bold text-body-sm hover:opacity-90 transition-opacity no-underline items-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">arrow_back</span> Quay lại
+        </a>
+    </div>
+</main>
+
+<div th:replace="~{catalog/footer :: footer}"></div>
+</body>
+</html>

@@ -1,6 +1,7 @@
 package hsf302.se2033jv.project_hsf302_group2.common.repository;
 
 import hsf302.se2033jv.project_hsf302_group2.common.entity.LoyaltyPoint;
+import hsf302.se2033jv.project_hsf302_group2.common.enums.ReferenceType;
 import hsf302.se2033jv.project_hsf302_group2.common.enums.TransactionType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,5 +40,16 @@ public interface LoyaltyPointRepository extends JpaRepository<LoyaltyPoint, Inte
             @Param("toDate") LocalDate toDate,
             Pageable pageable
     );
+
+    boolean existsByReferenceTypeAndReferenceIdAndTransactionType(
+            ReferenceType referenceType, Integer referenceId, TransactionType transactionType);
+
+    @Query("SELECT COALESCE(SUM(lp.points), 0) FROM LoyaltyPoint lp " +
+            "WHERE lp.customer.userId = :customerId AND lp.transactionType = 'EARN'")
+    Integer sumEarnedByCustomerId(@Param("customerId") Integer customerId);
+
+    @Query("SELECT COALESCE(SUM(ABS(lp.points)), 0) FROM LoyaltyPoint lp " +
+            "WHERE lp.customer.userId = :customerId AND lp.transactionType = 'REDEEM'")
+    Integer sumRedeemedByCustomerId(@Param("customerId") Integer customerId);
 }
 

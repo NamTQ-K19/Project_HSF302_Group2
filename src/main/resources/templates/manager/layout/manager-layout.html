@@ -14,6 +14,9 @@
         <a th:href="@{/manager/reservations}" th:classappend="${activePage == 'reservations'} ? ' active'" class="sidebar-nav-item">
             <span class="nav-icon">📅</span><span>Lịch đặt bàn</span>
         </a>
+        <a th:href="@{/manager/customers/rewards}" th:classappend="${activePage == 'rewards'} ? ' active'" class="sidebar-nav-item">
+            <span class="nav-icon">🎁</span><span>Điểm khách hàng</span>
+        </a>
         <a th:href="@{/manager/products}" th:classappend="${activePage == 'products'} ? ' active'" class="sidebar-nav-item">
             <span class="nav-icon">☕</span><span>Sản phẩm</span>
         </a>
