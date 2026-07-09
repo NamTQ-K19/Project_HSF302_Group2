@@ -63,6 +63,9 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     @Query("SELECT o.table.tableId FROM Order o WHERE o.table IS NOT NULL AND o.orderStatus IN ('PENDING', 'CONFIRMED', 'PREPARING')")
     List<Integer> findActiveOrderTableIds();
 
+    @Query("SELECT DISTINCT o FROM Order o JOIN o.orderDetails od WHERE od.itemStatus IN (hsf302.se2033jv.project_hsf302_group2.common.enums.OrderItemStatus.PENDING, hsf302.se2033jv.project_hsf302_group2.common.enums.OrderItemStatus.PREPARING) ORDER BY o.createdAt ASC")
+    List<Order> findBaristaOrders();
+
     @Query("SELECT o FROM Order o LEFT JOIN Payment p ON p.order = o WHERE " +
             "(:keyword IS NULL OR :keyword = '' OR " +
             "(:orderIdVal IS NOT NULL AND o.orderId = :orderIdVal) OR " +

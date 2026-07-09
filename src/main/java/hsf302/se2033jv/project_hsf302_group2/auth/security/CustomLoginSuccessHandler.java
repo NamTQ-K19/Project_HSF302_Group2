@@ -74,7 +74,7 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
                     redirectUrl = "/home";
                     break label;
                 case "ROLE_BARISTA":
-                    redirectUrl = "/order/edit";
+                    redirectUrl = "/barista/dashboard";
                     break label;
             }
         }
