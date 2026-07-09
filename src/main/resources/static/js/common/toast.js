@@ -23,23 +23,28 @@ window.Swal.fire = function(options) {
     const icon = options.icon || 'info';
     const title = options.title || '';
     const text = options.text || '';
+    const html = options.html || null;
+    const preConfirm = options.preConfirm || null;
     const showCancelButton = options.showCancelButton || false;
     const inputType = options.input || null;
     const inputPlaceholder = options.inputPlaceholder || 'Nhập lý do...';
     const confirmText = options.confirmButtonText || 'Đồng ý';
     const cancelText = options.cancelButtonText || 'Hủy bỏ';
 
-    if (showCancelButton || inputType === 'text') {
+    if (showCancelButton || inputType === 'text' || html || preConfirm) {
         return new Promise((resolve) => {
             renderPopupModal({
                 title: title || 'Xác nhận',
                 message: text || '',
+                html: html,
+                preConfirm: preConfirm,
                 type: icon,
                 isConfirm: true,
                 inputType: inputType,
                 inputPlaceholder: inputPlaceholder,
                 confirmButtonText: confirmText,
                 cancelButtonText: cancelText,
+                allowAutoClose: options.timer !== undefined ? (options.timer > 0) : false,
                 onConfirm: (val) => {
                     resolve({ isConfirmed: true, value: val });
                 },
@@ -53,11 +58,14 @@ window.Swal.fire = function(options) {
             renderPopupModal({
                 title: title || (icon === 'success' ? 'Thành công!' : (icon === 'error' ? 'Có lỗi xảy ra!' : (icon === 'warning' ? 'Cảnh báo!' : 'Thông báo'))),
                 message: text || title,
+                html: html,
+                preConfirm: preConfirm,
                 type: icon,
                 isConfirm: false,
                 confirmButtonText: confirmText,
-                onConfirm: () => {
-                    resolve({ isConfirmed: true });
+                allowAutoClose: options.timer !== undefined ? (options.timer > 0) : false,
+                onConfirm: (val) => {
+                    resolve({ isConfirmed: true, value: val });
                 }
             });
         });
@@ -120,7 +128,7 @@ window.showGlobalConfirm = function(title, message, onConfirm, onCancel) {
     });
 };
 
-function renderPopupModal({ title, message, type, isConfirm, inputType, inputPlaceholder, confirmButtonText = 'Đồng ý', cancelButtonText = 'Hủy bỏ', onConfirm, onCancel }) {
+function renderPopupModal({ title, message, html, preConfirm, type, isConfirm, inputType, inputPlaceholder, confirmButtonText = 'Đồng ý', cancelButtonText = 'Hủy bỏ', allowAutoClose = true, onConfirm, onCancel }) {
     // Remove existing popup if any
     let existing = document.getElementById('brewmaster-universal-popup');
     if (existing) existing.remove();
@@ -194,7 +202,8 @@ function renderPopupModal({ title, message, type, isConfirm, inputType, inputPla
                 <span class="material-symbols-outlined ${iconColor} text-[36px]" style="font-variation-settings: 'wght' 600;">${iconName}</span>
             </div>
             <h3 class="font-headline-sm text-[22px] font-bold text-on-surface m-0 mb-2">${title}</h3>
-            <p class="text-body-md text-on-surface-variant mb-2 m-0 leading-relaxed px-2">${message}</p>
+            ${message ? `<p class="text-body-md text-on-surface-variant mb-2 m-0 leading-relaxed px-2">${message}</p>` : ''}
+            ${html ? `<div class="w-full mt-2 text-left">${html}</div>` : ''}
             ${inputHtml}
             ${buttonsHtml}
         </div>
@@ -225,7 +234,15 @@ function renderPopupModal({ title, message, type, isConfirm, inputType, inputPla
 
     if (btnOk) {
         btnOk.addEventListener('click', () => {
-            const val = inputEl ? inputEl.value : null;
+            let val = inputEl ? inputEl.value : null;
+            if (typeof preConfirm === 'function') {
+                try {
+                    val = preConfirm();
+                } catch (e) {
+                    console.error('preConfirm error:', e);
+                    return;
+                }
+            }
             closePopup();
             if (typeof onConfirm === 'function') onConfirm(val);
         });
@@ -238,8 +255,8 @@ function renderPopupModal({ title, message, type, isConfirm, inputType, inputPla
         });
     }
 
-    // Auto close non-confirm popups after 4 seconds if user doesn't click
-    if (!isConfirm && !inputType) {
+    // Auto close non-confirm popups after 4 seconds if user doesn't click and allowAutoClose is true
+    if (!isConfirm && !inputType && allowAutoClose) {
         setTimeout(() => {
             if (document.body.contains(overlay)) closePopup();
         }, 4000);

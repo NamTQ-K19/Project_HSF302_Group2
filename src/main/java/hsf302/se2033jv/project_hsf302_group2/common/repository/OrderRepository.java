@@ -2,6 +2,10 @@ package hsf302.se2033jv.project_hsf302_group2.common.repository;
 
 import hsf302.se2033jv.project_hsf302_group2.common.entity.Order;
 import hsf302.se2033jv.project_hsf302_group2.common.enums.OrderStatus;
+import hsf302.se2033jv.project_hsf302_group2.common.enums.OrderType;
+import hsf302.se2033jv.project_hsf302_group2.common.enums.PaymentStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -55,4 +59,26 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     List<Order> findByUser_UserIdOrderByCreatedAtDesc(Integer userId);
 
     List<Order> findByUser_UserIdAndOrderStatus(Integer userId, OrderStatus status);
+
+    @Query("SELECT o FROM Order o LEFT JOIN Payment p ON p.order = o WHERE " +
+            "(:keyword IS NULL OR :keyword = '' OR " +
+            "(:orderIdVal IS NOT NULL AND o.orderId = :orderIdVal) OR " +
+            "LOWER(CONCAT(COALESCE(o.user.firstName, ''), ' ', COALESCE(o.user.lastName, ''))) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(o.user.phone) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(o.note) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
+            "(:status IS NULL OR o.orderStatus = :status) AND " +
+            "(:type IS NULL OR o.orderType = :type) AND " +
+            "(:paymentStatus IS NULL OR p.paymentStatus = :paymentStatus) AND " +
+            "(:fromDate IS NULL OR o.createdAt >= :fromDate) AND " +
+            "(:toDate IS NULL OR o.createdAt <= :toDate) " +
+            "ORDER BY o.createdAt DESC")
+    Page<Order> findWithDynamicFilter(
+            @Param("keyword") String keyword,
+            @Param("orderIdVal") Integer orderIdVal,
+            @Param("status") OrderStatus status,
+            @Param("type") OrderType type,
+            @Param("paymentStatus") PaymentStatus paymentStatus,
+            @Param("fromDate") LocalDateTime fromDate,
+            @Param("toDate") LocalDateTime toDate,
+            Pageable pageable);
 }

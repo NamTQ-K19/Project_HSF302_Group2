@@ -50,7 +50,9 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Query("SELECT u FROM User u WHERE " +
             "LOWER(CONCAT(u.firstName, ' ', u.lastName)) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-            "OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+            "OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "OR u.phone LIKE CONCAT('%', :keyword, '%') " +
+            "OR LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     Page<User> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
     @Query("SELECT COUNT(u) FROM User u WHERE u.status = true AND u.role.roleName IN ('MANAGER', 'CASHIER', 'BARISTA')")

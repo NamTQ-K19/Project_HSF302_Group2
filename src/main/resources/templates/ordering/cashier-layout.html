@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title} + ' - BrewMaster Thu Ngân'">BrewMaster POS</title>
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
+    <!-- Tailwind Head Fragment -->
+    <th:block th:replace="~{catalog/tailwind-head :: tailwind-head}"></th:block>
+</head>
+<body>
+<!-- Sidebar Fragment -->
+<aside th:fragment="sidebar(currentPage)" class="w-72 shrink-0 bg-surface-container-lowest border-r border-outline-variant flex flex-col h-screen sticky top-0 overflow-y-auto">
+    <!-- Logo -->
+    <div class="p-6 flex items-center justify-between border-b border-outline-variant/40">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                <span class="material-symbols-outlined text-[24px]">coffee</span>
+            </div>
+            <div>
+                <span class="font-headline-md text-primary font-bold block tracking-tight">BrewMaster</span>
+                <span class="text-xs text-on-surface-variant font-medium">Hệ thống Thu Ngân</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 px-4 py-6 flex flex-col gap-6">
+        <div class="flex flex-col gap-2">
+            <div class="text-[11px] font-bold text-on-surface-variant/60 uppercase tracking-widest px-4 mb-1">Nghiệp vụ quầy</div>
+            <a th:href="@{/order/create}" 
+               class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-all no-underline"
+               th:classappend="${currentPage == 'pos'} ? 'bg-primary text-on-primary shadow-lg shadow-primary/20' : 'text-on-surface-variant hover:bg-surface-container hover:text-primary'">
+                <span class="material-symbols-outlined text-[22px]">point_of_sale</span>
+                Bán hàng POS
+            </a>
+            <a th:href="@{/order/list}" 
+               class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-all no-underline"
+               th:classappend="${currentPage == 'list'} ? 'bg-primary text-on-primary shadow-lg shadow-primary/20' : 'text-on-surface-variant hover:bg-surface-container hover:text-primary'">
+                <span class="material-symbols-outlined text-[22px]">receipt_long</span>
+                Quản lý đơn hàng
+            </a>
+        </div>
+
+        <div class="mt-auto flex flex-col gap-2 pt-6 border-t border-outline-variant">
+            <div class="text-[11px] font-bold text-on-surface-variant/60 uppercase tracking-widest px-4 mb-1">Tài khoản</div>
+            <a th:href="@{/}" 
+               class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors no-underline">
+                <span class="material-symbols-outlined text-[20px]">home</span>
+                Trang chủ web
+            </a>
+            <form th:action="@{/logout}" method="post" class="m-0">
+                <button type="submit" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-error hover:bg-error/10 transition-colors border-none cursor-pointer bg-transparent">
+                    <span class="material-symbols-outlined text-[20px]">logout</span>
+                    Đăng xuất
+                </button>
+            </form>
+        </div>
+    </nav>
+</aside>
+
+<!-- Header Fragment -->
+<header th:fragment="header(title, cashierName)" class="h-20 bg-surface-container-lowest/80 backdrop-blur-md border-b border-outline-variant px-8 flex items-center justify-between sticky top-0 z-30">
+    <div class="flex items-center gap-4">
+        <h1 class="text-2xl font-bold text-on-surface m-0" th:text="${title}">Thu ngân POS</h1>
+        <div class="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container text-xs font-medium text-on-surface-variant border border-outline-variant">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Hệ thống trực tuyến</span>
+        </div>
+    </div>
+    
+    <div class="flex items-center gap-4">
+        <div class="text-right hidden sm:block">
+            <div class="text-sm font-semibold text-on-surface" th:text="${cashierName}">Thu ngân 01</div>
+            <div class="text-xs text-on-surface-variant">Ca làm việc hiện tại</div>
+        </div>
+        <div class="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold">
+            <span class="material-symbols-outlined">badge</span>
+        </div>
+    </div>
+</header>
+</body>
+</html>

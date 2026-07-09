@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{ordering/cashier-layout :: head('Quản lý đơn hàng (Order List)')}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/ordering/list.css}">
+</head>
+<body class="bg-surface font-body-md text-on-surface antialiased flex h-screen overflow-hidden">
+
+<!-- Sidebar -->
+<th:block th:replace="~{ordering/cashier-layout :: sidebar('list')}"></th:block>
+
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col h-screen overflow-hidden bg-surface-container-low">
+    <!-- Header -->
+    <th:block th:replace="~{ordering/cashier-layout :: header('Danh sách đơn hàng', ${cashierName})}"></th:block>
+
+    <!-- Content Workspace -->
+    <main class="flex-1 overflow-y-auto p-4 md:p-8">
+        <div class="max-w-7xl mx-auto space-y-6">
+            
+            <!-- Filter & Search Card -->
+            <div class="bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/60 minimal-shadow">
+                <form th:action="@{/order/list}" method="get" th:object="${filter}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 items-end">
+                    <!-- Keyword Search -->
+                    <div class="lg:col-span-2">
+                        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">Từ khóa tìm kiếm</label>
+                        <div class="relative">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+                            <input type="text" th:field="*{keyword}" placeholder="Mã đơn, tên/sđt khách, ghi chú..." 
+                                   class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-surface-container border border-outline-variant/60 text-sm font-medium text-on-surface focus:bg-surface-container-lowest focus:border-primary focus:outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Order Status -->
+                    <div>
+                        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">Trạng thái đơn</label>
+                        <select th:field="*{status}" class="w-full px-3 py-2.5 rounded-xl bg-surface-container border border-outline-variant/60 text-sm font-medium text-on-surface focus:bg-surface-container-lowest focus:border-primary focus:outline-none">
+                            <option value="">-- Tất cả --</option>
+                            <option th:each="st : ${orderStatuses}" th:value="${st}" th:text="${st}">CONFIRMED</option>
+                        </select>
+                    </div>
+
+                    <!-- Payment Status -->
+                    <div>
+                        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">Thanh toán</label>
+                        <select th:field="*{paymentStatus}" class="w-full px-3 py-2.5 rounded-xl bg-surface-container border border-outline-variant/60 text-sm font-medium text-on-surface focus:bg-surface-container-lowest focus:border-primary focus:outline-none">
+                            <option value="">-- Tất cả --</option>
+                            <option th:each="pst : ${paymentStatuses}" th:value="${pst}" th:text="${pst}">SUCCESS</option>
+                        </select>
+                    </div>
+
+                    <!-- Order Type -->
+                    <div>
+                        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">Kênh / Loại</label>
+                        <select th:field="*{type}" class="w-full px-3 py-2.5 rounded-xl bg-surface-container border border-outline-variant/60 text-sm font-medium text-on-surface focus:bg-surface-container-lowest focus:border-primary focus:outline-none">
+                            <option value="">-- Tất cả --</option>
+                            <option th:each="ot : ${orderTypes}" th:value="${ot}" th:text="${ot}">COUNTER</option>
+                        </select>
+                    </div>
+
+                    <!-- Filter Buttons -->
+                    <div class="flex items-center gap-2">
+                        <button type="submit" class="flex-1 py-2.5 px-4 rounded-xl bg-primary text-on-primary font-bold text-sm shadow-md shadow-primary/20 hover:bg-primary/90 transition-all border-none cursor-pointer flex items-center justify-center gap-1.5">
+                            <span class="material-symbols-outlined text-[18px]">filter_alt</span>
+                            Lọc
+                        </button>
+                        <a th:href="@{/order/list}" class="py-2.5 px-3 rounded-xl bg-surface-container text-on-surface-variant hover:bg-surface-container-high font-semibold text-sm transition-all no-underline flex items-center justify-center border border-outline-variant" title="Xóa bộ lọc">
+                            <span class="material-symbols-outlined text-[18px]">refresh</span>
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Orders Table Card -->
+            <div class="bg-surface-container-lowest rounded-3xl border border-outline-variant/60 overflow-hidden minimal-shadow flex flex-col">
+                <div class="p-6 border-b border-outline-variant/40 flex items-center justify-between bg-surface-container/20">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary text-[22px]">receipt_long</span>
+                        <h3 class="font-bold text-on-surface text-base m-0">Danh sách đơn hàng</h3>
+                        <span class="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold text-xs" th:text="${orderPage.totalElements} + ' đơn'">0 đơn</span>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-outline-variant/60 bg-surface-container-low/50 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">
+                                <th class="py-4 px-6">Mã đơn</th>
+                                <th class="py-4 px-6">Khách hàng</th>
+                                <th class="py-4 px-6">Vị trí / Kênh</th>
+                                <th class="py-4 px-6">Tổng tiền</th>
+                                <th class="py-4 px-6">Trạng thái hóa đơn</th>
+                                <th class="py-4 px-6">Thanh toán</th>
+                                <th class="py-4 px-6">Thời gian</th>
+                                <th class="py-4 px-6 text-right">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-outline-variant/30 text-sm">
+                            <tr th:if="${orders.empty}">
+                                <td colspan="8" class="py-16 text-center text-on-surface-variant">
+                                    <span class="material-symbols-outlined text-4xl block mb-2 opacity-50">inbox</span>
+                                    <span class="font-medium">Không tìm thấy đơn hàng nào phù hợp bộ lọc</span>
+                                </td>
+                            </tr>
+                            <tr th:each="o : ${orders}" class="table-row-hover">
+                                <td class="py-4 px-6 font-bold text-primary" th:text="'#ORD-' + ${o.orderId}">#ORD-101</td>
+                                <td class="py-4 px-6">
+                                    <div class="font-bold text-on-surface" th:text="${o.customerName}">Nguyễn Văn A</div>
+                                    <div class="text-xs text-on-surface-variant" th:text="${o.customerPhone}">0901234567</div>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <span class="font-semibold text-on-surface" th:text="${o.tableId != null ? 'Bàn ' + o.tableId : 'Takeaway'}">Bàn 1</span>
+                                    <div class="text-[11px] text-on-surface-variant font-bold uppercase" th:text="${o.orderType}">COUNTER</div>
+                                </td>
+                                <td class="py-4 px-6 font-headline-md font-bold text-primary" th:text="${#numbers.formatDecimal(o.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">55.000 ₫</td>
+                                <td class="py-4 px-6">
+                                    <span th:class="'status-badge status-' + ${o.orderStatus}" th:text="${o.orderStatus}">CONFIRMED</span>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <span th:class="'status-badge payment-' + ${o.paymentStatus}" th:text="${o.paymentStatus}">SUCCESS</span>
+                                    <div class="text-[11px] text-on-surface-variant mt-0.5" th:text="${o.paymentMethodName}">Cash</div>
+                                </td>
+                                <td class="py-4 px-6 text-xs text-on-surface-variant font-medium" th:text="${#temporals.format(o.createdAt, 'dd/MM/yyyy HH:mm')}">07/07 10:30</td>
+                                <td class="py-4 px-6 text-right">
+                                    <div class="flex items-center justify-end gap-1.5">
+                                        <button th:onclick="'openDetailModal(' + ${o.orderId} + ')'" 
+                                                class="px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-on-primary font-bold text-xs transition-colors border-none cursor-pointer flex items-center gap-1" title="Xem chi tiết & thao tác">
+                                            <span class="material-symbols-outlined text-[16px]">visibility</span>
+                                            Chi tiết
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div th:if="${orderPage.totalPages > 1}" class="p-4 border-t border-outline-variant/40 bg-surface-container/20 flex items-center justify-between">
+                    <div class="text-xs text-on-surface-variant font-medium">
+                        Hiển thị trang <b th:text="${currentPage + 1}">1</b> / <b th:text="${orderPage.totalPages}">5</b>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <a th:if="${currentPage > 0}" th:href="@{/order/list(page=${currentPage - 1}, keyword=${filter.keyword}, status=${filter.status}, paymentStatus=${filter.paymentStatus}, type=${filter.type})}" 
+                           class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors no-underline">
+                            <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+                        </a>
+                        <span th:each="i : ${#numbers.sequence(0, orderPage.totalPages - 1)}" th:if="${i >= currentPage - 2 and i <= currentPage + 2}">
+                            <a th:href="@{/order/list(page=${i}, keyword=${filter.keyword}, status=${filter.status}, paymentStatus=${filter.paymentStatus}, type=${filter.type})}" 
+                               th:text="${i + 1}"
+                               class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs transition-colors no-underline"
+                               th:classappend="${i == currentPage} ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface hover:bg-surface-container-high'">1</a>
+                        </span>
+                        <a th:if="${currentPage < orderPage.totalPages - 1}" th:href="@{/order/list(page=${currentPage + 1}, keyword=${filter.keyword}, status=${filter.status}, paymentStatus=${filter.paymentStatus}, type=${filter.type})}" 
+                           class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors no-underline">
+                            <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Order Detail Modal -->
+<div id="detail-modal" class="hidden fixed inset-0 bg-on-surface/50 backdrop-blur-sm z-50 items-center justify-center p-4">
+    <div id="detail-modal-content" class="bg-surface-container-lowest rounded-3xl border border-outline-variant shadow-2xl max-w-2xl w-full overflow-hidden animate-modal flex flex-col"></div>
+</div>
+
+<script th:src="@{/js/ordering/list.js}"></script>
+</body>
+</html>
