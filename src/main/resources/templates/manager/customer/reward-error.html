@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title th:text="${errorTitle} + ' - BrewMaster'">Lỗi</title>
+    <div th:replace="~{catalog/tailwind-head :: tailwind-head}"></div>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased flex h-screen overflow-hidden">
+
+<th:block th:replace="~{manager/layout/manager-layout :: sidebar(activePage=${activePage})}"></th:block>
+
+<main class="flex-1 flex items-center justify-center p-8">
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-12 shadow-sm text-center max-w-md">
+        <span class="material-symbols-outlined text-error text-[64px] mb-4">search_off</span>
+        <h1 class="font-headline-sm text-on-surface font-bold mb-2" th:text="${errorTitle}">Không tìm thấy</h1>
+        <p class="text-body-md text-on-surface-variant mb-6" th:text="${errorMessage}">Chi tiết lỗi</p>
+        <a th:href="@{/manager/customers/rewards}" class="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-full font-bold text-body-sm transition-colors no-underline">
+            <span class="material-symbols-outlined text-[18px]">arrow_back</span> Quay lại danh sách
+        </a>
+    </div>
+</main>
+</body>
+</html>

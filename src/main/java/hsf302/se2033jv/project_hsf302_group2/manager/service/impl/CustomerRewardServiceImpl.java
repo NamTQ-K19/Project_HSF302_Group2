@@ -67,6 +67,11 @@ public class CustomerRewardServiceImpl implements CustomerRewardService {
     public CustomerRewardSummaryResponse getCustomerRewardSummary(Integer customerId) {
         User customer = userRepository.findById(customerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khách hàng"));
+
+        if (customer.getRole() == null || !"CUSTOMER".equalsIgnoreCase(customer.getRole().getRoleName())) {
+            throw new ResourceNotFoundException("Không tìm thấy khách hàng");
+        }
+
         return mapUserToSummary(customer);
     }
 

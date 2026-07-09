@@ -1,6 +1,7 @@
 package hsf302.se2033jv.project_hsf302_group2.manager.controller;
 
 import hsf302.se2033jv.project_hsf302_group2.common.entity.User;
+import hsf302.se2033jv.project_hsf302_group2.common.exception.ResourceNotFoundException;
 import hsf302.se2033jv.project_hsf302_group2.customer.dto.response.LoyaltyPointResponse;
 import hsf302.se2033jv.project_hsf302_group2.customer.service.interfaces.ProfileService;
 import hsf302.se2033jv.project_hsf302_group2.manager.dto.request.CustomerRewardFilterRequest;
@@ -14,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @Controller
 @RequestMapping("/manager/customers/rewards")
@@ -136,5 +138,21 @@ public class CustomerRewardController {
     @GetMapping("/{customerId}/clear-filter")
     public String clearFilter(@PathVariable Integer customerId) {
         return "redirect:/manager/customers/rewards/" + customerId;
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public String handleNotFound(ResourceNotFoundException ex, Model model) {
+        model.addAttribute("errorTitle", "Không tìm thấy khách hàng");
+        model.addAttribute("errorMessage", ex.getMessage());
+        model.addAttribute("activePage", "rewards");
+        return "manager/customer/reward-error";
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public String handleInvalidId(MethodArgumentTypeMismatchException ex, Model model) {
+        model.addAttribute("errorTitle", "Yêu cầu không hợp lệ");
+        model.addAttribute("errorMessage", "Mã khách hàng không hợp lệ.");
+        model.addAttribute("activePage", "rewards");
+        return "manager/customer/reward-error";
     }
 }

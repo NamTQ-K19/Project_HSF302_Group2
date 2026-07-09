@@ -1,182 +1,226 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Chi tiết điểm khách hàng – CafeShop Manager</title>
-    <link th:href="@{/css/manager/manager-layout.css}" rel="stylesheet"/>
-    <link th:href="@{/css/manager/reservation-schedule.css}" rel="stylesheet"/>
-    <link th:href="@{/css/manager/customer-reward.css}" rel="stylesheet"/>
+    <title th:text="|Điểm tích lũy - ${summary.fullName} - BrewMaster|">Điểm tích lũy khách hàng</title>
+    <!-- Tailwind CSS config -->
+    <div th:replace="~{catalog/tailwind-head :: tailwind-head}"></div>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <meta name="_csrf" th:content="${_csrf?.token}" />
     <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
 </head>
-<body class="manager-body">
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed antialiased flex h-screen overflow-hidden">
 
-<div class="manager-app">
+<!-- Sidebar -->
+<th:block th:replace="~{manager/layout/manager-layout :: sidebar(activePage='rewards')}"></th:block>
 
-    <div th:replace="~{manager/layout/manager-layout :: sidebar(${activePage})}"></div>
-
-    <main class="manager-main">
-
-        <a th:href="@{/manager/customers/rewards}" class="btn btn-secondary btn-sm" style="margin-bottom:16px;">← Quay lại danh sách</a>
-
-        <div class="page-title">
-            <h1>🎁 Điểm tích lũy của khách hàng</h1>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col overflow-y-auto">
+    <!-- Top Bar -->
+    <header class="sticky top-0 z-30 bg-surface-container-lowest/80 backdrop-blur-md border-b border-outline-variant px-8 py-5 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <a th:href="@{/manager/customers/rewards}" class="inline-flex items-center justify-center w-10 h-10 rounded-full border border-outline bg-surface-container-lowest text-on-surface-variant hover:border-primary hover:text-primary transition-all no-underline">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </a>
+            <div>
+                <h1 class="font-headline-sm text-on-surface m-0 font-bold flex items-center gap-2" th:text="${summary.fullName}">Tên khách hàng</h1>
+                <div class="text-body-sm text-on-surface-variant mt-1">Điểm tích lũy của khách hàng</div>
+            </div>
         </div>
 
-        <!-- Customer summary card -->
-        <div class="card" style="margin-bottom:20px;">
-            <div class="card-header">
-                <span>👤</span><h2 th:text="${summary.fullName}">Tên khách hàng</h2>
+        <div class="flex items-center gap-6">
+            <div class="hidden md:flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-body-sm font-medium">
+                <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                Hệ thống hoạt động bình thường
             </div>
-            <div class="card-body">
-                <div class="customer-info-grid">
-                    <div><strong>Tên đăng nhập:</strong> <span th:text="${summary.username}"></span></div>
-                    <div><strong>Trạng thái:</strong>
-                        <span th:if="${summary.status}" class="account-badge account-active">Hoạt động</span>
-                        <span th:unless="${summary.status}" class="account-badge account-locked">Đã khóa</span>
-                    </div>
-                    <div><strong>Email:</strong> <span th:text="${summary.email}"></span></div>
-                    <div><strong>Số điện thoại:</strong> <span th:text="${summary.phone}"></span></div>
+            <div class="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center overflow-hidden shrink-0">
+                <span class="material-symbols-outlined text-primary text-[24px]">account_circle</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="p-8 max-w-[1400px] w-full mx-auto flex flex-col gap-8">
+
+        <!-- Customer Info Card -->
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm">
+            <div class="flex items-center gap-2 mb-4 border-b border-outline-variant/60 pb-3">
+                <span class="material-symbols-outlined text-primary">person</span>
+                <h2 class="font-headline-sm text-on-surface font-bold">Thông tin khách hàng</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-body-md">
+                <div><span class="font-bold text-on-surface-variant">Tên đăng nhập:</span> <span th:text="${summary.username}"></span></div>
+                <div>
+                    <span class="font-bold text-on-surface-variant">Trạng thái:</span>
+                    <span th:if="${summary.status}" class="bg-[#eafaf1] text-[#1e8449] text-xs font-bold px-2.5 py-1 rounded-full ml-1">Hoạt động</span>
+                    <span th:unless="${summary.status}" class="bg-error/10 text-error text-xs font-bold px-2.5 py-1 rounded-full ml-1">Đã khóa</span>
                 </div>
+                <div><span class="font-bold text-on-surface-variant">Email:</span> <span th:text="${summary.email}"></span></div>
+                <div><span class="font-bold text-on-surface-variant">Số điện thoại:</span> <span th:text="${summary.phone}"></span></div>
             </div>
         </div>
 
-        <!-- Points stats -->
-        <div class="stats-grid-3" style="margin-bottom:20px;">
-            <div class="stat-card">
-                <div class="stat-number" th:text="${summary.currentBalance}">0</div>
-                <div class="stat-label">Điểm hiện tại</div>
+        <!-- Points Stats -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm flex flex-col relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full bg-primary"></div>
+                <div class="flex items-center gap-3 text-on-surface-variant mb-4">
+                    <span class="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-lg">redeem</span>
+                    <span class="font-bold text-body-sm uppercase tracking-wider">Điểm hiện tại</span>
+                </div>
+                <div class="text-display-sm font-bold text-on-surface" th:text="${summary.currentBalance}">0</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-number" th:text="${summary.totalEarned}">0</div>
-                <div class="stat-label">Tổng điểm đã tích</div>
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm flex flex-col relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full bg-[#22c55e]"></div>
+                <div class="flex items-center gap-3 text-on-surface-variant mb-4">
+                    <span class="material-symbols-outlined text-[#22c55e] bg-[#22c55e]/10 p-2 rounded-lg">trending_up</span>
+                    <span class="font-bold text-body-sm uppercase tracking-wider">Tổng điểm đã tích</span>
+                </div>
+                <div class="text-display-sm font-bold text-on-surface" th:text="${summary.totalEarned}">0</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-number" th:text="${summary.totalRedeemed}">0</div>
-                <div class="stat-label">Tổng điểm đã đổi</div>
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm flex flex-col relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full bg-error"></div>
+                <div class="flex items-center gap-3 text-on-surface-variant mb-4">
+                    <span class="material-symbols-outlined text-error bg-error/10 p-2 rounded-lg">trending_down</span>
+                    <span class="font-bold text-body-sm uppercase tracking-wider">Tổng điểm đã đổi</span>
+                </div>
+                <div class="text-display-sm font-bold text-on-surface" th:text="${summary.totalRedeemed}">0</div>
             </div>
-        </div>
+        </section>
 
-        <!-- Filter -->
-        <div class="card" style="margin-bottom:20px;">
-            <div class="card-header">
-                <span>🔍</span><h2>Bộ lọc lịch sử giao dịch</h2>
+        <!-- Filter Section -->
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm">
+            <div class="flex items-center gap-2 mb-4 border-b border-outline-variant/60 pb-3">
+                <span class="material-symbols-outlined text-primary">filter_alt</span>
+                <h2 class="font-headline-sm text-on-surface font-bold">Bộ lọc lịch sử giao dịch</h2>
             </div>
-            <div class="card-body">
-                <form th:action="@{/manager/customers/rewards/{id}/filter(id=${summary.customerId})}" method="post" id="filterForm">
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                    <input type="hidden" name="page" value="0" id="filterPage"/>
+            <form th:action="@{/manager/customers/rewards/{id}/filter(id=${summary.customerId})}" method="post" id="filterForm" class="flex flex-col gap-4">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <input type="hidden" name="page" value="0" id="filterPage"/>
 
-                    <div class="filter-grid">
-                        <div class="form-group">
-                            <label class="form-label">Loại giao dịch</label>
-                            <select name="transactionType" class="form-control">
-                                <option value="">Tất cả</option>
-                                <option value="EARN" th:selected="${filter.transactionType == 'EARN'}">Tích điểm</option>
-                                <option value="REDEEM" th:selected="${filter.transactionType == 'REDEEM'}">Đổi điểm</option>
-                                <option value="ADJUST" th:selected="${filter.transactionType == 'ADJUST'}">Điều chỉnh</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Từ ngày</label>
-                            <input type="date" name="fromDate" class="form-control" th:value="${filter.fromDate}"/>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Đến ngày</label>
-                            <input type="date" name="toDate" class="form-control" th:value="${filter.toDate}"
-                                   th:classappend="${dateError != null} ? 'is-invalid' : ''"/>
-                            <div th:if="${dateError != null}" class="form-error" th:text="${dateError}"></div>
-                        </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="flex flex-col gap-2">
+                        <label class="text-body-sm font-bold text-on-surface">Loại giao dịch</label>
+                        <select name="transactionType" class="bg-surface-container border border-outline rounded-xl p-3 text-body-md focus:border-primary focus:bg-background outline-none transition-all">
+                            <option value="">Tất cả</option>
+                            <option value="EARN" th:selected="${filter.transactionType == 'EARN'}">Tích điểm</option>
+                            <option value="REDEEM" th:selected="${filter.transactionType == 'REDEEM'}">Đổi điểm</option>
+                            <option value="ADJUST" th:selected="${filter.transactionType == 'ADJUST'}">Điều chỉnh</option>
+                        </select>
                     </div>
-
-                    <div style="margin-top:12px; display:flex; gap:10px;">
-                        <button type="submit" class="btn btn-primary">🔍 Lọc</button>
-                        <a th:href="@{/manager/customers/rewards/{id}/clear-filter(id=${summary.customerId})}" class="btn btn-secondary">✕ Xóa lọc</a>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-body-sm font-bold text-on-surface">Từ ngày</label>
+                        <input type="date" name="fromDate" class="bg-surface-container border border-outline rounded-xl p-3 text-body-md focus:border-primary focus:bg-background outline-none transition-all" th:value="${filter.fromDate}"/>
                     </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Transaction history -->
-        <div class="card">
-            <div class="card-header">
-                <span>📋</span><h2>Lịch sử giao dịch điểm</h2>
-                <span class="record-count" th:text="'(' + ${transactionPage.totalElements} + ' giao dịch)'"></span>
-            </div>
-            <div class="card-body">
-
-                <div th:if="${#lists.isEmpty(transactions)}" class="empty-state">
-                    <div class="empty-icon">📭</div>
-                    <p>Khách hàng chưa có giao dịch điểm nào.</p>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-body-sm font-bold text-on-surface">Đến ngày</label>
+                        <input type="date" name="toDate" class="bg-surface-container border border-outline rounded-xl p-3 text-body-md focus:border-primary focus:bg-background outline-none transition-all" th:value="${filter.toDate}" th:classappend="${dateError != null} ? 'border-error' : ''"/>
+                        <div th:if="${dateError != null}" class="text-xs text-error font-medium" th:text="${dateError}">Lỗi ngày</div>
+                    </div>
                 </div>
 
-                <div th:unless="${#lists.isEmpty(transactions)}" class="table-responsive">
-                    <table class="schedule-table">
+                <div class="flex gap-3">
+                    <button type="submit" class="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-full font-bold text-body-sm transition-colors border-none cursor-pointer shadow-sm">
+                        <span class="material-symbols-outlined text-[18px]">search</span> Lọc
+                    </button>
+                    <a th:href="@{/manager/customers/rewards/{id}/clear-filter(id=${summary.customerId})}" class="inline-flex items-center gap-2 bg-surface-container border border-outline hover:border-primary text-on-surface-variant hover:text-primary px-5 py-2.5 rounded-full font-bold text-body-sm transition-all no-underline">
+                        <span class="material-symbols-outlined text-[18px]">close</span> Xóa lọc
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Transaction History Card -->
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-sm overflow-hidden">
+            <div class="px-6 py-5 border-b border-outline-variant flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">list_alt</span>
+                    <h2 class="font-headline-sm text-on-surface font-bold">Lịch sử giao dịch điểm</h2>
+                </div>
+                <span class="text-body-sm text-on-surface-variant font-medium bg-surface-container px-3 py-1 rounded-full"
+                      th:text="'(' + ${transactionPage.totalElements} + ' giao dịch)'">0 giao dịch</span>
+            </div>
+
+            <div class="p-6">
+                <div th:if="${#lists.isEmpty(transactions)}" class="flex flex-col items-center justify-center py-12 text-on-surface-variant">
+                    <span class="material-symbols-outlined text-[48px] mb-2 opacity-50">mail</span>
+                    <p class="text-body-md font-medium">Khách hàng chưa có giao dịch điểm nào.</p>
+                </div>
+
+                <div th:unless="${#lists.isEmpty(transactions)}" class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
                         <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Ngày giờ</th>
-                            <th>Loại giao dịch</th>
-                            <th class="text-right">Điểm</th>
-                            <th class="text-right">Số dư sau</th>
-                            <th>Nguồn</th>
-                            <th>Ghi chú</th>
+                        <tr class="border-b border-outline-variant">
+                            <th class="py-3 px-4 text-body-sm font-bold text-on-surface-variant w-[60px]">#</th>
+                            <th class="py-3 px-4 text-body-sm font-bold text-on-surface-variant">Ngày giờ</th>
+                            <th class="py-3 px-4 text-body-sm font-bold text-on-surface-variant">Loại giao dịch</th>
+                            <th class="py-3 px-4 text-body-sm font-bold text-on-surface-variant text-right">Điểm</th>
+                            <th class="py-3 px-4 text-body-sm font-bold text-on-surface-variant text-right">Số dư sau</th>
+                            <th class="py-3 px-4 text-body-sm font-bold text-on-surface-variant">Nguồn</th>
+                            <th class="py-3 px-4 text-body-sm font-bold text-on-surface-variant">Ghi chú</th>
                         </tr>
                         </thead>
-                        <tbody>
-                        <tr th:each="tx, stat : ${transactions}">
-                            <td th:text="${currentPage * pageSize + stat.count}"></td>
-                            <td th:text="${#temporals.format(tx.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
-                            <td th:switch="${tx.transactionType.name()}">
-                                <span th:case="'EARN'" class="txn-badge txn-earn">Tích điểm</span>
-                                <span th:case="'REDEEM'" class="txn-badge txn-redeem">Đổi điểm</span>
-                                <span th:case="*" class="txn-badge txn-adjust">Điều chỉnh</span>
+                        <tbody class="divide-y divide-outline-variant">
+                        <tr th:each="tx, stat : ${transactions}" class="hover:bg-surface-container-low transition-colors">
+                            <td class="py-4 px-4 text-body-md font-medium text-on-surface-variant" th:text="${currentPage * pageSize + stat.count}"></td>
+                            <td class="py-4 px-4 text-body-sm text-on-surface-variant" th:text="${#temporals.format(tx.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+                            <td class="py-4 px-4" th:switch="${tx.transactionType.name()}">
+                                <span th:case="'EARN'" class="bg-[#eafaf1] text-[#1e8449] text-xs font-bold px-2.5 py-1 rounded-full">Tích điểm</span>
+                                <span th:case="'REDEEM'" class="bg-error/10 text-error text-xs font-bold px-2.5 py-1 rounded-full">Đổi điểm</span>
+                                <span th:case="*" class="bg-[#e0f2fe] text-[#0369a1] text-xs font-bold px-2.5 py-1 rounded-full">Điều chỉnh</span>
                             </td>
-                            <td class="text-center"
-                                th:classappend="${tx.points >= 0} ? 'points-positive' : 'points-negative'"
+                            <td class="py-4 px-4 text-right font-bold"
+                                th:classappend="${tx.points >= 0} ? 'text-[#22c55e]' : 'text-error'"
                                 th:text="${tx.points >= 0 ? '+' + tx.points : tx.points}"></td>
-                            <td class="text-center" th:text="${tx.balanceAfter}"></td>
-                            <td th:switch="${tx.referenceType != null ? tx.referenceType.name() : ''}">
-                                <span th:case="'ORDER'" class="badge-table" th:text="'Đơn hàng #' + ${tx.referenceId}"></span>
-                                <span th:case="'REVIEW'" class="badge-table" th:text="'Đánh giá #' + ${tx.referenceId}"></span>
-                                <span th:case="*" class="text-muted">-</span>
+                            <td class="py-4 px-4 text-right text-body-md font-medium text-on-surface" th:text="${tx.balanceAfter}"></td>
+                            <td class="py-4 px-4" th:switch="${tx.referenceType != null ? tx.referenceType.name() : ''}">
+                                <span th:case="'ORDER'" class="bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full" th:text="'Đơn hàng #' + ${tx.referenceId}"></span>
+                                <span th:case="'REVIEW'" class="bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full" th:text="'Đánh giá #' + ${tx.referenceId}"></span>
+                                <span th:case="*" class="text-on-surface-variant">-</span>
                             </td>
-                            <td th:text="${tx.note != null ? tx.note : '-'}"></td>
+                            <td class="py-4 px-4 text-body-sm text-on-surface-variant" th:text="${tx.note != null ? tx.note : '-'}"></td>
                         </tr>
                         </tbody>
                     </table>
 
                     <!-- Pagination -->
-                    <div th:if="${transactionPage.totalPages > 1}" class="pagination-wrap">
-                        <button type="button" class="btn btn-secondary btn-sm"
-                                th:disabled="${currentPage == 0}"
-                                th:classappend="${currentPage == 0} ? 'disabled' : ''"
-                                th:onclick="|goToPage(${currentPage - 1})|">‹ Trước</button>
-
-                        <span th:each="i : ${#numbers.sequence(0, transactionPage.totalPages - 1)}">
+                    <div th:if="${transactionPage.totalPages > 1}" class="flex flex-wrap items-center justify-between gap-4 mt-6 pt-4 border-t border-outline-variant/60">
+                        <div class="flex items-center gap-2">
                             <button type="button"
-                                    th:classappend="${i == currentPage} ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm'"
-                                    th:text="${i + 1}"
-                                    th:onclick="'goToPage(' + ${i} + ')'"></button>
-                        </span>
+                                    class="inline-flex items-center justify-center w-9 h-9 rounded-xl border border-outline bg-surface-container-lowest text-on-surface-variant hover:border-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                    th:disabled="${currentPage == 0}"
+                                    th:onclick="|goToPage(${currentPage - 1})|">
+                                <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+                            </button>
 
-                        <button type="button" class="btn btn-secondary btn-sm"
-                                th:disabled="${currentPage >= transactionPage.totalPages - 1}"
-                                th:classappend="${currentPage >= transactionPage.totalPages - 1} ? 'disabled' : ''"
-                                th:onclick="|goToPage(${currentPage + 1})|">Sau ›</button>
+                            <span th:each="i : ${#numbers.sequence(0, transactionPage.totalPages - 1)}">
+                                    <button type="button"
+                                            class="w-9 h-9 rounded-xl text-body-sm font-bold transition-all"
+                                            th:classappend="${i == currentPage} ? 'bg-primary text-white border-none' : 'border border-outline bg-surface-container-lowest text-on-surface-variant hover:border-primary'"
+                                            th:text="${i + 1}"
+                                            th:onclick="'goToPage(' + ${i} + ')'"></button>
+                                </span>
 
-                        <span class="pagination-info">
-                            Trang <strong th:text="${currentPage + 1}"></strong> / <strong th:text="${transactionPage.totalPages}"></strong>
-                            (tổng <strong th:text="${transactionPage.totalElements}"></strong> giao dịch)
-                        </span>
+                            <button type="button"
+                                    class="inline-flex items-center justify-center w-9 h-9 rounded-xl border border-outline bg-surface-container-lowest text-on-surface-variant hover:border-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                    th:disabled="${currentPage >= transactionPage.totalPages - 1}"
+                                    th:onclick="|goToPage(${currentPage + 1})|">
+                                <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+                            </button>
+                        </div>
+
+                        <span class="text-body-sm text-on-surface-variant">
+                                Trang <strong class="text-on-surface" th:text="${currentPage + 1}"></strong> / <strong class="text-on-surface" th:text="${transactionPage.totalPages}"></strong>
+                                (tổng <strong class="text-on-surface" th:text="${transactionPage.totalElements}"></strong> giao dịch)
+                            </span>
                     </div>
                 </div>
             </div>
         </div>
-
-    </main>
-</div>
+    </div>
+</main>
 
 <script>
     function goToPage(page) {
