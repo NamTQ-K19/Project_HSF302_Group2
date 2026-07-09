@@ -18,7 +18,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
+
+import java.beans.PropertyEditorSupport;
 
 @Slf4j
 @Controller
@@ -86,5 +89,35 @@ public class OrderingController {
         model.addAttribute("orderStatuses", OrderStatus.values());
         model.addAttribute("paymentMethods", paymentMethodRepository.findAll());
         return "ordering/detail";
+    }
+
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        binder.registerCustomEditor(OrderStatus.class, blankSafeEnumEditor(OrderStatus.class));
+        binder.registerCustomEditor(OrderType.class, blankSafeEnumEditor(OrderType.class));
+        binder.registerCustomEditor(PaymentStatus.class, blankSafeEnumEditor(PaymentStatus.class));
+    }
+
+    /**
+     * Property editor dùng chung cho mọi enum filter:
+     * - Chuỗi rỗng/null  → set null (không lọc, tương đương "Tất cả")
+     * - Giá trị rác (URL bị chỉnh sửa tay) → set null thay vì crash, coi như bỏ qua filter đó
+     */
+    private <E extends Enum<E>> PropertyEditorSupport blankSafeEnumEditor(Class<E> enumType) {
+        return new PropertyEditorSupport() {
+            @Override
+            public void setAsText(String text) {
+                if (text == null || text.isBlank()) {
+                    setValue(null);
+                    return;
+                }
+                try {
+                    setValue(Enum.valueOf(enumType, text.trim()));
+                } catch (IllegalArgumentException ex) {
+                    log.warn("Giá trị filter không hợp lệ '{}' cho enum {}, bỏ qua filter này", text, enumType.getSimpleName());
+                    setValue(null);
+                }
+            }
+        };
     }
 }

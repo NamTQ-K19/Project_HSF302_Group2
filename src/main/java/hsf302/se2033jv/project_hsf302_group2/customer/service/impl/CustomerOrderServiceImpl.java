@@ -10,6 +10,7 @@ import hsf302.se2033jv.project_hsf302_group2.customer.dto.request.PlaceOrderRequ
 import hsf302.se2033jv.project_hsf302_group2.customer.dto.response.OrderConfirmationResponse;
 import hsf302.se2033jv.project_hsf302_group2.customer.dto.response.OrderResponse;
 import hsf302.se2033jv.project_hsf302_group2.customer.service.interfaces.CustomerOrderService;
+import hsf302.se2033jv.project_hsf302_group2.payment.service.interfaces.InvoiceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,7 +39,8 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
     private final PaymentMethodRepository paymentMethodRepository;
     private final PaymentRepository paymentRepository;
     private final LoyaltyPointRepository loyaltyPointRepository;
-    private final ReviewRepository reviewRepository;  // ✅ THÊM DÒNG NÀY
+    private final ReviewRepository reviewRepository;
+    private final InvoiceService invoiceService;
     private static final String CASH_PAYMENT_METHOD = "Tiền mặt";
 
     private static final Integer CUSTOMER_ROLE_ID = 5;
@@ -442,6 +444,13 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
             payment.setPaidAt(LocalDateTime.now());
             if (transactionNo != null) payment.setTransactionRef(transactionNo);
             paymentRepository.save(payment);
+
+            // Tự động gửi email hóa đơn ngay sau khi thanh toán online thành công
+            try {
+                invoiceService.resendInvoiceEmail(orderId);
+            } catch (Exception e) {
+                log.error("Không thể tự động gửi email hóa đơn cho đơn #{}: {}", orderId, e.getMessage(), e);
+            }
 
             // KHÔNG set order.status = CONFIRMED — chờ Cashier xác nhận (use case khác)
             // KHÔNG cộng điểm — chỉ cộng khi Order.status = COMPLETED (use case khác)

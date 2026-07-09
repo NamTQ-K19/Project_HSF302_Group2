@@ -7,7 +7,6 @@ import hsf302.se2033jv.project_hsf302_group2.common.enums.PaymentStatus;
 import hsf302.se2033jv.project_hsf302_group2.common.exception.BusinessException;
 import hsf302.se2033jv.project_hsf302_group2.common.repository.PaymentRepository;
 import hsf302.se2033jv.project_hsf302_group2.common.service.interfaces.EmailService;
-import hsf302.se2033jv.project_hsf302_group2.payment.dto.response.InvoiceListItemResponse;
 import hsf302.se2033jv.project_hsf302_group2.payment.dto.response.InvoiceResponse;
 import hsf302.se2033jv.project_hsf302_group2.payment.service.interfaces.InvoiceService;
 import lombok.RequiredArgsConstructor;
@@ -17,9 +16,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static hsf302.se2033jv.project_hsf302_group2.common.enums.OrderType.COUNTER;
-import static hsf302.se2033jv.project_hsf302_group2.common.enums.OrderType.ONLINE;
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -27,15 +23,6 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     private final PaymentRepository paymentRepository;
     private final EmailService emailService;
-
-    @Override
-    public List<InvoiceListItemResponse> getInvoiceList() {
-        List<Payment> payments = paymentRepository.findByPaymentStatusOrderByPaidAtDesc(PaymentStatus.SUCCESS);
-
-        return payments.stream()
-                .map(this::mapToListItem)
-                .collect(Collectors.toList());
-    }
 
     @Override
     public InvoiceResponse getInvoice(Integer orderId) {
@@ -73,19 +60,6 @@ public class InvoiceServiceImpl implements InvoiceService {
         );
     }
 
-    private InvoiceListItemResponse mapToListItem(Payment payment) {
-        Order order = payment.getOrder();
-        return InvoiceListItemResponse.builder()
-                .orderId(order.getOrderId())
-                .orderTypeLabel(getOrderTypeLabel(order))
-                .customerName(order.getUser().getFirstName() + " " + order.getUser().getLastName())
-                .tableNumber(order.getTable() != null ? "T" + String.format("%02d", order.getTable().getTableId()) : null)
-                .totalAmount(order.getTotalAmount())
-                .paymentMethodName(payment.getPaymentMethod().getName())
-                .paidAt(payment.getPaidAt())
-                .build();
-    }
-
     private InvoiceResponse mapToInvoiceResponse(Payment payment) {
         Order order = payment.getOrder();
 
@@ -93,10 +67,11 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .map(this::mapToItemResponse)
                 .collect(Collectors.toList());
 
-        boolean isCash = "cash".equalsIgnoreCase(payment.getPaymentMethod().getName());
+        boolean isCash = "Tiền mặt".equalsIgnoreCase(payment.getPaymentMethod().getName().trim());
 
         return InvoiceResponse.builder()
                 .orderId(order.getOrderId())
+                .orderStatus(order.getOrderStatus() != null ? order.getOrderStatus().name() : null)   // ← THÊM
                 .orderTypeLabel(getOrderTypeLabel(order))
                 .tableNumber(order.getTable() != null ? "T" + String.format("%02d", order.getTable().getTableId()) : null)
                 .orderDate(order.getCreatedAt())

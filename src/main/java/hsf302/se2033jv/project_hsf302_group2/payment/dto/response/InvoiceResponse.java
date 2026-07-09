@@ -15,6 +15,7 @@ public class InvoiceResponse {
 
     // Thông tin đơn hàng
     private Integer orderId;
+    private String orderStatus;
     private String orderTypeLabel;     // "Tại quầy" / "Online"
     private String tableNumber;        // null nếu online
     private LocalDateTime orderDate;

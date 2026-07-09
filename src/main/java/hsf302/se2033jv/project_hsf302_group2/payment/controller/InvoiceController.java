@@ -19,39 +19,22 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/cashier/invoices")
 @RequiredArgsConstructor
 @Slf4j
-@PreAuthorize("hasRole('CASHIER')")
+@PreAuthorize("hasAnyRole('CASHIER', 'ADMIN', 'MANAGER')")
 public class InvoiceController {
 
     private final InvoiceService invoiceService;
     private final ProfileService profileService;
 
-    @GetMapping
-    public String showInvoiceList(Model model, Authentication auth) {
-        User cashier = profileService.getCurrentUser(auth.getName());
-
-        model.addAttribute("cashier", cashier);
-        model.addAttribute("invoices", invoiceService.getInvoiceList());
-        return "cashier/invoice/list";
-    }
-
     @GetMapping("/{orderId}")
     public String showInvoiceDetail(@PathVariable Integer orderId, Model model, Authentication auth) {
         User cashier = profileService.getCurrentUser(auth.getName());
+        String cashierName = ((cashier.getFirstName() != null ? cashier.getFirstName() : "") + " "
+                + (cashier.getLastName() != null ? cashier.getLastName() : "")).trim();
+        if (cashierName.isEmpty()) cashierName = cashier.getUsername();
 
-        model.addAttribute("cashier", cashier);
+        model.addAttribute("cashierName", cashierName);
         model.addAttribute("invoice", invoiceService.getInvoice(orderId));
         return "cashier/invoice/detail";
     }
-
-    @PostMapping("/{orderId}/send-email")
-    public String resendEmail(@PathVariable Integer orderId, RedirectAttributes redirectAttributes) {
-        try {
-            invoiceService.resendInvoiceEmail(orderId);
-            redirectAttributes.addFlashAttribute("successMessage", "Đã gửi email hóa đơn cho khách hàng");
-        } catch (RuntimeException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Không thể gửi email: " + e.getMessage());
-            log.error("Error sending invoice email for order {}: {}", orderId, e.getMessage(), e);
-        }
-        return "redirect:/cashier/invoices/" + orderId;
-    }
+    
 }

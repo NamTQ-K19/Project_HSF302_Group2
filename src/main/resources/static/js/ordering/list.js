@@ -119,6 +119,12 @@ function renderOrderDetailContent(order) {
                         Xác nhận thanh toán
                     </button>
                 ` : ''}
+                ${isPaid ? `
+                    <button onclick="printInvoice(${order.orderId})" class="px-5 py-2.5 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-700 transition-all shadow-md shadow-blue-600/20 border-none cursor-pointer flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[18px]">print</span>
+                        In hóa đơn
+                    </button>
+                ` : ''}
                 <button onclick="closeDetailModal()" class="px-5 py-2.5 rounded-xl bg-surface-container text-on-surface font-semibold text-xs hover:bg-surface-container-high transition-all border border-outline-variant cursor-pointer">
                     Đóng
                 </button>
@@ -298,4 +304,8 @@ function formatDateTime(dtStr) {
     if (!dtStr) return '';
     const d = new Date(dtStr);
     return d.toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function printInvoice(orderId) {
+    window.open(`/cashier/invoices/${orderId}`, '_blank');
 }

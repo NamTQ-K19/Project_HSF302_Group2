@@ -99,22 +99,4 @@ public class GlobalConfigAdvice {
         return configService.getReservationCancelBeforeMinutes();
     }
 
-    // ===== MAINTENANCE MODE =====
-
-    @ModelAttribute
-    public void checkMaintenanceMode(HttpServletRequest request, ModelAndView modelAndView) {
-        String path = request.getRequestURI();
-        if (path.startsWith("/api/") || path.startsWith("/static/") || path.startsWith("/css/")
-                || path.startsWith("/js/") || path.startsWith("/images/") || path.startsWith("/webjars/")
-                || path.startsWith("/auth/login") || path.startsWith("/auth/forgot-password")
-                || path.startsWith("/auth/register") || path.startsWith("/admin/")) {
-            return;
-        }
-
-        if (configService.isMaintenanceMode()) {
-            log.info("Maintenance mode is ON, redirecting to maintenance page for path: {}", path);
-            modelAndView.setViewName("common/maintenance");
-            modelAndView.addObject("message", configService.getMaintenanceMessage());
-        }
-    }
 }

@@ -8,6 +8,7 @@ import hsf302.se2033jv.project_hsf302_group2.common.repository.*;
 import hsf302.se2033jv.project_hsf302_group2.ordering.dto.request.*;
 import hsf302.se2033jv.project_hsf302_group2.ordering.dto.response.*;
 import hsf302.se2033jv.project_hsf302_group2.ordering.service.interfaces.OrderingService;
+import hsf302.se2033jv.project_hsf302_group2.payment.service.interfaces.InvoiceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -39,6 +40,7 @@ public class OrderingServiceImpl implements OrderingService {
     private final PaymentRepository paymentRepository;
     private final PaymentMethodRepository paymentMethodRepository;
     private final LoyaltyPointRepository loyaltyPointRepository;
+    private final InvoiceService invoiceService;
 
     private static final String DEFAULT_IMAGE = "/images/default-product.png";
 
@@ -90,11 +92,16 @@ public class OrderingServiceImpl implements OrderingService {
     @Override
     @Transactional(readOnly = true)
     public List<TablePosResponse> getPosTables() {
+        // Suy ra bàn nào đang OCCUPIED dựa trên Order đang mở, không lưu status trực tiếp trên bàn
+        List<Integer> occupiedTableIds = orderRepository.findActiveOrderTableIds();
+
         return coffeeTableRepository.findByIsActiveTrueOrderByTableIdAsc().stream()
                 .map(t -> TablePosResponse.builder()
                         .tableId(t.getTableId())
                         .capacity(t.getCapacity())
-                        .status(t.getStatus() != null ? t.getStatus().name() : TableStatus.AVAILABLE.name())
+                        .status(occupiedTableIds.contains(t.getTableId())
+                                ? TableStatus.OCCUPIED.name()
+                                : TableStatus.AVAILABLE.name())
                         .isActive(t.getIsActive())
                         .build())
                 .collect(Collectors.toList());
@@ -142,10 +149,8 @@ public class OrderingServiceImpl implements OrderingService {
         if (request.getTableId() != null && request.getTableId() > 0) {
             table = coffeeTableRepository.findById(request.getTableId())
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bàn #" + request.getTableId()));
-            if (table.getStatus() == TableStatus.AVAILABLE) {
-                table.setStatus(TableStatus.OCCUPIED);
-                coffeeTableRepository.save(table);
-            }
+            // Không cần set status thủ công — bàn tự động coi là OCCUPIED
+            // khi Order này được lưu với table gắn vào (do getPosTables() suy ra từ Order)
         }
 
         // 3. Calculate order details
@@ -372,19 +377,10 @@ public class OrderingServiceImpl implements OrderingService {
             }
         }
 
-        // If order cancelled, release table
-        if (request.getStatus() == OrderStatus.CANCELLED && order.getTable() != null) {
-            CoffeeTable table = order.getTable();
-            table.setStatus(TableStatus.AVAILABLE);
-            coffeeTableRepository.save(table);
-        }
-
-        // If order completed, release table if occupied
-        if (request.getStatus() == OrderStatus.COMPLETED && order.getTable() != null) {
-            CoffeeTable table = order.getTable();
-            table.setStatus(TableStatus.AVAILABLE);
-            coffeeTableRepository.save(table);
-        }
+        // Không cần giải phóng bàn thủ công — khi order chuyển sang CANCELLED/COMPLETED,
+        // findActiveOrderTableIds() sẽ tự động KHÔNG còn trả về tableId này nữa
+        // (vì query chỉ lấy order có status IN PENDING/CONFIRMED/PREPARING),
+        // nên bàn tự động hiện AVAILABLE ở lần gọi getPosTables() tiếp theo.
 
         Payment payment = paymentRepository.findByOrder_OrderId(orderId).orElse(null);
         return mapToDetailResponse(savedOrder, details, payment);
@@ -415,6 +411,13 @@ public class OrderingServiceImpl implements OrderingService {
         payment.setPaymentStatus(PaymentStatus.SUCCESS);
         payment.setPaidAt(LocalDateTime.now());
         paymentRepository.save(payment);
+
+        // Tự động gửi email hóa đơn ngay sau khi Cashier xác nhận thanh toán tiền mặt thành công
+        try {
+            invoiceService.resendInvoiceEmail(orderId);
+        } catch (Exception e) {
+            log.error("Không thể tự động gửi email hóa đơn cho đơn #{}: {}", orderId, e.getMessage(), e);
+        }
 
         // Earn loyalty points if customer is present and points earned > 0
         if (order.getPointsEarned() != null && order.getPointsEarned() > 0 && order.getUser() != null) {
