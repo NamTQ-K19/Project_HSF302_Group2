@@ -14,6 +14,7 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReservationSessionData {
+    private Integer reservationId;
     private Integer customerId;
     private String customerName;
     private LocalDate reservationDate;

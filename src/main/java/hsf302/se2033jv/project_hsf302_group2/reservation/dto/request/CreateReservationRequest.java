@@ -18,7 +18,6 @@ import java.time.LocalTime;
 public class CreateReservationRequest {
 
     @NotNull(message = "Ngày đặt bàn không được để trống")
-    @Future(message = "Ngày đặt bàn phải là ngày trong tương lai")
     private LocalDate reservationDate;
 
     @NotNull(message = "Giờ đặt bàn không được để trống")

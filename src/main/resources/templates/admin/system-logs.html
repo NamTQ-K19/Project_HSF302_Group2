@@ -56,6 +56,8 @@
                         <option value="Update" th:selected="${action == 'Update'}">Cập nhật</option>
                         <option value="Delete" th:selected="${action == 'Delete'}">Xóa</option>
                         <option value="Cancel" th:selected="${action == 'Cancel'}">Hủy</option>
+                        <option value="PAY_DEPOSIT" th:selected="${action == 'PAY_DEPOSIT'}">Thanh toán</option>
+                        <option value="CREATE_RESERVATION" th:selected="${action == 'CREATE_RESERVATION'}">Đặt bàn</option>
                         <option value="Hide" th:selected="${action == 'Hide'}">Ẩn</option>
                         <option value="View" th:selected="${action == 'View'}">Xem</option>
                     </select>
@@ -126,6 +128,8 @@
                             <span th:case="'Logout'" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-surface-container-high text-on-surface-variant">Đăng xuất</span>
                             <span th:case="'Register'" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-[#3b82f6]/10 text-[#3b82f6]">Đăng ký</span>
                             <span th:case="'Create'" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-[#22c55e]/10 text-[#22c55e]">Tạo mới</span>
+                            <span th:case="'CREATE_RESERVATION'" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-[#22c55e]/10 text-[#22c55e]">Đặt bàn</span>
+                            <span th:case="'PAY_DEPOSIT'" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-primary/10 text-primary">Thanh toán</span>
                             <span th:case="'Update'" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-[#f59e0b]/10 text-[#f59e0b]">Cập nhật</span>
                             <span th:case="'Delete'" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-error/10 text-error">Xóa</span>
                             <span th:case="'Cancel'" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-error/10 text-error">Hủy</span>

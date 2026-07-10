@@ -202,12 +202,9 @@
 
     // ===== Load bàn khi trang load =====
     document.addEventListener('DOMContentLoaded', function() {
-        var today = new Date();
-        var tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-
         if (reservationDate && !reservationDate.value) {
-            reservationDate.value = tomorrow.toISOString().split('T')[0];
+            var today = new Date();
+            reservationDate.value = today.toISOString().split('T')[0];
         }
         if (reservationTime && !reservationTime.value) {
             reservationTime.value = '19:00';

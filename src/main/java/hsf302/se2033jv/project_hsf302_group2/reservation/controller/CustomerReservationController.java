@@ -5,6 +5,8 @@ import hsf302.se2033jv.project_hsf302_group2.common.entity.CoffeeTable;
 import hsf302.se2033jv.project_hsf302_group2.common.entity.MapEntity;
 import hsf302.se2033jv.project_hsf302_group2.common.entity.PaymentMethod;
 import hsf302.se2033jv.project_hsf302_group2.common.entity.User;
+import hsf302.se2033jv.project_hsf302_group2.common.enums.ReservationStatus;
+import hsf302.se2033jv.project_hsf302_group2.common.exception.InvalidReservationTimeException;
 import hsf302.se2033jv.project_hsf302_group2.common.exception.TableNotAvailableException;
 import hsf302.se2033jv.project_hsf302_group2.common.service.interfaces.ConfigService;
 import hsf302.se2033jv.project_hsf302_group2.customer.service.interfaces.ProfileService;
@@ -14,6 +16,7 @@ import hsf302.se2033jv.project_hsf302_group2.reservation.dto.request.DepositPaym
 import hsf302.se2033jv.project_hsf302_group2.reservation.dto.request.TableAvailabilityRequest;
 import hsf302.se2033jv.project_hsf302_group2.reservation.dto.response.*;
 import hsf302.se2033jv.project_hsf302_group2.reservation.service.interfaces.ReservationService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +31,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
@@ -139,7 +144,7 @@ public class CustomerReservationController {
         List<MapEntity> maps = reservationService.getAllMaps();
         model.addAttribute("maps", maps);
         model.addAttribute("user", user);
-        model.addAttribute("minDate", LocalDate.now().plusDays(1));
+        model.addAttribute("minDate", LocalDate.now());
         model.addAttribute("maxDate", LocalDate.now().plusDays(30));
         model.addAttribute("openingTime", "07:00");
         model.addAttribute("closingTime", "22:00");
@@ -160,7 +165,7 @@ public class CustomerReservationController {
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("user", user);
-            model.addAttribute("minDate", LocalDate.now().plusDays(1));
+            model.addAttribute("minDate", LocalDate.now());
             model.addAttribute("maxDate", LocalDate.now().plusDays(30));
             model.addAttribute("openingTime", "07:00");
             model.addAttribute("closingTime", "22:00");
@@ -177,14 +182,14 @@ public class CustomerReservationController {
             TableAvailabilityResponse availability = reservationService.checkAvailability(availabilityRequest);
 
             if (!availability.getAvailable()) {
-                throw new TableNotAvailableException("Khong co ban trong cho thoi gian nay");
+                throw new TableNotAvailableException("Không có bàn trống trong thời gian này");
             }
 
             if (request.getSelectedTableId() != null) {
                 boolean isSelectedAvailable = availability.getAvailableTables().stream()
                         .anyMatch(t -> t.getTableId().equals(request.getSelectedTableId()));
                 if (!isSelectedAvailable) {
-                    throw new TableNotAvailableException("Ban da chon khong con trong");
+                    throw new TableNotAvailableException("Bàn đã chọn không còn trống");
                 }
             } else {
                 if (!availability.getAvailableTables().isEmpty()) {
@@ -192,10 +197,26 @@ public class CustomerReservationController {
                 }
             }
 
+            // TẠO RESERVATION TRƯỚC (status = PENDING)
+            CreateReservationRequest createRequest = CreateReservationRequest.builder()
+                    .reservationDate(request.getReservationDate())
+                    .reservationTime(request.getReservationTime())
+                    .partySize(request.getPartySize())
+                    .durationMinutes(request.getDurationMinutes() != null ? request.getDurationMinutes() : 120)
+                    .selectedTableId(request.getSelectedTableId())
+                    .note(request.getNote())
+                    .build();
+
+            ReservationConfirmationResponse response = reservationService.createReservation(createRequest, user.getUserId());
+            Integer reservationId = response.getReservation().getReservationId();
+
+            // 2. LẤY SỐ TIỀN CỌC
             long depositAmount = configService.getReservationDepositAmount();
             int holdMinutes = configService.getReservationHoldMinutes();
 
+            // 3. LƯU VÀO SESSION VỚI reservationId
             ReservationSessionData sessionData = ReservationSessionData.builder()
+                    .reservationId(reservationId)
                     .customerId(user.getUserId())
                     .customerName(user.getFirstName() + " " + user.getLastName())
                     .reservationDate(request.getReservationDate())
@@ -209,21 +230,28 @@ public class CustomerReservationController {
                     .build();
 
             session.setAttribute("reservationSession", sessionData);
-            log.info("Reservation data saved to session for user: {}", user.getUsername());
 
             return "redirect:/customer/reservations/payment";
 
+        } catch (InvalidReservationTimeException e) {
+            bindingResult.reject("invalidTime", e.getMessage());
+            model.addAttribute("user", user);
+            model.addAttribute("minDate", LocalDate.now());
+            model.addAttribute("maxDate", LocalDate.now().plusDays(30));
+            model.addAttribute("openingTime", "07:00");
+            model.addAttribute("closingTime", "22:00");
+            return "reservation/create-reservation";
         } catch (TableNotAvailableException e) {
             bindingResult.reject("tableNotAvailable", e.getMessage());
             model.addAttribute("user", user);
-            model.addAttribute("minDate", LocalDate.now().plusDays(1));
+            model.addAttribute("minDate", LocalDate.now());
             model.addAttribute("maxDate", LocalDate.now().plusDays(30));
             model.addAttribute("openingTime", "07:00");
             model.addAttribute("closingTime", "22:00");
             return "reservation/create-reservation";
         } catch (Exception e) {
             log.error("Error creating reservation: {}", e.getMessage(), e);
-            redirectAttributes.addFlashAttribute("error", "Co loi xay ra: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
             return "redirect:/customer/reservations/new";
         }
     }
@@ -281,7 +309,7 @@ public class CustomerReservationController {
         ReservationSessionData sessionData = (ReservationSessionData) session.getAttribute("reservationSession");
 
         if (sessionData == null) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Khong tim thay thong tin dat ban. Vui long dat lai.");
+            redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy thông tin đặt bàn. Vui lòng thử lại");
             return "redirect:/customer/reservations/new";
         }
 
@@ -306,7 +334,7 @@ public class CustomerReservationController {
         model.addAttribute("depositAmount", depositAmount);
         model.addAttribute("holdMinutes", holdMinutes);
         model.addAttribute("paymentMethods", paymentMethods);
-        model.addAttribute("pageTitle", "Thanh toan tien coc");
+        model.addAttribute("pageTitle", "Thanh toán tiền cọc");
 
         return "reservation/payment-deposit-session";
     }
@@ -324,7 +352,7 @@ public class CustomerReservationController {
         ReservationSessionData sessionData = (ReservationSessionData) session.getAttribute("reservationSession");
 
         if (sessionData == null) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Khong tim thay thong tin dat ban. Vui long dat lai.");
+            redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy thông tin đặt bàn. Vui lòng thử lại");
             return "redirect:/customer/reservations/new";
         }
 
@@ -338,7 +366,7 @@ public class CustomerReservationController {
             TableAvailabilityResponse availability = reservationService.checkAvailability(availabilityRequest);
 
             if (!availability.getAvailable()) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Ban da duoc dat trong luc ban thanh toan. Vui long dat lai.");
+                redirectAttributes.addFlashAttribute("errorMessage", "Bàn đã được đặt trong lúc thanh toán. Vui lòng đặt lại.");
                 session.removeAttribute("reservationSession");
                 return "redirect:/customer/reservations/new";
             }
@@ -364,17 +392,17 @@ public class CustomerReservationController {
 
             redirectAttributes.addFlashAttribute("reservation", confirmedReservation);
             redirectAttributes.addFlashAttribute("depositAmount", response.getDepositAmount());
-            redirectAttributes.addFlashAttribute("successMessage", "Dat ban thanh cong!");
+            redirectAttributes.addFlashAttribute("successMessage", "Đặt bàn thành công!");
 
             return "redirect:/customer/reservations/" + confirmedReservation.getReservationId() + "/confirmation";
 
         } catch (TableNotAvailableException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Ban da duoc dat trong luc ban thanh toan. Vui long dat lai.");
+            redirectAttributes.addFlashAttribute("errorMessage", "Bàn đã được đặt trong lúc thanh toán. Vui lòng đặt lại");
             session.removeAttribute("reservationSession");
             return "redirect:/customer/reservations/new";
         } catch (Exception e) {
             log.error("Error processing payment: {}", e.getMessage(), e);
-            redirectAttributes.addFlashAttribute("errorMessage", "Co loi xay ra: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Có lỗi xảy ra: " + e.getMessage());
             return "redirect:/customer/reservations/payment";
         }
     }
@@ -386,57 +414,44 @@ public class CustomerReservationController {
         return "redirect:/customer/reservations/new";
     }
 
-    // Trang thanh toan tien coc cho reservation da ton tai
     @GetMapping("/{reservationId}/deposit")
-    public String showDepositPage(
-            @PathVariable Integer reservationId,
-            Model model,
-            Authentication auth,
-            RedirectAttributes redirectAttributes) {
-        User user = profileService.getCurrentUser(auth.getName());
-        try {
-            MakeReservationResponse reservation = reservationService.getReservationDetail(reservationId, user.getUserId());
-            long depositAmount = configService.getReservationDepositAmount();
-            Map<Integer, String> paymentMethods = new LinkedHashMap<>();
-            paymentMethods.put(1, "Tien mat");
-            paymentMethods.put(2, "VNPay");
-            paymentMethods.put(3, "Momo");
-            paymentMethods.put(4, "ZaloPay");
-            paymentMethods.put(5, "The Visa/Mastercard");
-            model.addAttribute("user", user);
-            model.addAttribute("reservation", reservation);
-            model.addAttribute("depositAmount", depositAmount);
-            model.addAttribute("paymentMethods", paymentMethods);
-            return "reservation/payment-deposit";
-        } catch (Exception e) {
-            log.error("Error showing deposit page: {}", e.getMessage());
-            redirectAttributes.addFlashAttribute("errorMessage", "Khong tim thay dat ban");
-            return "redirect:/customer/reservations";
-        }
+    public String redirectDepositToPayment(
+            @PathVariable Integer reservationId) {
+        return "redirect:/customer/reservations/" + reservationId + "/payment";
     }
 
-    // Xu ly thanh toan tien coc
     @PostMapping("/{reservationId}/deposit")
     public String processDeposit(
             @PathVariable Integer reservationId,
             @RequestParam Integer paymentMethodId,
             @RequestParam(required = false) String transactionRef,
             Authentication auth,
-            RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes,
+            HttpServletRequest request) {
+
         User user = profileService.getCurrentUser(auth.getName());
+
         try {
-            DepositPaymentRequest request = DepositPaymentRequest.builder()
+            DepositPaymentRequest depositRequest = DepositPaymentRequest.builder()
                     .reservationId(reservationId)
                     .paymentMethodId(paymentMethodId)
                     .transactionRef(transactionRef != null ? transactionRef : "DEP-" + reservationId + "-" + System.currentTimeMillis())
                     .build();
-            ReservationConfirmationResponse response = reservationService.payDeposit(request, user.getUserId());
+
+            ReservationConfirmationResponse response = reservationService.payDeposit(depositRequest, user.getUserId());
+
+            if (response.getPaymentUrl() != null && !response.getPaymentUrl().isEmpty()) {
+                return "redirect:" + response.getPaymentUrl();
+            }
+
             redirectAttributes.addFlashAttribute("reservation", response.getReservation());
             redirectAttributes.addFlashAttribute("depositAmount", response.getDepositAmount());
+            redirectAttributes.addFlashAttribute("successMessage", response.getMessage());
             return "redirect:/customer/reservations/" + reservationId + "/confirmation";
+
         } catch (Exception e) {
             log.error("Error processing deposit: {}", e.getMessage(), e);
-            redirectAttributes.addFlashAttribute("errorMessage", "Thanh toan that bai: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Thanh toán thất bại: " + e.getMessage());
             return "redirect:/customer/reservations/" + reservationId + "/deposit";
         }
     }
@@ -458,7 +473,80 @@ public class CustomerReservationController {
             return "reservation/confirmation";
         } catch (Exception e) {
             log.error("Error showing confirmation: {}", e.getMessage());
-            redirectAttributes.addFlashAttribute("errorMessage", "Khong tim thay dat ban");
+            redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy đặt bàn");
+            return "redirect:/customer/reservations";
+        }
+    }
+
+    //Chuyển đến payment-deposit-session khi thanh toán lại
+    @GetMapping("/{reservationId}/payment")
+    public String showRetryPaymentPage(
+            @PathVariable Integer reservationId,
+            Model model,
+            Authentication auth,
+            RedirectAttributes redirectAttributes) {
+
+        User user = profileService.getCurrentUser(auth.getName());
+
+        try {
+            // Kiểm tra quyền sở hữu
+            MakeReservationResponse reservation = reservationService.getReservationDetail(reservationId, user.getUserId());
+
+            // Kiểm tra trạng thái có thể thanh toán lại
+            if (reservation.getStatus() != ReservationStatus.PENDING) {
+                redirectAttributes.addFlashAttribute("errorMessage",
+                        "Đặt bàn không ở trạng thái chờ thanh toán");
+                return "redirect:/customer/reservations";
+            }
+
+            // Kiểm tra deposit chưa thanh toán
+            if (reservation.getDepositStatus() != null &&
+                    "PAID".equals(reservation.getDepositStatus())) {
+                redirectAttributes.addFlashAttribute("errorMessage",
+                        "Tiền cọc đã được thanh toán");
+                return "redirect:/customer/reservations";
+            }
+
+            // Lấy danh sách phương thức thanh toán
+            List<PaymentMethod> paymentMethods = reservationService.getAllPaymentMethods();
+
+            // Lấy thông tin deposit
+            ReservationDepositInfo depositInfo = reservationService.getDepositByReservationId(reservationId);
+
+            // Tạo session data để dùng chung với payment-deposit-session
+            ReservationSessionData sessionData = ReservationSessionData.builder()
+                    .reservationId(reservationId)
+                    .customerId(user.getUserId())
+                    .customerName(user.getFirstName() + " " + user.getLastName())
+                    .reservationDate(reservation.getReservationDate())
+                    .reservationTime(reservation.getReservationTime())
+                    .partySize(reservation.getPartySize())
+                    .durationMinutes(reservation.getDurationMinutes())
+                    .selectedTableId(reservation.getTableIds() != null && !reservation.getTableIds().isEmpty()
+                            ? reservation.getTableIds().get(0) : null)
+                    .note(reservation.getNote())
+                    .depositAmount(depositInfo != null ? depositInfo.getDepositAmount() :
+                            BigDecimal.valueOf(configService.getReservationDepositAmount()))
+                    .holdMinutes(configService.getReservationHoldMinutes())
+                    .build();
+
+            HttpSession session = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
+                    .getRequest().getSession();
+            session.setAttribute("reservationSession", sessionData);
+
+            model.addAttribute("user", user);
+            model.addAttribute("sessionData", sessionData);
+            model.addAttribute("depositAmount", sessionData.getDepositAmount());
+            model.addAttribute("holdMinutes", sessionData.getHoldMinutes());
+            model.addAttribute("paymentMethods", paymentMethods);
+            model.addAttribute("pageTitle", "Thanh toán lại tiền cọc");
+            model.addAttribute("isRetry", true);
+
+            return "reservation/payment-deposit-session";
+
+        } catch (Exception e) {
+            log.error("Error showing retry payment page: {}", e.getMessage(), e);
+            redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy đặt bàn");
             return "redirect:/customer/reservations";
         }
     }

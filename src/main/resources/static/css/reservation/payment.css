@@ -1,0 +1,327 @@
+/* ============================================================
+   RESERVATION PAYMENT - Styles
+   ============================================================ */
+
+/* ── Payment Layout ────────────────────────────────────────── */
+.payment-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: start;
+}
+
+/* ── Payment Select ────────────────────────────────────────── */
+.payment-select-wrap {
+    position: relative;
+}
+
+.payment-select-wrap select {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid #e5e5e5;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 500;
+    background: white;
+    color: #1a1c1c;
+    outline: none;
+    appearance: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234a4a4a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+}
+
+.payment-select-wrap select:hover {
+    border-color: #c8a882;
+}
+
+.payment-select-wrap select:focus {
+    border-color: #271310;
+    box-shadow: 0 0 0 3px rgba(39, 19, 16, 0.15);
+}
+
+.payment-select-wrap .select-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1c1c;
+    margin-bottom: 6px;
+}
+
+/* ── QR Panel ──────────────────────────────────────────────── */
+.qr-panel {
+    background: #faf8f6;
+    border-radius: 16px;
+    border: 1px solid #e5e5e5;
+    padding: 32px 24px;
+    min-height: 380px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.qr-panel .qr-placeholder .material-symbols-outlined {
+    font-size: 72px;
+    color: #cbd5e1;
+    display: block;
+    margin-bottom: 12px;
+}
+
+.qr-panel .qr-placeholder p {
+    color: #94a3b8;
+    font-size: 15px;
+    margin: 0;
+}
+
+.qr-panel .qr-content {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.qr-panel .qr-content.show {
+    display: flex;
+}
+
+.qr-panel .qr-content .qr-image-wrap {
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+    border: 1px solid #e5e5e5;
+    width: 100%;
+    max-width: 360px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qr-panel .qr-content .qr-image-wrap img {
+    width: 100%;
+    max-width: 320px;
+    height: auto;
+    display: block;
+    border-radius: 12px;
+}
+
+.qr-panel .qr-content .qr-label {
+    margin-top: 16px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1c1c;
+}
+
+.qr-panel .qr-content .qr-sub {
+    font-size: 14px;
+    color: #706d6c;
+    margin-top: 4px;
+}
+
+.qr-panel .no-qr {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0;
+}
+
+.qr-panel .no-qr.show {
+    display: flex;
+}
+
+.qr-panel .no-qr .material-symbols-outlined {
+    font-size: 64px;
+    color: #cbd5e1;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.qr-panel .no-qr .no-qr-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1a1c1c;
+}
+
+.qr-panel .no-qr .no-qr-desc {
+    color: #94a3b8;
+    font-size: 14px;
+    margin: 4px 0 0 0;
+}
+
+/* ── Selected Method Info ──────────────────────────────────── */
+#selectedMethodInfo {
+    margin-top: 16px;
+    padding: 14px 18px;
+    background: #f8f5f0;
+    border-radius: 12px;
+    border: 1px solid #e5e5e5;
+    display: none;
+    align-items: center;
+    gap: 12px;
+}
+
+#selectedMethodInfo.show {
+    display: flex;
+}
+
+#selectedMethodInfo .method-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(39, 19, 16, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+#selectedMethodInfo .method-icon .material-symbols-outlined {
+    font-size: 24px;
+    color: #271310;
+}
+
+#selectedMethodInfo .method-name {
+    font-weight: 600;
+    font-size: 15px;
+    color: #1a1c1c;
+}
+
+#selectedMethodInfo .method-desc {
+    font-size: 13px;
+    color: #706d6c;
+}
+
+/* ── Deposit Amount ────────────────────────────────────────── */
+.deposit-amount {
+    font-size: 36px;
+    font-weight: 700;
+    color: #271310;
+}
+
+/* ── VNPay Info Box ────────────────────────────────────────── */
+#vnpayInfo {
+    display: none;
+    margin-top: 12px;
+    padding: 12px 16px;
+    background: #f0f7ff;
+    border-radius: 10px;
+    border-left: 4px solid #005baa;
+}
+
+#vnpayInfo.show {
+    display: block;
+}
+
+.payment-info-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.payment-info-box .info-icon {
+    color: #005baa;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.payment-info-box .info-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: #1a1c1c;
+}
+
+.payment-info-box .info-desc {
+    font-size: 13px;
+    color: #475569;
+}
+
+/* ── VNPay Badge ───────────────────────────────────────────── */
+.vnpay-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #005baa;
+    color: white;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.vnpay-badge .material-symbols-outlined {
+    font-size: 14px;
+}
+
+/* ── Payment Loading ───────────────────────────────────────── */
+.payment-loading {
+    position: fixed;
+    inset: 0;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.payment-loading.show {
+    display: flex;
+}
+
+.payment-loading .spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid #e5e5e5;
+    border-top-color: #271310;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.payment-loading .loading-text {
+    font-size: 16px;
+    font-weight: 500;
+    color: #1a1c1c;
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .payment-layout {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .qr-panel {
+        min-height: 280px;
+        padding: 24px 16px;
+    }
+
+    .qr-panel .qr-content .qr-image-wrap {
+        max-width: 260px;
+        padding: 16px;
+    }
+
+    .qr-panel .qr-content .qr-image-wrap img {
+        max-width: 220px;
+    }
+
+    .deposit-amount {
+        font-size: 28px;
+    }
+
+    .payment-info-box {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+}

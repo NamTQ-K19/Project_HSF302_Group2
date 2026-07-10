@@ -5,12 +5,14 @@ import hsf302.se2033jv.project_hsf302_group2.common.enums.*;
 import hsf302.se2033jv.project_hsf302_group2.common.exception.*;
 import hsf302.se2033jv.project_hsf302_group2.common.repository.*;
 import hsf302.se2033jv.project_hsf302_group2.common.service.interfaces.ConfigService;
+import hsf302.se2033jv.project_hsf302_group2.payment.service.interfaces.VNPayService;
 import hsf302.se2033jv.project_hsf302_group2.reservation.dto.request.CancelReservationRequest;
 import hsf302.se2033jv.project_hsf302_group2.reservation.dto.request.CreateReservationRequest;
 import hsf302.se2033jv.project_hsf302_group2.reservation.dto.request.DepositPaymentRequest;
 import hsf302.se2033jv.project_hsf302_group2.reservation.dto.request.TableAvailabilityRequest;
 import hsf302.se2033jv.project_hsf302_group2.reservation.dto.response.*;
 import hsf302.se2033jv.project_hsf302_group2.reservation.service.interfaces.ReservationService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -45,6 +48,8 @@ public class ReservationServiceImpl implements ReservationService {
     private final ConfigService configService;
     private final OrderRepository orderRepository;
     private final MapRepository mapRepository;
+    private final VNPayService vnPayService;
+    private final HttpServletRequest httpServletRequest;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
@@ -99,13 +104,6 @@ public class ReservationServiceImpl implements ReservationService {
         reservation.setCancelledAt(LocalDateTime.now());
         reservation.setCancellationReason(request.getCancellationReason());
         reservationRepository.save(reservation);
-//
-//        // 5. Giải phóng bàn
-//        if (reservation.getTables() != null) {
-//            reservation.getTables().forEach(table ->
-//                    table.setStatus(TableStatus.AVAILABLE)
-//            );
-//        }
     }
 
     @Override
@@ -249,7 +247,6 @@ public class ReservationServiceImpl implements ReservationService {
             if (reservation.getTables() == null) {
                 reservation.setTables(new HashSet<>());
             }
-
             reservation.getTables().add(selectedTable);
             Reservation savedReservation = reservationRepository.save(reservation);
 
@@ -269,6 +266,7 @@ public class ReservationServiceImpl implements ReservationService {
             return buildConfirmationResponse(savedReservation, selectedTable, depositAmountDecimal, holdMinutes);
 
         } catch (Exception e) {
+            log.error("Error creating reservation: {}", e.getMessage(), e);
             throw e;
         }
     }
@@ -350,6 +348,30 @@ public class ReservationServiceImpl implements ReservationService {
         PaymentMethod paymentMethod = paymentMethodRepository.findById(request.getPaymentMethodId())
                 .orElseThrow(() -> new RuntimeException("Phương thức thanh toán không hợp lệ"));
 
+        // VNPAY (paymentMethodId == 2)
+        if (request.getPaymentMethodId() == 2) {
+            deposit.setPaymentMethod(paymentMethod);
+            deposit.setTransactionRef(request.getTransactionRef());
+            depositRepository.save(deposit);
+
+            String paymentUrl = vnPayService.createPaymentUrlForReservation(
+                    reservation.getReservationId(),
+                    deposit.getDepositAmount(),
+                    httpServletRequest
+            );
+
+            log.info("Redirecting to VNPay for reservation {}", reservation.getReservationId());
+
+            return buildConfirmationResponseWithPaymentUrl(
+                    reservation,
+                    reservation.getTables().iterator().next(),
+                    deposit.getDepositAmount(),
+                    configService.getReservationHoldMinutes(),
+                    paymentUrl
+            );
+        }
+
+        // CÁC PHƯƠNG THỨC KHÁC (Tiền mặt, chuyển khoản...)
         boolean paymentSuccess = processPayment(request);
 
         if (!paymentSuccess) {
@@ -370,10 +392,14 @@ public class ReservationServiceImpl implements ReservationService {
                 deposit.getDepositId(), "Thanh toán tiền cọc đặt bàn thành công");
 
         int holdMinutes = configService.getReservationHoldMinutes();
-        return buildConfirmationResponse(reservation,
-                reservation.getTables().iterator().next(),
-                deposit.getDepositAmount(),
-                holdMinutes);
+
+        return ReservationConfirmationResponse.builder()
+                .success(true)
+                .message("Thanh toán tiền cọc thành công! Đặt bàn của bạn đã được xác nhận.")
+                .reservation(convertToResponse(reservation))
+                .depositAmount(deposit.getDepositAmount())
+                .holdMinutes(holdMinutes)
+                .build();
     }
 
     @Override
@@ -476,7 +502,91 @@ public class ReservationServiceImpl implements ReservationService {
         return paymentMethodRepository.findAll();
     }
 
-    // ==================== PRIVATE METHODS ====================
+    @Override
+    @Transactional
+    public void handleGatewayPaymentResult(Integer reservationId, boolean success, String transactionRef, String rawResponse) {
+        log.info("Handling gateway payment result for reservation: {}, success: {}", reservationId, success);
+
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đặt bàn: " + reservationId));
+
+        ReservationDeposit deposit = depositRepository.findByReservation_ReservationId(reservationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin tiền cọc"));
+
+        if (success) {
+            deposit.setPaymentStatus(DepositPaymentStatus.PAID);
+            deposit.setTransactionRef(transactionRef);
+            depositRepository.save(deposit);
+
+            reservation.setStatus(ReservationStatus.CONFIRMED);
+            reservationRepository.save(reservation);
+
+            log.info("Reservation {} confirmed successfully after VNPay payment", reservation.getReservationId());
+        } else {
+            deposit.setPaymentStatus(DepositPaymentStatus.PENDING);
+            deposit.setTransactionRef(transactionRef);
+            depositRepository.save(deposit);
+
+            log.warn("VNPay payment failed for reservation {}", reservation.getReservationId());
+        }
+    }
+
+    @Override
+    @Transactional
+    public Reservation handleVNPayPaymentResult(Integer reservationId, String vnpTxnRef, boolean success) {
+        log.info("Handling VNPay payment result for reservation: {}, success: {}", reservationId, success);
+
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đặt bàn: " + reservationId));
+
+        ReservationDeposit deposit = depositRepository.findByReservationReservationId(reservation.getReservationId())
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin tiền cọc"));
+
+        if (success) {
+            deposit.setPaymentStatus(DepositPaymentStatus.PAID);
+            deposit.setTransactionRef(vnpTxnRef);
+            depositRepository.save(deposit);
+
+            reservation.setStatus(ReservationStatus.CONFIRMED);
+            reservationRepository.save(reservation);
+
+            log.info("Reservation {} confirmed successfully after VNPay payment", reservation.getReservationId());
+        } else {
+            deposit.setPaymentStatus(DepositPaymentStatus.PENDING);
+            deposit.setTransactionRef(vnpTxnRef);
+            depositRepository.save(deposit);
+            log.warn("VNPay payment failed for reservation {}", reservation.getReservationId());
+        }
+
+        return reservation;
+    }
+
+    @Override
+    public Reservation getReservationById(Integer reservationId) {
+        return reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đặt bàn: " + reservationId));
+    }
+
+    @Override
+    public ReservationDepositInfo getDepositByReservationId(Integer reservationId) {
+        log.info("Getting deposit info for reservation: {}", reservationId);
+
+        ReservationDeposit deposit = depositRepository.findByReservationReservationId(reservationId)
+                .orElse(null);
+
+        if (deposit == null) {
+            return null;
+        }
+
+        return ReservationDepositInfo.builder()
+                .depositId(deposit.getDepositId())
+                .depositAmount(deposit.getDepositAmount())
+                .paymentStatus(deposit.getPaymentStatus() != null ? deposit.getPaymentStatus().name() : null)
+                .paid(deposit.getPaymentStatus() == DepositPaymentStatus.PAID)
+                .refunded(deposit.getPaymentStatus() == DepositPaymentStatus.REFUNDED)
+                .transactionRef(deposit.getTransactionRef())
+                .build();
+    }
 
     private ReservationResponse mapToDTO(Reservation r) {
         ReservationDeposit deposit = reservationDepositRepository
@@ -538,27 +648,31 @@ public class ReservationServiceImpl implements ReservationService {
 
     private void validateDateTime(LocalDate date, LocalTime time) {
         if (date.isBefore(LocalDate.now())) {
-            throw new InvalidReservationTimeException("Ngày đặt bàn phải là ngày trong tương lai");
+            throw new InvalidReservationTimeException("Ngày đặt bàn không được là ngày trong quá khứ");
         }
 
-        // Lấy giờ làm việc từ ConfigService
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime futureTime = LocalDateTime.of(date, time);
+        int minHours = configService.getReservationMinAdvanceHours();
+        long hoursBetween = Duration.between(now, futureTime).toHours();
+
+        if (hoursBetween < minHours) {
+            throw new InvalidReservationTimeException("Thời gian đặt bàn phải trước ít nhất " + minHours + " tiếng. Hiện tại cách " + hoursBetween + " tiếng.");
+        }
+
         String hours = configService.getSiteHours();
         String[] parts = hours.split(" - ");
         LocalTime opening = LocalTime.parse(parts[0].trim());
         LocalTime closing = LocalTime.parse(parts[1].trim());
 
         if (time.isBefore(opening) || time.isAfter(closing)) {
-            throw new InvalidReservationTimeException(
-                    "Giờ đặt bàn phải trong khoảng " + opening + " - " + closing
-            );
+            throw new InvalidReservationTimeException("Giờ đặt bàn phải trong khoảng " + opening + " - " + closing);
         }
 
         int maxAdvanceDays = configService.getReservationMaxAdvanceDays();
         LocalDate maxDate = LocalDate.now().plusDays(maxAdvanceDays);
         if (date.isAfter(maxDate)) {
-            throw new InvalidReservationTimeException(
-                    "Chỉ có thể đặt bàn trước tối đa " + maxAdvanceDays + " ngày"
-            );
+            throw new InvalidReservationTimeException("Chỉ có thể đặt bàn trước tối đa " + maxAdvanceDays + " ngày");
         }
     }
 
@@ -583,7 +697,6 @@ public class ReservationServiceImpl implements ReservationService {
         LocalTime currentTime = request.getReservationTime();
         LocalDate currentDate = request.getReservationDate();
 
-        // Lấy giờ làm việc từ ConfigService
         String hours = configService.getSiteHours();
         String[] parts = hours.split(" - ");
         LocalTime opening = LocalTime.parse(parts[0].trim());
@@ -645,21 +758,28 @@ public class ReservationServiceImpl implements ReservationService {
         return true;
     }
 
-    private ReservationConfirmationResponse buildConfirmationResponse(
-            Reservation reservation, CoffeeTable table, BigDecimal depositAmount, int holdMinutes) {
+    private ReservationConfirmationResponse buildConfirmationResponseWithPaymentUrl(
+            Reservation reservation,
+            CoffeeTable table,
+            BigDecimal depositAmount,
+            int holdMinutes,
+            String paymentUrl) {
 
-        String formattedDateTime = "";
-        try {
-            if (reservation.getReservationDate() != null && reservation.getReservationTime() != null) {
-                LocalDateTime dateTime = LocalDateTime.of(
-                        reservation.getReservationDate(),
-                        reservation.getReservationTime()
-                );
-                formattedDateTime = dateTime.format(DATE_FORMATTER);
-            }
-        } catch (Exception e) {
-            log.warn("Could not format date time: {}", e.getMessage());
-        }
+        return ReservationConfirmationResponse.builder()
+                .success(true)
+                .message("Chuyển đến trang thanh toán VNPay")
+                .reservation(convertToResponse(reservation))
+                .depositAmount(depositAmount)
+                .holdMinutes(holdMinutes)
+                .paymentUrl(paymentUrl)
+                .build();
+    }
+
+    private ReservationConfirmationResponse buildConfirmationResponse(
+            Reservation reservation,
+            CoffeeTable table,
+            BigDecimal depositAmount,
+            int holdMinutes) {
 
         return ReservationConfirmationResponse.builder()
                 .success(true)
@@ -667,7 +787,6 @@ public class ReservationServiceImpl implements ReservationService {
                 .reservation(convertToResponse(reservation))
                 .depositAmount(depositAmount)
                 .holdMinutes(holdMinutes)
-                .paymentUrl("/customer/reservations/" + reservation.getReservationId() + "/deposit")
                 .build();
     }
 

@@ -13,14 +13,71 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <meta name="_csrf" th:content="${_csrf?.token}" />
     <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
+
+    <style>
+        .btn-retry-payment {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #10b981;
+            color: white;
+            padding: 5px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-retry-payment:hover {
+            background: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            color: white;
+        }
+        .btn-retry-payment .material-symbols-outlined {
+            font-size: 16px;
+        }
+
+        .btn-cancel-booking {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #ef4444;
+            color: white;
+            padding: 5px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-cancel-booking:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            color: white;
+        }
+        .btn-cancel-booking .material-symbols-outlined {
+            font-size: 16px;
+        }
+
+        .action-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+        }
+    </style>
 </head>
 <body class="bg-background text-on-surface font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed antialiased">
 
 <div th:replace="~{catalog/navbar :: navbar}"></div>
 
 <main class="max-w-max-width mx-auto px-margin-desktop py-12 min-h-[70vh]">
-    <!-- Flash messages are now handled globally via toast fragment in footer -->
-
     <div class="flex flex-col lg:flex-row gap-8">
         <!-- ══ LEFT: Sidebar ═══════════════════════════ -->
         <aside class="w-full lg:w-80 shrink-0">
@@ -123,11 +180,23 @@
                                     <div class="text-[11px] text-on-surface-variant/80 mt-0.5" th:text="${r.depositStatusVi != null ? r.depositStatusVi : ''}"></div>
                                 </td>
 
-                                <td class="py-4 px-2 text-center">
-                                    <a th:if="${r.canCancel}" th:href="@{/customer/reservations/{id}/cancel(id=${r.reservationId})}" class="inline-flex items-center gap-1 bg-error/10 hover:bg-error text-error hover:text-white px-3 py-1.5 rounded-lg font-bold text-[12px] transition-colors no-underline">
-                                        <span class="material-symbols-outlined text-[14px]">cancel</span> Hủy bàn
-                                    </a>
-                                    <span th:unless="${r.canCancel}" class="text-on-surface-variant/50 text-[12px] font-medium">—</span>
+                                <td class="py-4 px-2">
+                                    <div class="action-group">
+                                        <a th:if="${r.status.name() == 'PENDING' and r.depositStatus.name() == 'PENDING'}"
+                                           th:href="@{/customer/reservations/{id}/payment(id=${r.reservationId})}"
+                                           class="btn-retry-payment">
+                                            <span class="material-symbols-outlined">payment</span> Thanh toán lại
+                                        </a>
+
+                                       <a th:if="${r.canCancel}"
+                                           th:href="@{/customer/reservations/{id}/cancel(id=${r.reservationId})}"
+                                           class="btn-cancel-booking">
+                                            <span class="material-symbols-outlined">cancel</span> Hủy bàn
+                                        </a>
+
+                                        <span th:unless="${r.canCancel or (r.status.name() == 'PENDING' and r.depositStatus.name() == 'PENDING')}"
+                                              class="text-on-surface-variant/50 text-[12px] font-medium">—</span>
+                                    </div>
                                 </td>
                             </tr>
                             </tbody>

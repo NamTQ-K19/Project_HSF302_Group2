@@ -10,204 +10,22 @@
     <meta name="_csrf" th:content="${_csrf?.token}" />
     <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
 
+    <!-- CSS riêng -->
+    <link rel="stylesheet" th:href="@{/css/reservation/payment.css}" />
+
     <style>
-        .payment-layout {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 32px;
-            align-items: start;
-        }
-
-        .payment-select-wrap {
-            position: relative;
-        }
-        .payment-select-wrap select {
-            width: 100%;
-            padding: 14px 18px;
-            border: 2px solid #e5e5e5;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 500;
-            background: white;
-            color: #1a1c1c;
-            outline: none;
-            appearance: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234a4a4a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 16px center;
-        }
-        .payment-select-wrap select:hover {
-            border-color: #c8a882;
-        }
-        .payment-select-wrap select:focus {
-            border-color: #271310;
-            box-shadow: 0 0 0 3px rgba(39, 19, 16, 0.15);
-        }
-        .payment-select-wrap .select-label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            color: #1a1c1c;
-            margin-bottom: 6px;
-        }
-
-        .qr-panel {
-            background: #faf8f6;
-            border-radius: 16px;
-            border: 1px solid #e5e5e5;
-            padding: 32px 24px;
-            min-height: 380px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .qr-panel .qr-placeholder .material-symbols-outlined {
-            font-size: 72px;
-            color: #cbd5e1;
-            display: block;
-            margin-bottom: 12px;
-        }
-        .qr-panel .qr-placeholder p {
-            color: #94a3b8;
-            font-size: 15px;
-            margin: 0;
-        }
-
-        .qr-panel .qr-content {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-        }
-        .qr-panel .qr-content.show {
-            display: flex;
-        }
-        .qr-panel .qr-content .qr-image-wrap {
-            background: white;
-            border-radius: 20px;
-            padding: 24px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.1);
-            border: 1px solid #e5e5e5;
-            width: 100%;
-            max-width: 360px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .qr-panel .qr-content .qr-image-wrap img {
-            width: 100%;
-            max-width: 320px;
-            height: auto;
-            display: block;
-            border-radius: 12px;
-        }
-        .qr-panel .qr-content .qr-label {
-            margin-top: 16px;
-            font-size: 20px;
-            font-weight: 700;
-            color: #1a1c1c;
-        }
-        .qr-panel .qr-content .qr-sub {
-            font-size: 14px;
-            color: #706d6c;
-            margin-top: 4px;
-        }
-
-        .qr-panel .no-qr {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px 0;
-        }
-        .qr-panel .no-qr.show {
-            display: flex;
-        }
-        .qr-panel .no-qr .material-symbols-outlined {
-            font-size: 64px;
-            color: #cbd5e1;
-            display: block;
-            margin-bottom: 8px;
-        }
-        .qr-panel .no-qr .no-qr-title {
-            font-size: 20px;
-            font-weight: 600;
-            color: #1a1c1c;
-        }
-        .qr-panel .no-qr .no-qr-desc {
-            color: #94a3b8;
-            font-size: 14px;
-            margin: 4px 0 0 0;
-        }
-
-        #selectedMethodInfo {
-            margin-top: 16px;
-            padding: 14px 18px;
-            background: #f8f5f0;
-            border-radius: 12px;
-            border: 1px solid #e5e5e5;
-            display: none;
-            align-items: center;
-            gap: 12px;
-        }
-        #selectedMethodInfo.show {
-            display: flex;
-        }
-        #selectedMethodInfo .method-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: rgba(39, 19, 16, 0.08);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        #selectedMethodInfo .method-icon .material-symbols-outlined {
-            font-size: 24px;
-            color: #271310;
-        }
-        #selectedMethodInfo .method-name {
-            font-weight: 600;
-            font-size: 15px;
-            color: #1a1c1c;
-        }
-        #selectedMethodInfo .method-desc {
-            font-size: 13px;
-            color: #706d6c;
-        }
-
-        .deposit-amount {
-            font-size: 36px;
-            font-weight: 700;
-            color: #271310;
-        }
-
-        @media (max-width: 768px) {
-            .payment-layout {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-            .qr-panel {
-                min-height: 280px;
-                padding: 24px 16px;
-            }
-            .qr-panel .qr-content .qr-image-wrap {
-                max-width: 260px;
-                padding: 16px;
-            }
-            .qr-panel .qr-content .qr-image-wrap img {
-                max-width: 220px;
-            }
-            .deposit-amount {
-                font-size: 28px;
-            }
-        }
+        /* Additional styles specific to this page */
+        .bg-surface-container-lowest { background: #ffffff; }
+        .bg-surface-container-low { background: #f8f5f0; }
+        .bg-surface-container-high { background: #f1ede8; }
+        .bg-primary\/5 { background: rgba(200, 168, 130, 0.05); }
+        .border-primary\/20 { border-color: rgba(200, 168, 130, 0.2); }
+        .text-primary { color: #271310; }
+        .text-on-surface { color: #1a1c1c; }
+        .text-on-surface-variant { color: #706d6c; }
+        .bg-error\/10 { background: rgba(239, 68, 68, 0.1); }
+        .text-error { color: #ef4444; }
+        .border-error\/20 { border-color: rgba(239, 68, 68, 0.2); }
     </style>
 </head>
 <body class="bg-background text-on-surface font-body-md antialiased">
@@ -269,7 +87,7 @@
                 </div>
 
                 <!-- Bố cục 2 cột -->
-                <form th:action="@{/customer/reservations/payment/confirm}" method="post" id="paymentForm">
+                <form th:action="@{'/customer/reservations/' + ${sessionData.reservationId} + '/deposit'}" method="post" id="paymentForm">
                     <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
 
                     <div class="payment-layout">
@@ -285,6 +103,27 @@
                                 </select>
                             </div>
                             <p id="paymentError" class="text-error text-sm mt-2 hidden">Vui lòng chọn phương thức thanh toán</p>
+
+                            <!-- Thông tin VNPay -->
+                            <div id="vnpayInfo">
+                                <div class="payment-info-box">
+                                    <span class="material-symbols-outlined info-icon">qr_code_scanner</span>
+                                    <div>
+                                        <div class="info-title">Thanh toán qua VNPay</div>
+                                        <div class="info-desc">Bạn sẽ được chuyển đến cổng thanh toán VNPay để hoàn tất giao dịch. Vui lòng không đóng tab này.</div>
+                                        <div class="mt-2 flex items-center gap-2">
+                                            <span class="vnpay-badge">
+                                                <span class="material-symbols-outlined">verified</span>
+                                                Bảo mật
+                                            </span>
+                                            <span class="vnpay-badge">
+                                                <span class="material-symbols-outlined">schedule</span>
+                                                15 phút
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
                             <!-- Thông tin method được chọn -->
                             <div id="selectedMethodInfo">
@@ -341,127 +180,14 @@
 
 <div th:replace="~{catalog/footer :: footer}"></div>
 
-<script>
-    const qrDataMap = {
-        1: {
-            icon: 'payments',
-            name: 'Tiền mặt',
-            desc: 'Thanh toán khi nhận bàn',
-            hasQR: false,
-            qrImage: null,
-            qrLabel: 'Thanh toán tiền mặt',
-            qrSub: 'Bạn sẽ thanh toán trực tiếp tại quán'
-        },
-        2: {
-            icon: 'qr_code_scanner',
-            name: 'VNPay',
-            desc: 'Quét mã QR qua VNPay',
-            hasQR: true,
-            qrImage: '/images/qr/vnpay-qr.png',
-            qrLabel: 'VNPay',
-            qrSub: 'Quét mã QR bằng ứng dụng VNPay'
-        },
-        3: {
-            icon: 'qr_code_scanner',
-            name: 'Momo',
-            desc: 'Quét mã QR qua Momo',
-            hasQR: true,
-            qrImage: '/images/qr/momo-qr.png',
-            qrLabel: 'Momo',
-            qrSub: 'Quét mã QR bằng ứng dụng Momo'
-        },
-        4: {
-            icon: 'qr_code_scanner',
-            name: 'ZaloPay',
-            desc: 'Quét mã QR qua ZaloPay',
-            hasQR: true,
-            qrImage: '/images/qr/zalopay-qr.png',
-            qrLabel: 'ZaloPay',
-            qrSub: 'Quét mã QR bằng ứng dụng ZaloPay'
-        },
-        5: {
-            icon: 'credit_card',
-            name: 'Thẻ Visa/Mastercard',
-            desc: 'Nhập thông tin thẻ',
-            hasQR: false,
-            qrImage: null,
-            qrLabel: 'Thẻ Visa/Mastercard',
-            qrSub: 'Nhập thông tin thẻ để thanh toán'
-        },
-        6: {
-            icon: 'qr_code_scanner',
-            name: 'ShopeePay',
-            desc: 'Quét mã QR qua ShopeePay',
-            hasQR: true,
-            qrImage: '/images/qr/shopeepay-qr.png',
-            qrLabel: 'ShopeePay',
-            qrSub: 'Quét mã QR bằng ứng dụng ShopeePay'
-        }
-    };
+<!-- Loading Overlay -->
+<div id="paymentLoading" class="payment-loading">
+    <div class="spinner"></div>
+    <div class="loading-text">Đang xử lý thanh toán...</div>
+</div>
 
-    function onPaymentMethodChange(select) {
-        const methodId = parseInt(select.value);
-        const placeholder = document.getElementById('qrPlaceholder');
-        const qrContent = document.getElementById('qrContent');
-        const noQrContent = document.getElementById('noQrContent');
-        const methodInfo = document.getElementById('selectedMethodInfo');
-        const paymentError = document.getElementById('paymentError');
-
-        paymentError.classList.add('hidden');
-
-        if (!methodId) {
-            placeholder.style.display = 'block';
-            qrContent.classList.remove('show');
-            noQrContent.classList.remove('show');
-            methodInfo.classList.remove('show');
-            return;
-        }
-
-        const data = qrDataMap[methodId];
-        if (!data) return;
-
-        // Hiển thị thông tin method
-        document.getElementById('methodIcon').textContent = data.icon;
-        document.getElementById('methodName').textContent = data.name;
-        document.getElementById('methodDesc').textContent = data.desc;
-        methodInfo.classList.add('show');
-
-        // Ẩn tất cả
-        placeholder.style.display = 'none';
-        qrContent.classList.remove('show');
-        noQrContent.classList.remove('show');
-
-        if (data.hasQR && data.qrImage) {
-            // Có QR - hiển thị ảnh
-            qrContent.classList.add('show');
-            document.getElementById('qrImage').src = data.qrImage;
-            document.getElementById('qrLabel').textContent = data.qrLabel;
-            document.getElementById('qrSub').textContent = data.qrSub;
-        } else {
-            // Không có QR
-            noQrContent.classList.add('show');
-            document.getElementById('noQrTitle').textContent = data.name;
-            document.getElementById('noQrDesc').textContent = data.desc;
-        }
-    }
-
-    // Validate before submit
-    document.getElementById('paymentForm').addEventListener('submit', function(e) {
-        const select = document.getElementById('paymentMethodSelect');
-        if (!select.value) {
-            e.preventDefault();
-            document.getElementById('paymentError').classList.remove('hidden');
-            select.focus();
-        }
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const select = document.getElementById('paymentMethodSelect');
-        if (select && select.options.length > 1) {
-            // Không auto select, để user tự chọn
-        }
-    });
-</script>
+<!-- JS riêng -->
+<script th:src="@{/js/reservation/payment.js}"></script>
 
 </body>
 </html>

@@ -58,5 +58,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
             "   AND DATEADD(MINUTE, COALESCE(r.duration_minutes, 120), CAST(r.reservation_time AS DATETIME)) > CAST(:time AS DATETIME)" +
             ")", nativeQuery = true)
     List<Integer> findReservedTableIds(@Param("date") LocalDate date, @Param("time") LocalTime time);
+
+    Optional<Reservation> findByOrder_OrderId(Integer orderId);
 }
 

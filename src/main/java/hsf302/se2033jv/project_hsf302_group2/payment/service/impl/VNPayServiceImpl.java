@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -43,6 +44,9 @@ public class VNPayServiceImpl implements VNPayService {
 
     @Value("${vnpay.command}")
     private String vnpCommand;
+
+    @Value("${vnpay.reservation.return-url}")
+    private String vnpReservationReturnUrl;
 
     @Override
     public String createPaymentUrl(Order order, HttpServletRequest request) {
@@ -140,6 +144,121 @@ public class VNPayServiceImpl implements VNPayService {
                 .valid(valid)
                 .success(success)
                 .orderId(orderId)
+                .vnpTxnRef(vnpTxnRef)
+                .vnpTransactionNo(vnpTransactionNo)
+                .message(message)
+                .build();
+    }
+
+    @Override
+    public String createPaymentUrlForReservation(Integer reservationId, BigDecimal amount, HttpServletRequest request) {
+        // Tạo mã giao dịch: RES_{reservationId}_{timestamp}
+        String vnpTxnRef = "RES_" + reservationId + "_" + System.currentTimeMillis();
+        long amountVND = amount.longValue() * 100;
+
+        Map<String, String> params = new HashMap<>();
+        params.put("vnp_Version", vnpVersion);
+        params.put("vnp_Command", vnpCommand);
+        params.put("vnp_TmnCode", vnpTmnCode);
+        params.put("vnp_Amount", String.valueOf(amountVND));
+        params.put("vnp_CurrCode", "VND");
+        params.put("vnp_TxnRef", vnpTxnRef);
+        params.put("vnp_OrderInfo", "Thanh toan tien coc dat ban " + reservationId);
+        params.put("vnp_OrderType", "other");
+        params.put("vnp_Locale", "vn");
+        params.put("vnp_ReturnUrl", vnpReservationReturnUrl); // ⭐ Dùng return URL riêng cho reservation
+        params.put("vnp_IpAddr", VNPayUtil.getIpAddress(request));
+
+        Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+        params.put("vnp_CreateDate", formatter.format(cld.getTime()));
+        cld.add(Calendar.MINUTE, 15);
+        params.put("vnp_ExpireDate", formatter.format(cld.getTime()));
+
+        // Sắp xếp tham số theo alphabet
+        List<String> fieldNames = new ArrayList<>(params.keySet());
+        Collections.sort(fieldNames);
+        StringBuilder hashData = new StringBuilder();
+        StringBuilder query = new StringBuilder();
+
+        Iterator<String> itr = fieldNames.iterator();
+        while (itr.hasNext()) {
+            String name = itr.next();
+            String value = params.get(name);
+            if (value != null && !value.isEmpty()) {
+                hashData.append(name).append('=').append(URLEncoder.encode(value, StandardCharsets.US_ASCII));
+                query.append(URLEncoder.encode(name, StandardCharsets.US_ASCII)).append('=')
+                        .append(URLEncoder.encode(value, StandardCharsets.US_ASCII));
+                if (itr.hasNext()) { hashData.append('&'); query.append('&'); }
+            }
+        }
+
+        String secureHash = VNPayUtil.hmacSHA512(vnpHashSecret, hashData.toString());
+        query.append("&vnp_SecureHash=").append(secureHash);
+
+        log.info("Created VNPay payment URL for reservation {} with txnRef {}", reservationId, vnpTxnRef);
+        return vnpPayUrl + "?" + query;
+    }
+
+    @Override
+    public VNPayReturnResultRequest processReturnForReservation(Map<String, String> params) {
+        log.info("Processing VNPay return for reservation with params: {}", params);
+
+        // 1. Lấy hash từ VNPay gửi về
+        Map<String, String> fields = new HashMap<>(params);
+        String receivedHash = fields.remove("vnp_SecureHash");
+        fields.remove("vnp_SecureHashType");
+
+        // 2. Sắp xếp tham số theo alphabet
+        List<String> fieldNames = new ArrayList<>(fields.keySet());
+        Collections.sort(fieldNames);
+
+        // 3. Tạo chuỗi hash data
+        StringBuilder hashData = new StringBuilder();
+        Iterator<String> itr = fieldNames.iterator();
+        while (itr.hasNext()) {
+            String name = itr.next();
+            String value = fields.get(name);
+            if (value != null && !value.isEmpty()) {
+                hashData.append(name).append('=').append(URLEncoder.encode(value, StandardCharsets.US_ASCII));
+                if (itr.hasNext()) {
+                    hashData.append('&');
+                }
+            }
+        }
+
+        // 4. Tạo hash từ server và so sánh
+        String calculatedHash = VNPayUtil.hmacSHA512(vnpHashSecret, hashData.toString());
+        boolean valid = calculatedHash.equalsIgnoreCase(receivedHash);
+
+        // 5. Lấy các tham số quan trọng
+        String vnpTxnRef = params.get("vnp_TxnRef");
+        String responseCode = params.get("vnp_ResponseCode");
+        String vnpTransactionNo = params.get("vnp_TransactionNo");
+
+        // 6. Parse reservation ID từ vnpTxnRef (RES_123_1234567890)
+        Integer reservationId = null;
+        try {
+            String[] parts = vnpTxnRef.split("_");
+            if (parts.length >= 3 && "RES".equals(parts[0])) {
+                reservationId = Integer.parseInt(parts[1]);
+            }
+        } catch (Exception e) {
+            log.warn("Cannot parse reservationId from vnpTxnRef: {}", vnpTxnRef);
+        }
+
+        // 7. Xác định kết quả
+        boolean success = valid && "00".equals(responseCode);
+        String message = !valid ? "Sai checksum, dữ liệu có thể đã bị giả mạo"
+                : (success ? "Thanh toán thành công" : "Giao dịch không thành công, mã lỗi: " + responseCode);
+
+        log.info("VNPay return for reservation: id={}, valid={}, success={}, message={}",
+                reservationId, valid, success, message);
+
+        return VNPayReturnResultRequest.builder()
+                .valid(valid)
+                .success(success)
+                .orderId(reservationId)
                 .vnpTxnRef(vnpTxnRef)
                 .vnpTransactionNo(vnpTransactionNo)
                 .message(message)

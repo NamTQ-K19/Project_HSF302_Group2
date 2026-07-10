@@ -2,6 +2,7 @@ package hsf302.se2033jv.project_hsf302_group2.reservation.service.interfaces;
 
 import hsf302.se2033jv.project_hsf302_group2.common.entity.MapEntity;
 import hsf302.se2033jv.project_hsf302_group2.common.entity.PaymentMethod;
+import hsf302.se2033jv.project_hsf302_group2.common.entity.Reservation;
 import hsf302.se2033jv.project_hsf302_group2.reservation.dto.request.CancelReservationRequest;
 import hsf302.se2033jv.project_hsf302_group2.reservation.dto.request.CreateReservationRequest;
 import hsf302.se2033jv.project_hsf302_group2.reservation.dto.request.DepositPaymentRequest;
@@ -63,4 +64,14 @@ public interface ReservationService {
     //Lấy phương thức thanh toán
     List<PaymentMethod> getAllPaymentMethods();
 
+    // THÊM MỚI: Xử lý kết quả thanh toán từ VNPay (GIỐNG ORDER)/
+    void handleGatewayPaymentResult(Integer reservationId, boolean success, String transactionRef, String rawResponse);
+
+    // Xử lý kết quả thanh toán từ VNPay (trả về Reservation)/
+    Reservation handleVNPayPaymentResult(Integer reservationId, String vnpTxnRef, boolean success);
+
+    // THÊM MỚI: Lấy Reservation theo ID
+    Reservation getReservationById(Integer reservationId);
+
+    ReservationDepositInfo getDepositByReservationId(Integer reservationId);
 }

@@ -10,6 +10,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.HashMap;
@@ -76,5 +77,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(ApiResponse.error("Resource not found"));
+    }
+
+    @ExceptionHandler(InvalidReservationTimeException.class)
+    public String handleInvalidReservationTime(InvalidReservationTimeException e, RedirectAttributes redirectAttributes) {
+        log.error("Invalid reservation time: {}", e.getMessage());
+        redirectAttributes.addFlashAttribute("error", e.getMessage());
+        return "redirect:/customer/reservations/new";
     }
 }

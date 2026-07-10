@@ -11,12 +11,11 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReservationConfirmationResponse {
-
-    private String message;
-    private Boolean success;
-    private MakeReservationResponse reservation;
+public class ReservationDepositInfo {
+    private Integer depositId;
     private BigDecimal depositAmount;
-    private String paymentUrl;
-    private Integer holdMinutes;
+    private String paymentStatus;
+    private boolean paid;
+    private boolean refunded;
+    private String transactionRef;
 }

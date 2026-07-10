@@ -1,0 +1,90 @@
+/* ── Success Animation ───────────────────────────────────── */
+.confirmation-success {
+    animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ── Status Badge ────────────────────────────────────────── */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.status-badge.confirmed {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-badge.pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-badge.cancelled {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* ── Payment Method Tag ──────────────────────────────────── */
+.payment-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.payment-tag.vnpay {
+    background: #005baa;
+    color: white;
+}
+
+.payment-tag.cash {
+    background: #e2e8f0;
+    color: #475569;
+}
+
+.payment-tag.momo {
+    background: #ae2070;
+    color: white;
+}
+
+.payment-tag.zalopay {
+    background: #0068ff;
+    color: white;
+}
+
+/* ── Transaction Ref ────────────────────────────────────── */
+.transaction-ref {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    background: #f1f5f9;
+    padding: 4px 12px;
+    border-radius: 6px;
+    color: #1a1c1c;
+    letter-spacing: 0.5px;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 480px) {
+    .confirmation-success .success-icon {
+        font-size: 48px;
+    }
+}
