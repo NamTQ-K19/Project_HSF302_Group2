@@ -55,15 +55,29 @@ public class CustomerReservationController {
     private final ProfileService profileService;
     private final ConfigService configService;
 
-    // Danh sach dat ban cua khach hang
+    // Danh sach dat ban cua khach hang (co phan trang)
     @GetMapping
-    public String showMyReservations(Model model, Authentication auth) {
+    public String showMyReservations(
+            @RequestParam(defaultValue = "0") int page,
+            Model model,
+            Authentication auth) {
 
         User user = profileService.getCurrentUser(auth.getName());
-        List<ReservationResponse> reservations = reservationService.getMyReservations(user.getUserId());
+        int pageSize = 10;
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "createdAt"));
+        
+        Page<ReservationResponse> reservationPage = reservationService.getMyReservations(user.getUserId(), pageable);
+        
+        long pendingCount = reservationService.getMyReservations(user.getUserId()).stream()
+                .filter(r -> r.getStatus() == hsf302.se2033jv.project_hsf302_group2.common.enums.ReservationStatus.PENDING)
+                .count();
 
         model.addAttribute("user", user);
-        model.addAttribute("reservations", reservations);
+        model.addAttribute("reservationPage", reservationPage);
+        model.addAttribute("reservations", reservationPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", reservationPage.getTotalPages());
+        model.addAttribute("pendingCount", pendingCount);
         return "reservation/my-reservations";
     }
 
@@ -547,6 +561,27 @@ public class CustomerReservationController {
         } catch (Exception e) {
             log.error("Error showing retry payment page: {}", e.getMessage(), e);
             redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy đặt bàn");
+            return "redirect:/customer/reservations";
+        }
+    }
+
+    // Màn hình chi tiết đặt bàn của khách hàng
+    @GetMapping("/{reservationId}")
+    public String showReservationDetail(
+            @PathVariable Integer reservationId,
+            Model model,
+            Authentication auth,
+            RedirectAttributes redirectAttributes) {
+
+        User user = profileService.getCurrentUser(auth.getName());
+        try {
+            MakeReservationResponse reservation = reservationService.getReservationDetail(reservationId, user.getUserId());
+            model.addAttribute("user", user);
+            model.addAttribute("reservation", reservation);
+            return "reservation/detail";
+        } catch (Exception e) {
+            log.error("Error showing customer reservation detail: {}", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy đặt bàn hoặc bạn không có quyền xem.");
             return "redirect:/customer/reservations";
         }
     }

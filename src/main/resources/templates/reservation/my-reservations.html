@@ -95,11 +95,11 @@
                 <div class="w-full flex flex-col gap-3">
                     <div class="bg-surface-container rounded-2xl p-4 flex justify-between items-center border border-outline-variant/50">
                         <div class="text-on-surface-variant text-body-sm font-bold flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">table_restaurant</span> Tổng đặt bàn</div>
-                        <div class="font-extrabold text-title-lg text-primary" th:text="${#lists.size(reservations)}">0</div>
+                        <div class="font-extrabold text-title-lg text-primary" th:text="${reservationPage.totalElements}">0</div>
                     </div>
                     <div class="bg-secondary-container/20 border border-secondary/20 rounded-2xl p-4 flex justify-between items-center">
                         <div class="text-on-surface-variant text-body-sm font-bold flex items-center gap-2"><span class="material-symbols-outlined text-[18px] text-secondary">pending_actions</span> Chờ xác nhận</div>
-                        <div class="font-extrabold text-title-lg text-secondary" th:text="${#lists.size(reservations.?[status.name() == 'PENDING'])}">0</div>
+                        <div class="font-extrabold text-title-lg text-secondary" th:text="${pendingCount}">0</div>
                     </div>
                 </div>
 
@@ -149,7 +149,10 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr th:each="r, rStat : ${reservations}" class="border-b border-outline-variant hover:bg-surface-container-lowest/50 transition-colors">
+                            <tr th:each="r, rStat : ${reservations}" 
+                                 th:data-href="@{/customer/reservations/{id}(id=${r.reservationId})}"
+                                 onclick="if(!event.target.closest('.action-group') && !event.target.closest('a') && !event.target.closest('button')) window.location=this.getAttribute('data-href');"
+                                 class="border-b border-outline-variant hover:bg-surface-container-lowest/50 transition-colors cursor-pointer">
                                 <td class="py-4 px-2 font-bold text-on-surface-variant/70 text-center" th:text="${rStat.count}"></td>
 
                                 <td class="py-4 px-2 font-medium text-on-surface" th:text="${#temporals.format(r.reservationDate,'dd/MM/yyyy')}"></td>
@@ -201,6 +204,29 @@
                             </tr>
                             </tbody>
                         </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <div th:if="${totalPages > 1}" class="flex items-center justify-between mt-6 pt-6 border-t border-outline-variant/60">
+                        <div class="text-body-sm text-on-surface-variant font-medium">
+                            Trang <span th:text="${currentPage + 1}" class="font-extrabold text-primary"></span> / <span th:text="${totalPages}" class="font-extrabold"></span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <a th:if="${currentPage > 0}" th:href="@{/customer/reservations(page=${currentPage - 1})}" 
+                               class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors no-underline shadow-sm border border-outline-variant/60">
+                                <span class="material-symbols-outlined text-[20px]">chevron_left</span>
+                            </a>
+                            <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:if="${i >= currentPage - 2 and i <= currentPage + 2}">
+                                <a th:href="@{/customer/reservations(page=${i})}" 
+                                   th:text="${i + 1}"
+                                   class="w-10 h-10 rounded-xl flex items-center justify-center font-extrabold text-body-sm transition-all no-underline border border-outline-variant/60"
+                                   th:classappend="${i == currentPage} ? 'bg-primary text-white shadow-md shadow-primary/20' : 'bg-surface-container text-on-surface hover:bg-surface-container-high'">1</a>
+                            </span>
+                            <a th:if="${currentPage < totalPages - 1}" th:href="@{/customer/reservations(page=${currentPage + 1})}" 
+                               class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors no-underline shadow-sm border border-outline-variant/60">
+                                <span class="material-symbols-outlined text-[20px]">chevron_right</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>

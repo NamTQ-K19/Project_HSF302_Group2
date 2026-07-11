@@ -20,6 +20,9 @@ public interface ReservationService {
     // Lấy danh sách đặt bàn của customer, mới nhất lên đầu
     List<ReservationResponse> getMyReservations(Integer customerId);
 
+    // Lấy danh sách đặt bàn của customer có phân trang, mới nhất lên đầu
+    Page<ReservationResponse> getMyReservations(Integer customerId, Pageable pageable);
+
     // Lấy một đặt bàn để hiển thị trang xác nhận hủy
     // Ném RuntimeException nếu không tìm thấy hoặc không thuộc customer này
     ReservationResponse getReservationForCancel(Integer reservationId, Integer customerId);

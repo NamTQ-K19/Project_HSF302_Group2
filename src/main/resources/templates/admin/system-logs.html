@@ -52,6 +52,7 @@
                         <option value="Login" th:selected="${action == 'Login'}">Đăng nhập</option>
                         <option value="Logout" th:selected="${action == 'Logout'}">Đăng xuất</option>
                         <option value="Register" th:selected="${action == 'Register'}">Đăng ký</option>
+                        <option value="REFUND_DEPOSIT_VNPAY" th:selected="${action == 'REFUND_DEPOSIT_VNPAY'}">Hoàn tiền</option>
                         <option value="Create" th:selected="${action == 'Create'}">Tạo mới</option>
                         <option value="Update" th:selected="${action == 'Update'}">Cập nhật</option>
                         <option value="Delete" th:selected="${action == 'Delete'}">Xóa</option>
@@ -127,6 +128,8 @@
                             <span th:case="'Login'" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-primary/10 text-primary">Đăng nhập</span>
                             <span th:case="'Logout'" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-surface-container-high text-on-surface-variant">Đăng xuất</span>
                             <span th:case="'Register'" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-[#3b82f6]/10 text-[#3b82f6]">Đăng ký</span>
+                            <span th:case="'REFUND_DEPOSIT_VNPAY'" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-[#3b82f6]/10 text-[#3b82f6]">Hoàn tiền</span>
+                            <span th:case="'REFUND_DEPOSIT_MANUAL'" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-[#3b82f6]/10 text-[#3b82f6]">Hoàn tiền</span>
                             <span th:case="'Create'" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-[#22c55e]/10 text-[#22c55e]">Tạo mới</span>
                             <span th:case="'CREATE_RESERVATION'" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-[#22c55e]/10 text-[#22c55e]">Đặt bàn</span>
                             <span th:case="'PAY_DEPOSIT'" class="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold uppercase tracking-wider bg-primary/10 text-primary">Thanh toán</span>

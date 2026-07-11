@@ -63,6 +63,12 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
+    public Page<ReservationResponse> getMyReservations(Integer customerId, Pageable pageable) {
+        Page<Reservation> reservations = reservationRepository.findByCustomerUserId(customerId, pageable);
+        return reservations.map(this::mapToDTO);
+    }
+
+    @Override
     public ReservationResponse getReservationForCancel(Integer reservationId, Integer customerId) {
         Reservation reservation = reservationRepository
                 .findByReservationIdAndCustomer_UserId(reservationId, customerId)
@@ -578,13 +584,16 @@ public class ReservationServiceImpl implements ReservationService {
             return null;
         }
 
+        String rawRef = deposit.getTransactionRef();
+        String displayRef = (rawRef != null && rawRef.contains("|")) ? rawRef.split("\\|")[0] : rawRef;
+
         return ReservationDepositInfo.builder()
                 .depositId(deposit.getDepositId())
                 .depositAmount(deposit.getDepositAmount())
                 .paymentStatus(deposit.getPaymentStatus() != null ? deposit.getPaymentStatus().name() : null)
                 .paid(deposit.getPaymentStatus() == DepositPaymentStatus.PAID)
                 .refunded(deposit.getPaymentStatus() == DepositPaymentStatus.REFUNDED)
-                .transactionRef(deposit.getTransactionRef())
+                .transactionRef(displayRef)
                 .build();
     }
 
