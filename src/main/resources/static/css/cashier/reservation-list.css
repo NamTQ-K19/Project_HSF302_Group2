@@ -1,0 +1,278 @@
+/* ── Filter Bar */
+.filter-bar {
+    display: grid;
+    grid-template-columns: 1fr 200px auto auto;
+    gap: 12px;
+    align-items: end;
+}
+
+.filter-bar .search-field {
+    grid-column: 1 / 2;
+    position: relative;
+}
+
+.filter-bar .date-field {
+    grid-column: 2 / 3;
+    min-width: 160px;
+}
+
+.filter-bar .btn-submit {
+    grid-column: 3 / 4;
+}
+
+.filter-bar .btn-reset {
+    grid-column: 4 / 5;
+}
+
+/* ── Search Input ───────────────────────────────────────────── */
+.filter-bar .search-field input {
+    width: 100%;
+    padding: 10px 14px 10px 40px;
+    border-radius: 12px;
+    border: 1px solid #d1d5db;
+    font-size: 14px;
+    background: #fafafa;
+    transition: all 0.2s ease;
+    outline: none;
+    font-family: inherit;
+}
+
+.filter-bar .search-field input:focus {
+    border-color: #c8a882;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(200, 168, 130, 0.15);
+}
+
+.filter-bar .search-field input::placeholder {
+    color: #9ca3af;
+}
+
+.filter-bar .search-field .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    font-size: 18px;
+    pointer-events: none;
+}
+
+/* ── Date Input ─────────────────────────────────────────────── */
+.filter-bar .date-field input {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid #d1d5db;
+    font-size: 14px;
+    background: #fafafa;
+    transition: all 0.2s ease;
+    outline: none;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.filter-bar .date-field input:focus {
+    border-color: #c8a882;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(200, 168, 130, 0.15);
+}
+
+/* ── Buttons ─────────────────────────────────────────────────── */
+.filter-bar .btn-filter {
+    padding: 10px 20px;
+    border-radius: 12px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    font-family: inherit;
+    width: 100%;
+    justify-content: center;
+}
+
+.filter-bar .btn-filter-primary {
+    background: #c8a882;
+    color: #4a2c1b;
+    box-shadow: 0 4px 12px rgba(200, 168, 130, 0.3);
+}
+
+.filter-bar .btn-filter-primary:hover {
+    background: #b8946e;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(200, 168, 130, 0.35);
+}
+
+.filter-bar .btn-filter-primary:active {
+    transform: translateY(0);
+}
+
+.filter-bar .btn-filter-secondary {
+    background: #f1f0ed;
+    color: #6b7280;
+    border: 1px solid #e5e7eb;
+}
+
+.filter-bar .btn-filter-secondary:hover {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.filter-bar .btn-filter-secondary:active {
+    transform: scale(0.98);
+}
+
+.filter-bar .btn-filter .icon {
+    font-size: 18px;
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 992px) {
+    .filter-bar {
+        grid-template-columns: 1fr 180px auto auto;
+        gap: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .filter-bar {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .filter-bar .search-field {
+        grid-column: 1 / 3;
+    }
+
+    .filter-bar .date-field {
+        grid-column: 1 / 2;
+        min-width: unset;
+    }
+
+    .filter-bar .btn-submit {
+        grid-column: 2 / 3;
+    }
+
+    .filter-bar .btn-reset {
+        grid-column: 1 / 3;
+    }
+
+    .filter-bar .btn-filter {
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .filter-bar {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-bar .search-field {
+        grid-column: 1 / 2;
+    }
+
+    .filter-bar .date-field {
+        grid-column: 1 / 2;
+    }
+
+    .filter-bar .btn-submit {
+        grid-column: 1 / 2;
+    }
+
+    .filter-bar .btn-reset {
+        grid-column: 1 / 2;
+    }
+}
+
+/* ── Filter Label ───────────────────────────────────────────── */
+.filter-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+}
+
+/* ── Status Badges ──────────────────────────────────────────── */
+.status-badge {
+    display: inline-flex;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+/* Reservation Status */
+.status-PENDING { background: #fef3c7; color: #92400e; }
+.status-CONFIRMED { background: #d1fae5; color: #065f46; }
+.status-CANCELLED { background: #fee2e2; color: #991b1b; }
+.status-COMPLETED { background: #e5e7eb; color: #374151; }
+.status-ARRIVED { background: #dbeafe; color: #1e40af; }
+.status-NO_SHOW { background: #f3f4f6; color: #6b7280; }
+
+/* Deposit Payment Status */
+.payment-PENDING { background: #fef3c7; color: #92400e; }
+.payment-PAID { background: #d1fae5; color: #065f46; }
+.payment-REFUNDED { background: #dbeafe; color: #1e40af; }
+.payment-CANCELLED { background: #fee2e2; color: #991b1b; }
+.payment-FORFEITED { background: #f3f4f6; color: #6b7280; }
+
+/* ── Table Row Hover ────────────────────────────────────────── */
+.table-row-hover:hover {
+    background: rgba(200, 168, 130, 0.05);
+    transition: background 0.2s ease;
+}
+
+/* ── Modal Animation ────────────────────────────────────────── */
+@keyframes modalIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.animate-modal {
+    animation: modalIn 0.25s ease-out forwards;
+}
+
+/* ── Pagination ─────────────────────────────────────────────── */
+.pagination-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #f1f0ed;
+    color: #374151;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.pagination-btn:hover {
+    background: #e5e7eb;
+}
+
+.pagination-btn.active {
+    background: #c8a882;
+    color: #4a2c1b;
+}
+
+.pagination-btn.active:hover {
+    background: #b8946e;
+}

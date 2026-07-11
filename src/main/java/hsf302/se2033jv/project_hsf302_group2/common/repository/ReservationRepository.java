@@ -60,5 +60,19 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
     List<Integer> findReservedTableIds(@Param("date") LocalDate date, @Param("time") LocalTime time);
 
     Optional<Reservation> findByOrder_OrderId(Integer orderId);
+
+    @Query("SELECT r FROM Reservation r WHERE " +
+           "(:date IS NULL OR r.reservationDate = :date) AND " +
+           "(:keyword IS NULL OR :keyword = '' OR " +
+           " CAST(r.reservationId AS string) LIKE %:keyword% OR " +
+           " LOWER(r.customer.firstName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           " LOWER(r.customer.lastName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           " r.customer.phone LIKE %:keyword% OR " +
+           " LOWER(r.customer.email) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    Page<Reservation> searchReservationsForCashier(
+            @Param("keyword") String keyword,
+            @Param("date") LocalDate date,
+            Pageable pageable
+    );
 }
 

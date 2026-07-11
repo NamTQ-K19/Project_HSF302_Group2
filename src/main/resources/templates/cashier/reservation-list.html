@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{ordering/cashier-layout :: head('Quản lý đặt bàn (Reservation List)')}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/ordering/list.css}">
+    <link rel="stylesheet" th:href="@{/css/cashier/reservation-list.css}">
+</head>
+<body class="bg-surface font-body-md text-on-surface antialiased flex h-screen overflow-hidden">
+
+<!-- Sidebar -->
+<th:block th:replace="~{ordering/cashier-layout :: sidebar('reservation-list')}"></th:block>
+
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col h-screen overflow-hidden bg-surface-container-low">
+    <!-- Header -->
+    <th:block th:replace="~{ordering/cashier-layout :: header('Danh sách đặt bàn', ${cashierName})}"></th:block>
+
+    <!-- Content Workspace -->
+    <main class="flex-1 overflow-y-auto p-4 md:p-8">
+        <div class="max-w-7xl mx-auto space-y-6">
+
+            <!-- Filter & Search Card -->
+            <div class="bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/60 minimal-shadow">
+                <form th:action="@{/cashier/reservations}" method="get" th:object="${filter}" class="filter-bar">
+
+                    <!-- Search Field -->
+                    <div class="search-field">
+                        <span class="search-icon material-symbols-outlined">search</span>
+                        <input type="text" th:field="*{keyword}" placeholder="Mã đặt bàn, tên khách, SĐT, email...">
+                    </div>
+
+                    <!-- Date Field -->
+                    <div class="date-field">
+                        <input type="date" th:field="*{date}">
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="btn-submit">
+                        <button type="submit" class="btn-filter btn-filter-primary">
+                            <span class="icon material-symbols-outlined">filter_alt</span>
+                            Tìm kiếm
+                        </button>
+                    </div>
+
+                    <!-- Reset Button -->
+                    <div class="btn-reset">
+                        <a th:href="@{/cashier/reservations}" class="btn-filter btn-filter-secondary">
+                            <span class="icon material-symbols-outlined">refresh</span>
+                            Reset
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Reservations Table Card -->
+            <div class="bg-surface-container-lowest rounded-3xl border border-outline-variant/60 overflow-hidden minimal-shadow flex flex-col">
+                <div class="p-6 border-b border-outline-variant/40 flex items-center justify-between bg-surface-container/20">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary text-[22px]">event_seat</span>
+                        <h3 class="font-bold text-on-surface text-base m-0">Danh sách đặt bàn</h3>
+                        <span class="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold text-xs" th:text="${reservationPage.totalElements} + ' lượt'">0 lượt</span>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                        <tr class="border-b border-outline-variant/60 bg-surface-container-low/50 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">
+                            <th class="py-4 px-6">Mã đặt bàn</th>
+                            <th class="py-4 px-6">Khách hàng</th>
+                            <th class="py-4 px-6">Thời gian</th>
+                            <th class="py-4 px-6">Số người</th>
+                            <th class="py-4 px-6">Đặt cọc</th>
+                            <th class="py-4 px-6">Thanh toán cọc</th>
+                            <th class="py-4 px-6">Trạng thái đặt bàn</th>
+                            <th class="py-4 px-6 text-right">Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-outline-variant/30 text-sm">
+                        <tr th:if="${reservations.empty}">
+                            <td colspan="8" class="py-16 text-center text-on-surface-variant">
+                                <span class="material-symbols-outlined text-4xl block mb-2 opacity-50">inbox</span>
+                                <span class="font-medium">Không tìm thấy đơn đặt bàn nào</span>
+                            </td>
+                        </tr>
+                        <tr th:each="r : ${reservations}" class="table-row-hover">
+                            <td class="py-4 px-6 font-bold text-primary" th:text="'#RES-' + ${r.reservationId}">#RES-1</td>
+                            <td class="py-4 px-6">
+                                <div class="font-bold text-on-surface" th:text="${r.customerName}">Nguyễn Văn A</div>
+                                <div class="text-xs text-on-surface-variant" th:text="${r.customerPhone}">0901234567</div>
+                            </td>
+                            <td class="py-4 px-6">
+                                <div class="font-bold text-on-surface" th:text="${#temporals.format(r.reservationDate, 'dd/MM/yyyy')}">12/07/2026</div>
+                                <div class="text-xs text-on-surface-variant" th:text="${#temporals.format(r.reservationTime, 'HH:mm')} + ' (' + ${r.durationMinutes} + ' phút)'">18:00 (120 phút)</div>
+                            </td>
+                            <td class="py-4 px-6 font-semibold" th:text="${r.partySize} + ' người'">2 người</td>
+                            <td class="py-4 px-6 font-semibold text-primary" th:text="${#numbers.formatDecimal(r.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">50.000 ₫</td>
+                            <td class="py-4 px-6">
+                                <span th:class="'status-badge payment-' + ${r.depositPaymentStatus}" th:text="${r.depositPaymentStatusDisplay}">Chưa cọc</span>
+                                <div class="text-[11px] text-on-surface-variant mt-0.5" th:text="${r.paymentMethodName}">VNPay</div>
+                            </td>
+                            <td class="py-4 px-6">
+                                <span th:class="'status-badge status-' + ${r.status}" th:text="${r.statusDisplay}">XÁC NHẬN</span>
+                            </td>
+                            <td class="py-4 px-6 text-right">
+                                <div class="flex items-center justify-end gap-1.5">
+                                    <button th:onclick="'openReservationDetailModal(' + ${r.reservationId} + ')'"
+                                            class="px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-on-primary font-bold text-xs transition-colors border-none cursor-pointer flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[16px]">visibility</span>
+                                        Xem chi tiết
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div th:if="${reservationPage.totalPages > 1}" class="p-4 border-t border-outline-variant/40 bg-surface-container/20 flex items-center justify-between">
+                    <div class="text-xs text-on-surface-variant font-medium">
+                        Hiển thị trang <b th:text="${currentPage + 1}">1</b> / <b th:text="${reservationPage.totalPages}">5</b>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <a th:if="${currentPage > 0}" th:href="@{/cashier/reservations(page=${currentPage - 1}, keyword=${filter.keyword}, date=${filter.date})}"
+                           class="pagination-btn">
+                            <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+                        </a>
+                        <span th:each="i : ${#numbers.sequence(0, reservationPage.totalPages - 1)}" th:if="${i >= currentPage - 2 and i <= currentPage + 2}">
+                            <a th:href="@{/cashier/reservations(page=${i}, keyword=${filter.keyword}, date=${filter.date})}"
+                               th:text="${i + 1}"
+                               class="pagination-btn"
+                               th:classappend="${i == currentPage} ? 'active' : ''">1</a>
+                        </span>
+                        <a th:if="${currentPage < reservationPage.totalPages - 1}" th:href="@{/cashier/reservations(page=${currentPage + 1}, keyword=${filter.keyword}, date=${filter.date})}"
+                           class="pagination-btn">
+                            <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Reservation Detail Modal -->
+<div id="detail-modal" class="hidden fixed inset-0 bg-on-surface/50 backdrop-blur-sm z-50 items-center justify-center p-4">
+    <div id="detail-modal-content" class="bg-surface-container-lowest rounded-3xl border border-outline-variant shadow-2xl max-w-2xl w-full overflow-hidden animate-modal flex flex-col">
+    </div>
+</div>
+
+<script th:src="@{/js/cashier/cashier-reservation.js}"></script>
+</body>
+</html>

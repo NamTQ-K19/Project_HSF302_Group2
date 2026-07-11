@@ -47,10 +47,13 @@ public class ReservationVNPayReturnController {
         }
 
         // GỌI SERVICE XỬ LÝ KẾT QUẢ THANH TOÁN
+        String combinedRef = (result.getVnpTransactionNo() != null ? result.getVnpTransactionNo() : "")
+                + "|" + (result.getVnpTxnRef() != null ? result.getVnpTxnRef() : "")
+                + "|" + (allParams.getOrDefault("vnp_PayDate", ""));
         reservationService.handleGatewayPaymentResult(
                 reservationId,
                 result.isValid() && result.isSuccess(),
-                result.getVnpTransactionNo(),
+                combinedRef,
                 allParams.toString()
         );
 
