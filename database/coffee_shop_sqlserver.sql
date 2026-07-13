@@ -211,6 +211,7 @@ CREATE TABLE order_details (
     item_total            DECIMAL(10,2)  NOT NULL,
     special_note          NVARCHAR(MAX)  NULL,
     item_status           NVARCHAR(15)   NOT NULL DEFAULT 'PENDING',
+    cancel_reason         NVARCHAR(MAX)  NULL,
 
     CONSTRAINT pk_order_details  PRIMARY KEY (item_id),
     CONSTRAINT ck_od_quantity    CHECK (quantity    > 0),

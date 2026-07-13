@@ -61,6 +61,9 @@ public class OrderDetail {
     @Enumerated(EnumType.STRING)
     private OrderItemStatus itemStatus;
 
+    @Column(name = "cancel_reason", columnDefinition = "NVARCHAR(255)")
+    private String cancelReason;
+
     @PrePersist
     protected void onCreate() {
         if (priceSnapshot == null) priceSnapshot = BigDecimal.ZERO;

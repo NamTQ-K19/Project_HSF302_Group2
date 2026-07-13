@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thống kê hôm nay - Barista</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/barista/style.css}"/>
+    <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+        .stat-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+        }
+        .stat-card .value {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        .value.success { color: var(--success); }
+        .value.danger { color: var(--danger); }
+        
+        .section-title {
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+        .stats-table th {
+            text-align: left;
+            padding: 1rem 1.5rem;
+            background: var(--primary-light);
+            color: var(--primary-hover);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+        .stats-table td {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .badge-success { background: var(--success-bg); color: var(--success); }
+        .badge-danger { background: var(--danger-bg); color: var(--danger); }
+        
+        .badge-het-nguyen-lieu { background: #fff8e1; border: 1px solid #ffecb3; color: #b06909; font-weight: 500; border-radius: 12px; padding: 4px 10px; }
+        .badge-may-hong { background: #ffebee; border: 1px solid #ffcdd2; color: #c62828; font-weight: 500; border-radius: 12px; padding: 4px 10px; }
+        .badge-khach-huy { background: #f3e5f5; border: 1px solid #e1bee7; color: #6a1b9a; font-weight: 500; border-radius: 12px; padding: 4px 10px; }
+        .badge-khac { background: #f5f5f5; border: 1px solid #e0e0e0; color: #424242; font-weight: 500; border-radius: 12px; padding: 4px 10px; }
+
+        .top-product-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.2rem;
+        }
+        .top-product-rank {
+            width: 24px;
+            height: 24px;
+            background: #fff3e0;
+            color: #e65100;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        .top-product-info {
+            flex-grow: 1;
+        }
+        .top-product-name-qty {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.4rem;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        .top-product-qty {
+            color: var(--success);
+            font-weight: 600;
+        }
+        .progress-bar {
+            height: 6px;
+            background: #f0f0f0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #d48548;
+            border-radius: 3px;
+        }
+
+        .reason-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 1.2rem;
+            border-radius: var(--radius-sm);
+            margin-bottom: 0.8rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        .reason-item.het-nguyen-lieu { background: #fff8e1; border: 1px solid #ffecb3; color: #b06909; }
+        .reason-item.may-hong { background: #ffebee; border: 1px solid #ffcdd2; color: #c62828; }
+        .reason-item.khach-huy { background: #f3e5f5; border: 1px solid #e1bee7; color: #6a1b9a; }
+        .reason-item.khac { background: #f5f5f5; border: 1px solid #e0e0e0; color: #424242; }
+        
+        .reason-stats {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .reason-count-qty {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .reason-percent {
+            font-size: 0.85rem;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .summary-card {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: var(--shadow-sm);
+        }
+        .summary-card-title {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        .summary-card-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 0.25rem;
+        }
+        .summary-card-sub {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        .summary-icon {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .icon-orange { background: #fff3e0; color: #e65100; }
+        .icon-green { background: #e8f5e9; color: #2e7d32; }
+        .icon-red { background: #ffebee; color: #c62828; }
+        .icon-purple { background: #f3e5f5; color: #6a1b9a; }
+        .progress-bar-purple {
+            height: 6px;
+            background: #f0f0f0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        .progress-fill-purple {
+            height: 100%;
+            background: #6a1b9a;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <th:block th:replace="~{barista/fragments/sidebar :: sidebar('statistics')}"></th:block>
+
+    <div class="main-content">
+        <div class="header">
+            <h1 class="page-title">Thống kê Pha chế (Hôm nay)</h1>
+        </div>
+
+        <div class="content-body">
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <div class="summary-card-title">Tổng món</div>
+                    <div class="summary-card-value" th:text="${totalItemsCount}">0</div>
+                    <div class="summary-card-sub" th:text="${totalItemsQty} + ' ly'">0 ly</div>
+                    <div class="summary-icon icon-orange">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-card-title">Pha thành công</div>
+                    <div class="summary-card-value" th:text="${completedItems.size()}">0</div>
+                    <div class="summary-card-sub" th:text="${completedQty} + ' ly'">0 ly</div>
+                    <div class="summary-icon icon-green">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-card-title">Không pha được</div>
+                    <div class="summary-card-value" th:text="${cancelledItems.size()}">0</div>
+                    <div class="summary-card-sub" th:text="${cancelledQty} + ' ly'">0 ly</div>
+                    <div class="summary-icon icon-red">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-card-title">Tỉ lệ hoàn thành</div>
+                    <div class="summary-card-value" th:text="${completionRate} + '%'">0%</div>
+                    <div class="summary-card-sub">hôm nay</div>
+                    <div class="summary-icon icon-purple">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                    </div>
+                    <div class="progress-bar-purple">
+                        <div class="progress-fill-purple" th:style="'width: ' + ${completionRate} + '%;'"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="stats-grid">
+                <!-- Box 1: Top sản phẩm pha thành công -->
+                <div class="stat-card">
+                    <h3 style="display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.5rem; color: var(--text-color); font-weight: 700; font-size: 1.1rem;">
+                        <span style="color: var(--success); display: flex;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        </span>
+                        Top sản phẩm pha thành công
+                    </h3>
+                    
+                    <div th:if="${topProducts.isEmpty()}" style="text-align: center; color: var(--text-muted); padding: 2rem 0;">Chưa có dữ liệu</div>
+                    
+                    <div th:each="entry, iterStat : ${topProducts}" class="top-product-item">
+                        <div class="top-product-rank" th:text="${iterStat.count}"></div>
+                        <div class="top-product-info">
+                            <div class="top-product-name-qty">
+                                <span th:text="${entry.key}"></span>
+                                <span class="top-product-qty" th:text="${entry.value + ' ly'}"></span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" th:style="'width: ' + (${entry.value * 100 / maxTopQuantity}) + '%;'"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Box 2: Lý do không pha được -->
+                <div class="stat-card">
+                    <h3 style="display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.5rem; color: var(--text-color); font-weight: 700; font-size: 1.1rem;">
+                        <span style="color: var(--danger); display: flex;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                        </span>
+                        Lý do không pha được
+                    </h3>
+                    
+                    <div th:if="${cancelReasonStats.isEmpty()}" style="text-align: center; color: var(--text-muted); padding: 2rem 0;">Chưa có dữ liệu</div>
+                    
+                    <div th:each="stat : ${cancelReasonStats}" 
+                         th:class="'reason-item ' + 
+                            (${stat.reason.contains('Hết nguyên liệu')} ? 'het-nguyen-lieu' : 
+                            (${stat.reason.contains('Máy hỏng')} ? 'may-hong' : 
+                            (${stat.reason.contains('Khách hủy')} ? 'khach-huy' : 'khac')))">
+                        <span th:text="${stat.reason}"></span>
+                        <div class="reason-stats">
+                            <span class="reason-count-qty" th:text="${stat.count + ' lần · ' + stat.quantity + ' ly'}"></span>
+                            <span class="reason-percent" th:text="${stat.percentage + '%'}"></span>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.5;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 class="section-title" style="margin-bottom: 0;">Lịch sử chi tiết</h2>
+                <span style="color: var(--text-muted); font-size: 0.9rem;" th:text="${allStats.size()} + ' mục'"></span>
+            </div>
+            
+            <table class="stats-table">
+                <thead>
+                    <tr>
+                        <th width="100">Giờ</th>
+                        <th width="100">Đơn #</th>
+                        <th width="100">Sản phẩm</th>
+                        <th width="150">Vị trí</th>
+                        <th width="70">SL</th>
+                        <th width="150">Trạng thái</th>
+                        <th width="150">Lý do hủy</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${allStats.isEmpty()}">
+                        <td colspan="7" style="text-align: center; color: var(--text-muted);">Chưa có lịch sử pha chế nào.</td>
+                    </tr>
+                    <tr th:each="item : ${allStats}">
+                        <td th:text="${#temporals.format(item.order.updatedAt != null ? item.order.updatedAt : item.order.createdAt, 'HH:mm')}"></td>
+                        <td th:text="'#' + ${item.order.orderId}"></td>
+                        <td th:text="${item.productNameSnapshot}" style="font-weight: 500;"></td>
+                        <td th:text="${item.order.table != null ? 'Bàn ' + item.order.table.tableId : 'Mang đi'}" style="color: var(--text-muted);"></td>
+                        <td>
+                            <span style="background: #f5f5f5; padding: 2px 8px; border-radius: 12px; font-size: 0.85rem; font-weight: 600;" th:text="'x' + ${item.quantity}"></span>
+                        </td>
+                        <td>
+                            <span th:if="${item.itemStatus.name() == 'COMPLETED'}" class="badge" style="background: #e8f5e9; color: #2e7d32; display: inline-flex; align-items: center; gap: 4px; border-radius: 12px; padding: 4px 10px;">
+                                <span style="width: 6px; height: 6px; border-radius: 50%; background: #2e7d32;"></span> Hoàn thành
+                            </span>
+                            <span th:if="${item.itemStatus.name() == 'CANCELLED'}" class="badge" style="background: #ffebee; color: #c62828; display: inline-flex; align-items: center; gap: 4px; border-radius: 12px; padding: 4px 10px;">
+                                <span style="width: 6px; height: 6px; border-radius: 50%; background: #c62828;"></span> Đã hủy
+                            </span>
+                        </td>
+                        <td>
+                            <span th:if="${item.itemStatus.name() == 'COMPLETED'}" style="color: #bdbdbd;">&mdash;</span>
+                            <span th:if="${item.itemStatus.name() == 'CANCELLED'}" 
+                                  th:class="'badge ' + 
+                                  (${item.cancelReason != null && item.cancelReason.contains('Hết nguyên liệu')} ? 'badge-het-nguyen-lieu' : 
+                                  (${item.cancelReason != null && item.cancelReason.contains('Máy hỏng')} ? 'badge-may-hong' : 
+                                  (${item.cancelReason != null && item.cancelReason.contains('Khách hủy')} ? 'badge-khach-huy' : 'badge-khac')))"
+                                  th:text="${item.cancelReason != null ? item.cancelReason : 'Không rõ'}"></span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

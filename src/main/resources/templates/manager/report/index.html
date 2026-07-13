@@ -12,6 +12,7 @@
     <meta name="_csrf" th:content="${_csrf?.token}" />
     <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
 
+
     <!-- Printable Style Overrides -->
     <style>
         @media print {
@@ -640,5 +641,6 @@
             });
         }
     </script>
+    <th:block th:replace="~{admin/fragments/ai-chat-widget :: widget}"></th:block>
 </body>
 </html>

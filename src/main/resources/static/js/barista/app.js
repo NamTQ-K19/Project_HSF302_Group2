@@ -17,13 +17,33 @@ function openReportModal(itemId, itemName) {
 function closeModal() {
     document.getElementById('report-modal').classList.remove('active');
     document.getElementById('modal-item-id').value = "";
+    document.getElementById('modal-cancel-reason').value = "";
+    document.getElementById('custom-reason-container').style.display = 'none';
+    document.getElementById('custom-reason-input').value = "";
 }
 
 function selectReason(reason) {
     document.querySelectorAll('.reason-btn').forEach(b => {
-        if (b.innerText.includes(reason)) b.classList.add('selected');
-        else b.classList.remove('selected');
+        let text = b.innerText.trim();
+        if (text === reason || text === reason + '...') {
+            b.classList.add('selected');
+        } else {
+            b.classList.remove('selected');
+        }
     });
+    
+    if (reason === 'Khác') {
+        document.getElementById('custom-reason-container').style.display = 'block';
+        document.getElementById('custom-reason-input').focus();
+        document.getElementById('modal-cancel-reason').value = document.getElementById('custom-reason-input').value;
+    } else {
+        document.getElementById('custom-reason-container').style.display = 'none';
+        document.getElementById('modal-cancel-reason').value = reason;
+    }
     // Enable submit button
     document.getElementById('btn-submit-report').disabled = false;
+}
+
+function updateCustomReason() {
+    document.getElementById('modal-cancel-reason').value = document.getElementById('custom-reason-input').value;
 }

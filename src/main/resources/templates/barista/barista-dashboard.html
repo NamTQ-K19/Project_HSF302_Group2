@@ -3,144 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Auto refresh every 10 seconds -->
     <meta http-equiv="refresh" content="10">
     <title>Barista Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
     <link rel="stylesheet" th:href="@{/css/barista/style.css}"/>
 </head>
 <body>
-    <div class="sidebar">
-        <div class="sidebar-brand">
-            <h2>☕ HSF302 Coffee</h2>
-            <p>Brew Station</p>
+<th:block th:replace="~{barista/fragments/sidebar :: sidebar('dashboard')}"></th:block>
+
+<div class="main-content">
+    <div class="header">
+        <div>
+            <div class="page-title">Hàng Đợi Pha Chế</div>
+            <div class="page-subtitle" th:text="${orders != null ? orders.size() + ' đơn đang chờ' : '0 đơn đang chờ'}"></div>
         </div>
-        
-        <div class="sidebar-menu">
-            <button class="menu-btn active">📝 Hàng đợi pha chế</button>
-            <form th:action="@{/logout}" method="post" style="margin-top: auto; padding: 1rem;">
-                <button type="submit" class="menu-btn" style="color: #ef4444;">🚪 Đăng xuất</button>
-            </form>
-        </div>
+        <div class="clock" id="live-clock">--:--</div>
     </div>
 
-    <div class="main-content">
-        <div class="header">
-            <h1 class="page-title">Hàng Đợi Pha Chế</h1>
-            <div class="header-right">
-                <div class="clock" id="live-clock">--:--</div>
+    <div class="content-body">
+        <div class="orders-container">
+
+            <!-- Empty state -->
+            <div th:if="${orders == null || orders.isEmpty()}" class="empty-state">
+                <div class="empty-state-icon">☕</div>
+                <p>Chưa có đơn hàng nào cần pha chế.</p>
             </div>
-        </div>
 
-        <div class="content-body">
-            <div class="orders-container">
-                <!-- If no orders -->
-                <div th:if="${orders == null || orders.isEmpty()}" style="text-align:center; color:var(--text-muted); padding: 3rem;">
-                    Chưa có đơn hàng nào cần pha chế.
-                </div>
-
-                <!-- Loop through orders -->
-                <div th:each="order : ${orders}" class="order-card">
-                    <div class="order-header">
-                        <div>
-                            <span class="order-id" th:text="'#' + ${order.orderId}"></span>
-                            <span class="order-table" style="margin-left: 10px;" 
-                                  th:text="${order.tableId != null ? 'Bàn ' + order.tableId : 'Mang đi / Giao hàng'}">
+            <!-- Order cards -->
+            <div th:each="order : ${orders}" class="order-card">
+                <div class="order-header">
+                    <div class="order-header-left">
+                        <span class="order-id" th:text="'#' + ${order.orderId}"></span>
+                        <span class="order-table"
+                              th:text="${order.tableId != null ? 'Bàn ' + order.tableId : 'Mang đi'}">
                             </span>
-                        </div>
                     </div>
-                    
-                    <table class="items-table">
-                        <thead>
-                            <tr>
-                                <th width="50">#</th>
-                                <th>Món đồ uống</th>
-                                <th width="150">Trạng thái</th>
-                                <th width="200" style="text-align:center;">Hành động</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Loop through items in order -->
-                            <tr th:each="item, stat : ${order.items}" 
-                                th:if="${item.itemStatus == 'PENDING' || item.itemStatus == 'PREPARING'}">
-                                
-                                <td class="item-index" th:text="${stat.count}"></td>
-                                
-                                <td>
-                                    <div class="item-name" th:text="${item.productName}"></div>
-                                    <div style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">
-                                        Số lượng: <span class="item-qty" th:text="${item.quantity}"></span> 
-                                        <span th:if="${item.specialNote != null}">
-                                            | Ghi chú: <span style="color:var(--warning)" th:text="${item.specialNote}"></span>
-                                        </span>
-                                    </div>
-                                </td>
-                                
-                                <td th:class="${item.itemStatus == 'PENDING' ? 'item-status status-pending' : 'item-status status-preparing'}"
-                                    th:text="${item.itemStatus == 'PENDING' ? 'Chờ pha chế' : 'Đang pha'}">
-                                </td>
-                                
-                                <td>
-                                    <div class="actions-cell" style="justify-content:center;">
-                                        <!-- Form to Prepare -->
-                                        <form th:if="${item.itemStatus == 'PENDING'}" th:action="@{/barista/item/status}" method="post" style="margin:0;">
-                                            <input type="hidden" name="itemId" th:value="${item.itemId}"/>
-                                            <input type="hidden" name="status" value="PREPARING"/>
-                                            <button type="submit" class="btn-action btn-prepare">☕ Pha</button>
-                                        </form>
-
-                                        <!-- Form to Complete -->
-                                        <form th:if="${item.itemStatus == 'PREPARING'}" th:action="@{/barista/item/status}" method="post" style="margin:0;">
-                                            <input type="hidden" name="itemId" th:value="${item.itemId}"/>
-                                            <input type="hidden" name="status" value="COMPLETED"/>
-                                            <button type="submit" class="btn-action btn-done">✔ Xong</button>
-                                        </form>
-                                        
-                                        <!-- Open Modal for Error -->
-                                        <button type="button" class="btn-action btn-error" 
-                                                th:data-id="${item.itemId}" 
-                                                th:data-name="${item.productName}"
-                                                onclick="openReportModal(this.getAttribute('data-id'), this.getAttribute('data-name'))">
-                                            ⚠ Báo lỗi
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <span class="order-time" th:text="${order.items.size()} + ' món'"></span>
                 </div>
+
+                <table class="items-table">
+                    <thead>
+                    <tr>
+                        <th width="50">#</th>
+                        <th>Món đồ uống</th>
+                        <th width="150">Trạng thái</th>
+                        <th width="210" style="text-align:center;">Hành động</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="item, stat : ${order.items}"
+                        th:if="${item.itemStatus == 'PENDING' || item.itemStatus == 'PREPARING'}">
+
+                        <td class="item-index" th:text="${stat.count}"></td>
+
+                        <td>
+                            <div class="item-name" th:text="${item.productName}"></div>
+                            <div class="item-meta">
+                                <span class="item-qty" th:text="'×' + ${item.quantity}"></span>
+                                <span th:if="${item.specialNote != null}" class="item-note"
+                                      th:text="'⚡ ' + ${item.specialNote}"></span>
+                            </div>
+                        </td>
+
+                        <td>
+                                    <span th:if="${item.itemStatus == 'PENDING'}" class="item-status status-pending">
+                                        <span class="status-dot"></span> Chờ pha chế
+                                    </span>
+                            <span th:if="${item.itemStatus == 'PREPARING'}" class="item-status status-preparing">
+                                        <span class="status-dot"></span> Đang pha
+                                    </span>
+                        </td>
+
+                        <td>
+                            <div class="actions-cell">
+                                <form th:if="${item.itemStatus == 'PENDING'}" th:action="@{/barista/item/status}" method="post" style="margin:0;">
+                                    <input type="hidden" name="itemId" th:value="${item.itemId}"/>
+                                    <input type="hidden" name="status" value="PREPARING"/>
+                                    <button type="submit" class="btn-action btn-prepare">☕ Pha</button>
+                                </form>
+
+                                <form th:if="${item.itemStatus == 'PREPARING'}" th:action="@{/barista/item/status}" method="post" style="margin:0;">
+                                    <input type="hidden" name="itemId" th:value="${item.itemId}"/>
+                                    <input type="hidden" name="status" value="COMPLETED"/>
+                                    <button type="submit" class="btn-action btn-done">✔ Xong</button>
+                                </form>
+
+                                <button type="button" class="btn-action btn-error"
+                                        th:data-id="${item.itemId}"
+                                        th:data-name="${item.productName}"
+                                        onclick="openReportModal(this.getAttribute('data-id'), this.getAttribute('data-name'))">
+                                    ⚠ Báo lỗi
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
+
         </div>
     </div>
+</div>
 
-    <!-- Modal for Reporting Issue -->
-    <div class="modal-overlay" id="report-modal">
-        <div class="modal" onclick="event.stopPropagation()">
-            <div class="modal-header">
-                <h3>Báo Lỗi / Không thể pha</h3>
-                <button class="close-btn" onclick="closeModal()">✕</button>
+<!-- Modal báo lỗi -->
+<div class="modal-overlay" id="report-modal">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3>⚠ Báo Lỗi / Không thể pha</h3>
+            <button class="close-btn" onclick="closeModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <p>Bạn đang báo lỗi cho món: <strong id="modal-item-name"></strong></p>
+            <div class="reasons" id="reasons-grid">
+                <button type="button" class="reason-btn" onclick="selectReason('Hết nguyên liệu')">Hết nguyên liệu</button>
+                <button type="button" class="reason-btn" onclick="selectReason('Máy hỏng')">Máy hỏng</button>
+                <button type="button" class="reason-btn" onclick="selectReason('Khách hủy')">Khách hủy</button>
+                <button type="button" class="reason-btn" onclick="selectReason('Khác')">Khác...</button>
             </div>
-            <div class="modal-body">
-                <p>Bạn đang báo lỗi cho món: <strong id="modal-item-name"></strong></p>
-                
-                <div class="reasons" id="reasons-grid">
-                    <button type="button" class="reason-btn" onclick="selectReason('Hết nguyên liệu')">Hết nguyên liệu</button>
-                    <button type="button" class="reason-btn" onclick="selectReason('Máy hỏng')">Máy hỏng</button>
-                    <button type="button" class="reason-btn" onclick="selectReason('Khác')">Khác...</button>
-                </div>
-                
-                <form th:action="@{/barista/item/status}" method="post" style="margin-top: 1.5rem;">
-                    <input type="hidden" name="itemId" id="modal-item-id"/>
-                    <input type="hidden" name="status" value="CANCELLED"/>
-                    <div class="modal-footer">
-                        <button type="button" class="btn-cancel" onclick="closeModal()">Hủy</button>
-                        <button type="submit" class="btn-submit" id="btn-submit-report" disabled>Xác nhận hủy món</button>
-                    </div>
-                </form>
+            <div id="custom-reason-container" style="display: none; margin-top: 1rem;">
+                <input type="text" id="custom-reason-input" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-family: inherit; font-size: 0.95rem;" placeholder="Nhập lý do hủy..." oninput="updateCustomReason()">
             </div>
         </div>
+        <form th:action="@{/barista/item/status}" method="post" style="margin:0;">
+            <input type="hidden" name="itemId" id="modal-item-id"/>
+            <input type="hidden" name="status" value="CANCELLED"/>
+            <input type="hidden" name="cancelReason" id="modal-cancel-reason"/>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeModal()">Hủy</button>
+                <button type="submit" class="btn-submit" id="btn-submit-report" disabled>Xác nhận hủy món</button>
+            </div>
+        </form>
     </div>
+</div>
 
-    <script th:src="@{/js/barista/app.js}"></script>
+<script th:src="@{/js/barista/app.js}"></script>
 </body>
 </html>
