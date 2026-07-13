@@ -27,6 +27,12 @@
                 <span class="material-symbols-outlined text-[20px]">calendar_month</span>
                 Lịch đặt bàn
             </a>
+            <a th:href="@{/manager/reports}" 
+               class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors no-underline"
+               th:classappend="${activePage == 'reports'} ? 'bg-primary/10 text-primary font-bold' : 'text-on-surface-variant hover:bg-surface-container hover:text-primary'">
+                <span class="material-symbols-outlined text-[20px]">bar_chart</span>
+                Báo cáo & Thống kê
+            </a>
         </div>
 
         <!-- Management Section -->
