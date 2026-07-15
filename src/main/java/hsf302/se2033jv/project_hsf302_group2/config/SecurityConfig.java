@@ -57,7 +57,7 @@ public class SecurityConfig {
                                 "/js/**", "/forgot-password", "/products/**", "/set-password**", "/resend-otp",
                                 "/verify-email", "/register", "/home", "/login", "/uploads/**", "/api/banners",
                                 "/favicon.ico", "/webjars/**", "/search", "/loyalty-policy",
-                                "/customer/payment/vnpay/return")
+                                "/customer/payment/vnpay/return", "/ai-chat/**")
                         .permitAll()
                         .requestMatchers("/admin/**").authenticated()
                         .requestMatchers("/customer/profile/**").authenticated()

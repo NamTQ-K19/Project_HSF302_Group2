@@ -1,6 +1,9 @@
 // customer/controller/CustomerReviewController.java
 package hsf302.se2033jv.project_hsf302_group2.customer.controller;
 
+import hsf302.se2033jv.project_hsf302_group2.common.enums.PolicyActionType;
+import hsf302.se2033jv.project_hsf302_group2.common.enums.PolicyType;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.PolicyRepository;
 import hsf302.se2033jv.project_hsf302_group2.common.util.SecurityUtils;
 import hsf302.se2033jv.project_hsf302_group2.customer.dto.request.CreateReviewRequest;
 import hsf302.se2033jv.project_hsf302_group2.customer.dto.response.ReviewResponse;
@@ -23,6 +26,7 @@ import java.util.Map;
 public class CustomerReviewController {
 
     private final CustomerReviewService reviewService;
+    private final PolicyRepository policyRepository;
 
     /**
      * Trang danh sách đánh giá của tôi
@@ -53,8 +57,16 @@ public class CustomerReviewController {
         model.addAttribute("orderId", orderId);
         model.addAttribute("products", reviewableProducts);
         model.addAttribute("pageTitle", "Đánh giá sản phẩm");
+        model.addAttribute("reviewEarnPoints", getReviewEarnPoints());
 
         return "customer/review/create";
+    }
+
+    private Integer getReviewEarnPoints() {
+        return policyRepository.findByPolicyTypeAndActionType(PolicyType.EARN, PolicyActionType.REVIEW)
+                .filter(p -> Boolean.TRUE.equals(p.getStatus()))
+                .map(p -> p.getCurrencyValue().intValue())
+                .orElse(0);
     }
 
     /**

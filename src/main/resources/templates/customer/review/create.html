@@ -116,7 +116,7 @@
                             </button>
                             <div class="text-on-surface-variant text-body-sm mt-4 text-center flex items-center justify-center gap-1.5">
                                 <span class="material-symbols-outlined text-secondary text-[18px]">workspace_premium</span>
-                                Bạn sẽ nhận được <strong class="text-secondary">5 điểm</strong> tích lũy cho mỗi đánh giá!
+                                Bạn sẽ nhận được <strong class="text-secondary" th:text="${reviewEarnPoints}">5</strong> điểm tích lũy cho mỗi đánh giá!
                             </div>
                         </div>
                     </form>
@@ -145,7 +145,7 @@
                     </li>
                     <li class="flex items-start gap-3">
                         <span class="material-symbols-outlined text-secondary mt-0.5">workspace_premium</span>
-                        <span class="text-on-surface font-medium text-body-md leading-relaxed">Nhận <strong class="text-secondary">5 điểm</strong> tích lũy</span>
+                        <span class="text-on-surface font-medium text-body-md leading-relaxed">Nhận <strong class="text-secondary" th:text="${reviewEarnPoints}">5</strong> điểm tích lũy</span>
                     </li>
                 </ul>
             </div>
@@ -246,13 +246,16 @@
                 }),
                 success: function(response) {
                     if (response.success) {
+                        const earnedPoints = response.data && response.data.pointsEarned != null
+                            ? response.data.pointsEarned : 0;
                         Swal.fire({
                             icon: 'success',
                             title: 'Đánh giá thành công!',
                             text: response.message || 'Cảm ơn bạn đã đánh giá!',
                             confirmButtonColor: '#6b4423'
                         }).then(() => {
-                            window.location.href = '/customer/orders/detail/' + orderId + '?reviewed=true';
+                            window.location.href = '/customer/orders/detail/' + orderId
+                                + '?reviewed=true&pointsEarned=' + earnedPoints;
                         });
                     } else {
                         Swal.fire({ icon: 'error', title: 'Lỗi!', text: response.message || 'Không thể gửi đánh giá' });

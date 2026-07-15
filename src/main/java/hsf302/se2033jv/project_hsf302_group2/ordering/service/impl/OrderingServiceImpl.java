@@ -40,6 +40,7 @@ public class OrderingServiceImpl implements OrderingService {
     private final PaymentRepository paymentRepository;
     private final PaymentMethodRepository paymentMethodRepository;
     private final LoyaltyPointRepository loyaltyPointRepository;
+    private final PolicyRepository policyRepository;
     private final InvoiceService invoiceService;
 
     private static final String DEFAULT_IMAGE = "/images/default-product.png";
@@ -185,25 +186,32 @@ public class OrderingServiceImpl implements OrderingService {
         BigDecimal discountAmount = BigDecimal.ZERO;
         int pointsUsed = 0;
         if (customer != null && (Boolean.TRUE.equals(request.getUsePoints()) || (request.getPointsToUse() != null && request.getPointsToUse() > 0))) {
-            int currentPoints = getCustomerPoints(customer.getUserId());
-            if (currentPoints > 0) {
-                BigDecimal maxDiscount = subtotal.multiply(new BigDecimal("0.5"));
-                int maxPointsCanUse = maxDiscount.divide(new BigDecimal("100"), 0, RoundingMode.FLOOR).intValue();
-                int pointsToUse = Math.min(currentPoints, maxPointsCanUse);
-                if (request.getPointsToUse() != null && request.getPointsToUse() > 0) {
-                    pointsToUse = Math.min(request.getPointsToUse(), Math.min(currentPoints, maxPointsCanUse));
-                }
-                if (pointsToUse > 0) {
-                    discountAmount = new BigDecimal(pointsToUse * 100);
-                    pointsUsed = pointsToUse;
+            BigDecimal pointToVndRate = getPointToVndRate();   // đọc động từ policies
+
+            if (pointToVndRate.compareTo(BigDecimal.ZERO) > 0) {
+                int currentPoints = getCustomerPoints(customer.getUserId());
+                if (currentPoints > 0) {
+                    BigDecimal maxDiscount = subtotal.multiply(new BigDecimal("0.5"));
+                    int maxPointsCanUse = maxDiscount.divide(pointToVndRate, 0, RoundingMode.FLOOR).intValue();
+                    int pointsToUse = Math.min(currentPoints, maxPointsCanUse);
+                    if (request.getPointsToUse() != null && request.getPointsToUse() > 0) {
+                        pointsToUse = Math.min(request.getPointsToUse(), Math.min(currentPoints, maxPointsCanUse));
+                    }
+                    if (pointsToUse > 0) {
+                        discountAmount = pointToVndRate.multiply(new BigDecimal(pointsToUse));
+                        pointsUsed = pointsToUse;
+                    }
                 }
             }
+            // Nếu chính sách "Đổi điểm" đang bị Manager vô hiệu hóa (pointToVndRate = 0),
+            // Cashier vẫn tick "Sử dụng điểm" được nhưng không có gì được áp dụng.
         }
+
         BigDecimal totalAmount = subtotal.subtract(discountAmount);
         if (totalAmount.compareTo(BigDecimal.ZERO) < 0) {
             totalAmount = BigDecimal.ZERO;
         }
-        int pointsEarned = totalAmount.divide(new BigDecimal("10000"), 0, RoundingMode.FLOOR).intValue();
+        int pointsEarned = calculatePointsEarned(totalAmount);   // đọc động từ policies
 
         // 4. Create Order
         Order order = Order.builder()
@@ -284,6 +292,34 @@ public class OrderingServiceImpl implements OrderingService {
         paymentRepository.save(payment);
 
         return mapToDetailResponse(savedOrder, orderDetails, payment);
+    }
+
+    /**
+     * Đọc tỷ lệ quy đổi "1 điểm = X VND" từ policies (REDEEM + DISCOUNT).
+     * Trả về 0 nếu chính sách không tồn tại hoặc đang bị vô hiệu hóa.
+     */
+    private BigDecimal getPointToVndRate() {
+        return policyRepository.findByPolicyTypeAndActionType(PolicyType.REDEEM, PolicyActionType.DISCOUNT)
+                .filter(p -> Boolean.TRUE.equals(p.getStatus()))
+                .map(Policy::getCurrencyValue)
+                .orElse(BigDecimal.ZERO);
+    }
+
+    /**
+     * Tính điểm tích lũy từ tổng tiền đơn hàng, dựa trên chính sách EARN + ORDER (đơn vị %).
+     * Trả về 0 nếu chính sách không tồn tại hoặc đang bị vô hiệu hóa.
+     */
+    private int calculatePointsEarned(BigDecimal totalAmount) {
+        BigDecimal earnPercent = policyRepository.findByPolicyTypeAndActionType(PolicyType.EARN, PolicyActionType.ORDER)
+                .filter(p -> Boolean.TRUE.equals(p.getStatus()))
+                .map(Policy::getCurrencyValue)
+                .orElse(BigDecimal.ZERO);
+
+        if (earnPercent.compareTo(BigDecimal.ZERO) <= 0) {
+            return 0;
+        }
+        BigDecimal rate = earnPercent.divide(new BigDecimal("100"), 10, RoundingMode.HALF_UP);
+        return totalAmount.multiply(rate).setScale(0, RoundingMode.FLOOR).intValue();
     }
 
     @Override

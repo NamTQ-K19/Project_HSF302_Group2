@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface LoyaltyPointRepository extends JpaRepository<LoyaltyPoint, Integer> {
@@ -51,5 +52,8 @@ public interface LoyaltyPointRepository extends JpaRepository<LoyaltyPoint, Inte
     @Query("SELECT COALESCE(SUM(ABS(lp.points)), 0) FROM LoyaltyPoint lp " +
             "WHERE lp.customer.userId = :customerId AND lp.transactionType = 'REDEEM'")
     Integer sumRedeemedByCustomerId(@Param("customerId") Integer customerId);
+
+    Optional<LoyaltyPoint> findByReferenceTypeAndReferenceIdAndTransactionType(
+            ReferenceType referenceType, Integer referenceId, TransactionType transactionType);
 }
 

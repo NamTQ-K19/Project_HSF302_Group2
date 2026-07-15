@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="ai-chat-widget">
+
+    <!-- Nút mở chat -->
+    <button id="aiChatToggleBtn" type="button"
+            class="ai-chat-fab bg-primary text-white">
+        <span class="material-symbols-outlined text-[26px]">smart_toy</span>
+    </button>
+
+    <!-- Cửa sổ chat -->
+    <div id="aiChatWindow" class="ai-chat-window is-hidden border border-outline-variant">
+
+        <!-- Header -->
+        <div class="bg-primary text-white px-5 py-4 flex items-center gap-2">
+            <span class="material-symbols-outlined">smart_toy</span>
+            <span class="font-bold text-body-md">Trợ lý AI tư vấn menu</span>
+            <button id="aiChatCloseBtn" type="button"
+                    class="ml-auto bg-transparent border-none text-white cursor-pointer flex items-center">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+        </div>
+
+        <!-- Khung tin nhắn -->
+        <div id="aiChatMessages" class="ai-chat-messages text-body-sm">
+            <div class="ai-chat-bubble ai bg-surface-container">
+                Xin chào! Mình là trợ lý AI của BrewMaster ☕ Bạn muốn tư vấn món gì hôm nay?
+            </div>
+        </div>
+
+        <!-- Ô nhập -->
+        <form id="aiChatForm" class="border-t border-outline-variant p-3 flex gap-2">
+            <input id="aiChatInput" type="text" maxlength="500" autocomplete="off"
+                   placeholder="Nhập câu hỏi về menu..."
+                   class="flex-1 px-3 py-2.5 rounded-xl bg-surface-container border border-outline-variant text-sm focus:outline-none focus:border-primary"/>
+            <button type="submit"
+                    class="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center border-none cursor-pointer hover:opacity-90">
+                <span class="material-symbols-outlined text-[20px]">send</span>
+            </button>
+        </form>
+    </div>
+
+</div>
+</body>
+</html>

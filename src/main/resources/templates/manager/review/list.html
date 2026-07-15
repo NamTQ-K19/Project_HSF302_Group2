@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Quản lý đánh giá - BrewMaster</title>
+    <div th:replace="~{catalog/tailwind-head :: tailwind-head}"></div>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased flex h-screen overflow-hidden">
+
+<th:block th:replace="~{manager/layout/manager-layout :: sidebar(activePage='reviews')}"></th:block>
+
+<main class="flex-1 flex flex-col overflow-y-auto">
+    <header class="sticky top-0 z-30 bg-surface-container-lowest/80 backdrop-blur-md border-b border-outline-variant px-8 py-5 flex items-center justify-between">
+        <div>
+            <h1 class="font-headline-sm text-on-surface m-0 font-bold flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[28px]">rate_review</span>
+                Quản lý đánh giá khách hàng
+            </h1>
+            <div class="text-body-sm text-on-surface-variant mt-1">
+                Xem, ẩn/hiện hoặc xóa các đánh giá sản phẩm từ khách hàng
+            </div>
+        </div>
+    </header>
+
+    <div class="p-8 max-w-[1400px] w-full mx-auto flex flex-col gap-6">
+
+        <div th:if="${successMessage}" class="flex items-center gap-3 bg-[#eafaf1] border-l-4 border-success p-4 rounded-xl text-success text-body-sm font-medium">
+            <span class="material-symbols-outlined text-[20px]">check_circle</span>
+            <span th:text="${successMessage}">Thành công</span>
+        </div>
+        <div th:if="${errorMessage}" class="flex items-center gap-3 bg-[#fdf0ee] border-l-4 border-error p-4 rounded-xl text-error text-body-sm font-medium">
+            <span class="material-symbols-outlined text-[20px]">error</span>
+            <span th:text="${errorMessage}">Lỗi</span>
+        </div>
+
+        <!-- Bộ lọc -->
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-sm p-6">
+            <form th:action="@{/manager/reviews}" method="get"
+                  class="grid grid-cols-1 md:grid-cols-[2.5fr_1.5fr_0.8fr_1fr_auto] gap-4 items-end">
+                <div class="flex flex-col gap-2">
+                    <label class="text-body-sm font-bold text-on-surface">Từ khóa</label>
+                    <input type="text" name="keyword" th:value="${filter.keyword}"
+                           placeholder="Tên khách hàng hoặc nội dung đánh giá..."
+                           class="w-full bg-surface-container border border-outline rounded-xl p-3 text-body-md focus:border-primary outline-none"/>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label class="text-body-sm font-bold text-on-surface">Sản phẩm</label>
+                    <select name="productId" class="w-full bg-surface-container border border-outline rounded-xl p-3 text-body-md">
+                        <option value="">Tất cả</option>
+                        <option th:each="p : ${products}"
+                                th:value="${p.productId}"
+                                th:text="${p.name}"
+                                th:selected="${filter.productId != null and filter.productId == p.productId}"></option>
+                    </select>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label class="text-body-sm font-bold text-on-surface">Số sao</label>
+                    <select name="rating" class="w-full bg-surface-container border border-outline rounded-xl p-3 text-body-md">
+                        <option value="">Tất cả</option>
+                        <option th:each="i : ${#numbers.sequence(5, 1)}"
+                                th:value="${i}" th:text="${i} + ' sao'"
+                                th:selected="${filter.rating == i}"></option>
+                    </select>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label class="text-body-sm font-bold text-on-surface">Trạng thái</label>
+                    <select name="visibility" class="w-full bg-surface-container border border-outline rounded-xl p-3 text-body-md">
+                        <option value="" th:selected="${filter.visibility == null or filter.visibility == ''}">Tất cả</option>
+                        <option value="visible" th:selected="${filter.visibility == 'visible'}">Đang hiện</option>
+                        <option value="hidden" th:selected="${filter.visibility == 'hidden'}">Đang ẩn</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button type="submit" class="flex-1 inline-flex items-center justify-center gap-2 bg-primary hover:opacity-90 text-white py-3 px-6 rounded-xl font-bold text-body-sm border-none cursor-pointer whitespace-nowrap">
+                        <span class="material-symbols-outlined text-[18px]">search</span> Lọc
+                    </button>
+                    <a th:href="@{/manager/reviews}" class="inline-flex items-center justify-center gap-2 bg-surface-container border border-outline text-on-surface-variant py-3 px-4 rounded-xl font-semibold text-body-sm no-underline">
+                        Xóa lọc
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Bảng danh sách -->
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-sm overflow-hidden">
+            <div class="px-6 py-5 border-b border-outline-variant flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">list_alt</span>
+                    <h2 class="font-headline-sm text-on-surface font-bold">Danh sách đánh giá</h2>
+                </div>
+                <span class="text-body-sm text-on-surface-variant font-medium bg-surface-container px-3 py-1 rounded-full"
+                      th:text="${reviewPage.totalElements} + ' đánh giá'">0 đánh giá</span>
+            </div>
+
+            <div class="p-6">
+                <div th:if="${#lists.isEmpty(reviews)}" class="flex flex-col items-center justify-center py-12 text-on-surface-variant">
+                    <span class="material-symbols-outlined text-[48px] mb-2 opacity-50">rate_review</span>
+                    <p class="text-body-md font-medium">Không tìm thấy đánh giá nào.</p>
+                </div>
+
+                <div th:unless="${#lists.isEmpty(reviews)}" class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse table-fixed">
+                        <thead>
+                        <tr class="border-b border-outline-variant">
+                            <th class="py-3 px-4 text-body-sm font-bold text-on-surface-variant w-[4%]">STT</th>
+                            <th class="py-3 px-4 text-body-sm font-bold text-on-surface-variant w-[13%]">Khách hàng</th>
+                            <th class="py-3 px-4 text-body-sm font-bold text-on-surface-variant w-[11%]">Sản phẩm</th>
+                            <th class="py-3 px-4 text-body-sm font-bold text-on-surface-variant w-[8%]">Số sao</th>
+                            <th class="py-3 px-4 text-body-sm font-bold text-on-surface-variant text-center w-[11%]">Điểm cộng</th>
+                            <th class="py-3 px-4 text-body-sm font-bold text-on-surface-variant w-[24%]">Nội dung</th>
+                            <th class="py-3 px-4 text-body-sm font-bold text-on-surface-variant w-[10%]">Ngày</th>
+                            <th class="py-3 px-4 text-body-sm font-bold text-on-surface-variant text-center w-[10%]">Trạng thái</th>
+                            <th class="py-3 px-4 text-body-sm font-bold text-on-surface-variant text-center w-[9%]">Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-outline-variant">
+                        <tr th:each="rv, stat : ${reviews}" class="hover:bg-surface-container-low transition-colors">
+                            <td class="py-3.5 px-4 text-body-md text-on-surface-variant" th:text="${currentPage * 10 + stat.count}">1</td>
+                            <td class="py-3.5 px-4 text-body-md font-semibold text-on-surface" th:text="${rv.customerName}">Nguyễn Văn A</td>
+                            <td class="py-3.5 px-4 text-body-md text-on-surface-variant" th:text="${rv.productName}">Cà phê sữa</td>
+                            <td class="py-3.5 px-4 text-body-md">
+                                <span class="text-warning font-bold" th:text="${rv.rating} + ' ★'">5 ★</span>
+                            </td>
+                            <td class="py-3.5 px-4 text-center">
+                                <span class="inline-flex items-center gap-1 bg-primary/10 text-primary px-2.5 py-1 rounded-full text-body-sm font-bold">
+                                    +<span th:text="${rv.pointsEarned}">0</span>
+                                </span>
+                            </td>
+                            <td class="py-3.5 px-4 text-body-sm text-on-surface-variant max-w-[240px] truncate" th:text="${rv.comment}">Sản phẩm rất ngon</td>
+                            <td class="py-3.5 px-4 text-body-sm text-on-surface-variant" th:text="${#temporals.format(rv.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
+                            <td class="py-3.5 px-4 text-center">
+                                        <span th:if="${rv.isVisible}" class="inline-flex items-center gap-1 bg-success/10 text-success px-3 py-1 rounded-full text-body-sm font-semibold">
+                                            <span class="material-symbols-outlined text-[14px]">visibility</span> Đang hiện
+                                        </span>
+                                <span th:unless="${rv.isVisible}" class="inline-flex items-center gap-1 bg-error/10 text-error px-3 py-1 rounded-full text-body-sm font-semibold">
+                                            <span class="material-symbols-outlined text-[14px]">visibility_off</span> Đang ẩn
+                                        </span>
+                            </td>
+                            <td class="py-3.5 px-4">
+                                <div class="flex items-center justify-center gap-2">
+                                    <form th:if="${rv.isVisible}" th:action="@{/manager/reviews/hide/{id}(id=${rv.reviewId})}" method="post"
+                                          onsubmit="return confirm('Ẩn đánh giá này khỏi khách hàng?')">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                        <button type="submit" class="inline-flex items-center gap-1.5 bg-surface-container border border-outline hover:border-primary text-on-surface-variant hover:text-primary px-3 py-1.5 rounded-lg text-body-sm font-semibold cursor-pointer">
+                                            <span class="material-symbols-outlined text-[16px]">visibility_off</span> Ẩn
+                                        </button>
+                                    </form>
+                                    <form th:unless="${rv.isVisible}" th:action="@{/manager/reviews/show/{id}(id=${rv.reviewId})}" method="post"
+                                          onsubmit="return confirm('Hiện lại đánh giá này cho khách hàng?')">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                        <button type="submit" class="inline-flex items-center gap-1.5 bg-primary/10 border border-transparent hover:border-primary text-primary px-3 py-1.5 rounded-lg text-body-sm font-semibold cursor-pointer">
+                                            <span class="material-symbols-outlined text-[16px]">visibility</span> Hiện
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Phân trang -->
+                    <div th:if="${reviewPage.totalPages > 1}" class="flex items-center gap-2 mt-6 pt-4 border-t border-outline-variant flex-wrap">
+                        <a th:if="${currentPage > 0}"
+                           th:href="@{/manager/reviews(keyword=${filter.keyword}, productId=${filter.productId}, rating=${filter.rating}, visibility=${filter.visibility}, page=${currentPage - 1})}"
+                           class="px-3 py-1.5 rounded-lg bg-surface-container border border-outline text-body-sm no-underline text-on-surface-variant">‹ Trước</a>
+
+                        <span th:each="i : ${#numbers.sequence(0, reviewPage.totalPages - 1)}">
+                                <a th:if="${i != currentPage}"
+                                   th:href="@{/manager/reviews(keyword=${filter.keyword}, productId=${filter.productId}, rating=${filter.rating}, visibility=${filter.visibility}, page=${i})}"
+                                   class="px-3 py-1.5 rounded-lg bg-surface-container border border-outline text-body-sm no-underline text-on-surface-variant"
+                                   th:text="${i + 1}"></a>
+                                <span th:if="${i == currentPage}"
+                                      class="px-3 py-1.5 rounded-lg bg-primary text-white text-body-sm font-bold"
+                                      th:text="${i + 1}"></span>
+                            </span>
+
+                        <a th:if="${currentPage < reviewPage.totalPages - 1}"
+                           th:href="@{/manager/reviews(keyword=${filter.keyword}, productId=${filter.productId}, rating=${filter.rating}, visibility=${filter.visibility}, page=${currentPage + 1})}"
+                           class="px-3 py-1.5 rounded-lg bg-surface-container border border-outline text-body-sm no-underline text-on-surface-variant">Sau ›</a>
+
+                        <span class="text-body-sm text-on-surface-variant ml-2">
+                                Trang <strong th:text="${currentPage + 1}"></strong> / <strong th:text="${reviewPage.totalPages}"></strong>
+                            </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>
