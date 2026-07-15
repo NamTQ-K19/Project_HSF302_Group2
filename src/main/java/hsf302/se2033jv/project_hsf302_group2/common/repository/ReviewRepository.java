@@ -2,6 +2,8 @@ package hsf302.se2033jv.project_hsf302_group2.common.repository;
 
 
 import hsf302.se2033jv.project_hsf302_group2.common.entity.Review;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -86,4 +88,23 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
      */
     @Query("SELECT r FROM Review r WHERE r.product.productId = :productId AND r.isVisible = true ORDER BY r.createdAt DESC")
     List<Review> findVisibleByProductId(@Param("productId") Integer productId);
+
+    /**
+     * Lọc động: từ khóa (tên khách hàng HOẶC nội dung), sản phẩm, rating, trạng thái hiển thị — có phân trang
+     */
+    @Query("SELECT r FROM Review r " +
+            "WHERE (:keyword IS NULL OR :keyword = '' OR " +
+            "       LOWER(CONCAT(COALESCE(r.customer.firstName,''), ' ', COALESCE(r.customer.lastName,''))) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "       LOWER(r.comment) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+            "AND (:productId IS NULL OR r.product.productId = :productId) " +
+            "AND (:rating IS NULL OR r.rating = :rating) " +
+            "AND (:isVisible IS NULL OR r.isVisible = :isVisible) " +
+            "ORDER BY r.createdAt DESC")
+    Page<Review> findWithDynamicFilter(
+            @Param("keyword") String keyword,
+            @Param("productId") Integer productId,
+            @Param("rating") Integer rating,
+            @Param("isVisible") Boolean isVisible,
+            Pageable pageable
+    );
 }

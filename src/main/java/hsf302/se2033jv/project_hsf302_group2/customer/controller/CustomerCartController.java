@@ -2,7 +2,11 @@
 package hsf302.se2033jv.project_hsf302_group2.customer.controller;
 
 import hsf302.se2033jv.project_hsf302_group2.common.entity.CartItem;
+import hsf302.se2033jv.project_hsf302_group2.common.entity.Policy;
+import hsf302.se2033jv.project_hsf302_group2.common.enums.PolicyActionType;
+import hsf302.se2033jv.project_hsf302_group2.common.enums.PolicyType;
 import hsf302.se2033jv.project_hsf302_group2.common.exception.BusinessException;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.PolicyRepository;
 import hsf302.se2033jv.project_hsf302_group2.common.util.SecurityUtils;
 import hsf302.se2033jv.project_hsf302_group2.customer.dto.request.AddToCartRequest;
 import hsf302.se2033jv.project_hsf302_group2.customer.dto.request.CartUpdateRequest;
@@ -31,6 +35,7 @@ public class CustomerCartController {
 
     private final CustomerCartService cartService;
     private final CartItemRepository cartItemRepository;
+    private final PolicyRepository policyRepository;
 
     @GetMapping
     public String showCart(Model model) {
@@ -40,12 +45,21 @@ public class CustomerCartController {
             CartResponse cart = cartService.getCart(userId);
             model.addAttribute("cart", cart);
             model.addAttribute("pageTitle", "Giỏ hàng");
+            model.addAttribute("earnPercent", getOrderEarnPercent());   // MỚI
         } catch (Exception e) {
             log.error("Error loading cart: {}", e.getMessage(), e);
             model.addAttribute("cart", null);
             model.addAttribute("pageTitle", "Giỏ hàng");
+            model.addAttribute("earnPercent", BigDecimal.ZERO);   // MỚI — fallback khi lỗi
         }
         return "customer/cart/index";
+    }
+
+    private BigDecimal getOrderEarnPercent() {
+        return policyRepository.findByPolicyTypeAndActionType(PolicyType.EARN, PolicyActionType.ORDER)
+                .filter(p -> Boolean.TRUE.equals(p.getStatus()))
+                .map(Policy::getCurrencyValue)
+                .orElse(BigDecimal.ZERO);
     }
 
     @GetMapping("/json")

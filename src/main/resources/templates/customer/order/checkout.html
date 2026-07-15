@@ -141,7 +141,8 @@
                                 <input class="w-5 h-5 accent-secondary cursor-pointer rounded border-secondary" type="checkbox" id="usePointsCheckbox">
                                 <span class="font-bold text-secondary text-body-md flex items-center gap-1.5"><span class="material-symbols-outlined text-[20px]">stars</span> Sử dụng điểm</span>
                             </label>
-                            <span class="bg-secondary text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">1đ = 100₫</span>
+                            <span class="bg-secondary text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider"
+                                  th:text="'1đ = ' + ${#numbers.formatDecimal(pointToVndRate, 0, 'COMMA', 0, 'POINT')} + '₫'">1đ = 100₫</span>
                         </div>
                         <div class="text-on-surface text-body-sm pl-8 mb-2">
                             Bạn có <strong class="text-secondary font-bold text-body-md bg-white/50 px-2 py-0.5 rounded-md" id="availablePoints">0</strong> điểm (<span id="pointsValue" class="font-medium">0₫</span>)
@@ -183,7 +184,7 @@
 
 <!-- TOAST BOTTOM RIGHT -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script>
+<script th:inline="javascript">
     $(document).ready(function() {
         const csrfToken = $("meta[name='_csrf']").attr("content");
         const csrfHeader = $("meta[name='_csrf_header']").attr("content");
@@ -200,7 +201,8 @@
         let availablePoints = 0;
         let usePoints = false;
         let discountFromPoints = 0;
-        const POINT_VALUE = 100;
+        const POINT_VALUE = /*[[${pointToVndRate}]]*/ 100;
+        const EARN_PERCENT = /*[[${earnPercent}]]*/ 0.01;
         let selectedItemIds = [];
         let isLoading = false;
 
@@ -241,7 +243,7 @@
                         $('#subtotal').text(formatCurrency(subtotal));
                         $('#total').text(formatCurrency(subtotal));
                         loadLoyaltyPoints();
-                        const earnedPoints = Math.floor(subtotal / 10000);
+                        const earnedPoints = Math.floor(subtotal * EARN_PERCENT / 100);
                         $('#pointsEarned').text(earnedPoints);
                         calculateDiscount();
                     } else {
@@ -269,7 +271,7 @@
                     $('#total').text(formatCurrency(subtotal));
                     availablePoints = cart.loyaltyPoints || 0;
                     updatePointsDisplay();
-                    const earnedPoints = Math.floor(subtotal / 10000);
+                    const earnedPoints = Math.floor(subtotal * EARN_PERCENT / 100);
                     $('#pointsEarned').text(earnedPoints);
                     calculateDiscount();
                 },
@@ -294,7 +296,7 @@
                     const pointsText = $html.find('.points-number').text() || '0';
                     availablePoints = parseInt(pointsText) || 0;
                     updatePointsDisplay();
-                    const earnedPoints = Math.floor(subtotal / 10000);
+                    const earnedPoints = Math.floor(subtotal * EARN_PERCENT / 100);
                     $('#pointsEarned').text(earnedPoints);
                     calculateDiscount();
                 },

@@ -56,6 +56,18 @@
                 <span class="material-symbols-outlined text-[20px]">redeem</span>
                 Điểm khách hàng
             </a>
+            <a th:href="@{/manager/policies}"
+               class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors no-underline"
+               th:classappend="${activePage == 'policies'} ? 'bg-primary/10 text-primary font-bold' : 'text-on-surface-variant hover:bg-surface-container hover:text-primary'">
+                <span class="material-symbols-outlined text-[20px]">loyalty</span>
+                Chính sách điểm thưởng
+            </a>
+            <a th:href="@{/manager/reviews}"
+               class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors no-underline"
+               th:classappend="${activePage == 'reviews'} ? 'bg-primary/10 text-primary font-bold' : 'text-on-surface-variant hover:bg-surface-container hover:text-primary'">
+                <span class="material-symbols-outlined text-[20px]">rate_review</span>
+                Đánh giá khách hàng
+            </a>
         </div>
 
         <!-- Account Section -->

@@ -7,9 +7,7 @@ import hsf302.se2033jv.project_hsf302_group2.common.entity.OrderDetail;
 import hsf302.se2033jv.project_hsf302_group2.common.entity.Product;
 import hsf302.se2033jv.project_hsf302_group2.common.entity.Review;
 import hsf302.se2033jv.project_hsf302_group2.common.entity.User;
-import hsf302.se2033jv.project_hsf302_group2.common.enums.OrderStatus;
-import hsf302.se2033jv.project_hsf302_group2.common.enums.ReferenceType;
-import hsf302.se2033jv.project_hsf302_group2.common.enums.TransactionType;
+import hsf302.se2033jv.project_hsf302_group2.common.enums.*;
 import hsf302.se2033jv.project_hsf302_group2.common.exception.BusinessException;
 import hsf302.se2033jv.project_hsf302_group2.common.exception.ResourceNotFoundException;
 import hsf302.se2033jv.project_hsf302_group2.common.repository.*;
@@ -38,8 +36,8 @@ public class CustomerReviewServiceImpl implements CustomerReviewService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final LoyaltyPointRepository loyaltyPointRepository;
+    private final PolicyRepository policyRepository;
 
-    private static final Integer REVIEW_POINTS = 5;
     private static final String DEFAULT_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Crect width='60' height='60' fill='%23f8f9fa'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='30' fill='%23dee2e6'%3E☕%3C/text%3E%3C/svg%3E";
 
     @Override
@@ -75,6 +73,8 @@ public class CustomerReviewServiceImpl implements CustomerReviewService {
             throw new BusinessException("This product is not in your order");
         }
 
+        int reviewPoints = getReviewEarnPoints();   // đọc động từ policies
+
         Review review = Review.builder()
                 .customer(user)
                 .order(order)
@@ -82,25 +82,27 @@ public class CustomerReviewServiceImpl implements CustomerReviewService {
                 .rating(request.getRating())
                 .comment(request.getComment())
                 .isVisible(true)
-                .pointsEarned(REVIEW_POINTS)
+                .pointsEarned(reviewPoints)
                 .createdAt(LocalDateTime.now())
                 .build();
 
         Review savedReview = reviewRepository.save(review);
-        log.info("Review created with ID: {}", savedReview.getReviewId());
 
-        Integer currentPoints = getCurrentPoints(userId);
-        LoyaltyPoint loyaltyPoint = LoyaltyPoint.builder()
-                .customer(user)
-                .transactionType(TransactionType.EARN)
-                .points(REVIEW_POINTS)
-                .balanceAfter(currentPoints + REVIEW_POINTS)
-                .referenceType(ReferenceType.REVIEW)
-                .referenceId(savedReview.getReviewId())
-                .note("Tích điểm từ đánh giá sản phẩm")
-                .createdAt(LocalDateTime.now())
-                .build();
-        loyaltyPointRepository.save(loyaltyPoint);
+        // Chỉ ghi giao dịch điểm nếu chính sách đang active và giá trị > 0
+        if (reviewPoints > 0) {
+            Integer currentPoints = getCurrentPoints(userId);
+            LoyaltyPoint loyaltyPoint = LoyaltyPoint.builder()
+                    .customer(user)
+                    .transactionType(TransactionType.EARN)
+                    .points(reviewPoints)
+                    .balanceAfter(currentPoints + reviewPoints)
+                    .referenceType(ReferenceType.REVIEW)
+                    .referenceId(savedReview.getReviewId())
+                    .note("Tích điểm từ đánh giá sản phẩm")
+                    .createdAt(LocalDateTime.now())
+                    .build();
+            loyaltyPointRepository.save(loyaltyPoint);
+        }
 
         return buildReviewResponse(savedReview);
     }
@@ -218,5 +220,16 @@ public class CustomerReviewServiceImpl implements CustomerReviewService {
     private Integer getCurrentPoints(Integer customerId) {
         Integer points = loyaltyPointRepository.getTotalPointsByCustomerId(customerId);
         return points != null ? points : 0;
+    }
+
+    /**
+     * Đọc số điểm tặng cố định mỗi lượt review từ policies (EARN + REVIEW).
+     * Trả về 0 nếu chính sách không tồn tại hoặc đang bị vô hiệu hóa.
+     */
+    private Integer getReviewEarnPoints() {
+        return policyRepository.findByPolicyTypeAndActionType(PolicyType.EARN, PolicyActionType.REVIEW)
+                .filter(p -> Boolean.TRUE.equals(p.getStatus()))
+                .map(p -> p.getCurrencyValue().intValue())
+                .orElse(0);
     }
 }

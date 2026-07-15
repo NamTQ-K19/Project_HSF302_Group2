@@ -796,16 +796,9 @@ GO
 
 -- 17. Bảng POLICIES (Luật / Chính sách điểm)
 INSERT INTO policies (policy_name, policy_type, action_type, currency_value, unit, status) VALUES
-(N'Giảm giá Sinh nhật', 'REDEEM', 'DISCOUNT', 20, '%', 1),
-(N'Tích điểm hóa đơn', 'EARN', 'ORDER', 10, 'point/100k', 1),
-(N'Đổi điểm lấy đồ uống', 'REDEEM', 'ORDER', 100, 'points', 1),
-(N'Giảm giá khách VIP', 'REDEEM', 'DISCOUNT', 10, '%', 1),
-(N'Tặng điểm Review', 'EARN', 'REVIEW', 5, 'points', 1),
-(N'Khuyến mãi thứ 3', 'REDEEM', 'DISCOUNT', 15, '%', 1),
-(N'Voucher 50k', 'REDEEM', 'DISCOUNT', 50000, 'VND', 1),
-(N'Đổi bánh ngọt', 'REDEEM', 'ORDER', 50, 'points', 1),
-(N'Mua 2 tính 1', 'REDEEM', 'DISCOUNT', 1, 'item', 1),
-(N'Tích điểm check-in', 'EARN', 'ORDER', 2, 'points', 1);
+(N'Đổi điểm', 'REDEEM', 'DISCOUNT', 100, 'VND', 1),
+(N'Tích điểm hóa đơn', 'EARN', 'ORDER', 0.01, '%', 1),
+(N'Tặng điểm Review', 'EARN', 'REVIEW', 5, 'points', 1);
 GO
 
 INSERT INTO map (map_name, url_map) VALUES
@@ -972,6 +965,9 @@ select * from payments
 select * from loyalty_points
 
 select * from system_logs
+
+select * from policies
+select * from reviews
 
 UPDATE users
 SET password_hash = '$2a$10$2.SdZIwqe6nJllpI4MnfQu/GOjqg0G.0kDADLa1DiEMAybWAyyFNO'

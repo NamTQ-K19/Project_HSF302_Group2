@@ -146,7 +146,10 @@
                 <div>
                     <div class="font-bold text-secondary text-body-lg mb-1">Điểm tích lũy</div>
                     <div class="text-on-surface text-body-sm mb-1">Bạn đang có <span class="points-number font-bold text-secondary text-body-md bg-white/50 px-2 py-0.5 rounded-md" th:text="${cart.loyaltyPoints}">0</span> điểm</div>
-                    <div class="text-on-surface-variant/70 text-[12px] font-medium border-t border-secondary/10 pt-2 mt-2">Tích 1 điểm cho mỗi 10.000₫ thanh toán.</div>
+                    <div class="text-on-surface-variant/70 text-[12px] font-medium border-t border-secondary/10 pt-2 mt-2"
+                         th:text="'Tích ' + ${#numbers.formatDecimal(earnPercent, 0, 'COMMA', 2, 'POINT')} + '% giá trị đơn hàng thành điểm thưởng.'">
+                        Tích 0.01% giá trị đơn hàng thành điểm thưởng.
+                    </div>
                 </div>
             </div>
         </div>

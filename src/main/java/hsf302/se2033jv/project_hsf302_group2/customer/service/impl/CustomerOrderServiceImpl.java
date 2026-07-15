@@ -40,6 +40,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
     private final PaymentRepository paymentRepository;
     private final LoyaltyPointRepository loyaltyPointRepository;
     private final ReviewRepository reviewRepository;
+    private final PolicyRepository policyRepository;
     private final InvoiceService invoiceService;
     private static final String CASH_PAYMENT_METHOD = "Tiền mặt";
 
@@ -139,17 +140,19 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         Integer pointsUsed = 0;
 
         if (request.getUsePoints() != null && request.getUsePoints()) {
-            Integer currentPoints = getCurrentPoints(userId);
-            if (currentPoints > 0) {
-                BigDecimal maxDiscount = subtotal.multiply(new BigDecimal("0.5"));
-                int maxPointsCanUse = maxDiscount.divide(new BigDecimal("100"), 0, RoundingMode.FLOOR).intValue();
-                int pointsToUse = Math.min(currentPoints, maxPointsCanUse);
+            BigDecimal pointToVndRate = getPointToVndRate();
 
-                if (pointsToUse > 0) {
-                    discountAmount = new BigDecimal(pointsToUse * 100);
-                    pointsUsed = pointsToUse;
-                    // ĐÃ CHUYỂN việc tạo LoyaltyPoint REDEEM xuống bước 8 (sau khi có savedOrder.getOrderId())
-                    // để tránh reference_id bị NULL
+            if (pointToVndRate.compareTo(BigDecimal.ZERO) > 0) {
+                Integer currentPoints = getCurrentPoints(userId);
+                if (currentPoints > 0) {
+                    BigDecimal maxDiscount = subtotal.multiply(new BigDecimal("0.5"));
+                    int maxPointsCanUse = maxDiscount.divide(pointToVndRate, 0, RoundingMode.FLOOR).intValue();
+                    int pointsToUse = Math.min(currentPoints, maxPointsCanUse);
+
+                    if (pointsToUse > 0) {
+                        discountAmount = pointToVndRate.multiply(new BigDecimal(pointsToUse));
+                        pointsUsed = pointsToUse;
+                    }
                 }
             }
         }
@@ -313,7 +316,12 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
     }
 
     private Integer calculatePointsEarned(BigDecimal amount) {
-        return amount.divide(new BigDecimal("10000"), 0, RoundingMode.FLOOR).intValue();
+        BigDecimal earnPercent = getOrderEarnPercent();   // đọc động từ policies, đơn vị %
+        if (earnPercent.compareTo(BigDecimal.ZERO) <= 0) {
+            return 0;   // chính sách đang bị vô hiệu hóa → không tích điểm
+        }
+        BigDecimal rate = earnPercent.divide(new BigDecimal("100"), 10, RoundingMode.HALF_UP);
+        return amount.multiply(rate).setScale(0, RoundingMode.FLOOR).intValue();
     }
 
     private Integer getCurrentPoints(Integer customerId) {
@@ -507,7 +515,14 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
             return;
         }
 
-        int pointsToRefund = order.getDiscountAmount().divide(new BigDecimal("100")).intValue();
+        int pointsToRefund = loyaltyPointRepository
+                .findByReferenceTypeAndReferenceIdAndTransactionType(
+                        ReferenceType.ORDER, order.getOrderId(), TransactionType.REDEEM)
+                .map(lp -> Math.abs(lp.getPoints()))   // giao dịch REDEEM lưu points âm, lấy trị tuyệt đối
+                .orElse(0);                             // không có giao dịch REDEEM nào → không hoàn gì cả
+
+        if (pointsToRefund == 0) return;   // không có điểm nào đã dùng cho đơn này → dừng sớm
+
         User customer = order.getUser();
         Integer newBalance = getCurrentPoints(customer.getUserId()) + pointsToRefund;
 
@@ -522,6 +537,28 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
                 .createdAt(LocalDateTime.now())
                 .build();
         loyaltyPointRepository.save(refund);
+    }
+
+    /**
+     * Đọc tỷ lệ quy đổi "1 điểm = X VND" từ policies (REDEEM + DISCOUNT).
+     * Trả về 0 nếu chính sách không tồn tại hoặc đang bị vô hiệu hóa.
+     */
+    private BigDecimal getPointToVndRate() {
+        return policyRepository.findByPolicyTypeAndActionType(PolicyType.REDEEM, PolicyActionType.DISCOUNT)
+                .filter(p -> Boolean.TRUE.equals(p.getStatus()))
+                .map(Policy::getCurrencyValue)
+                .orElse(BigDecimal.ZERO);
+    }
+
+    /**
+     * Đọc tỷ lệ tích điểm "%" theo giá trị đơn hàng từ policies (EARN + ORDER).
+     * Trả về 0 nếu chính sách không tồn tại hoặc đang bị vô hiệu hóa.
+     */
+    private BigDecimal getOrderEarnPercent() {
+        return policyRepository.findByPolicyTypeAndActionType(PolicyType.EARN, PolicyActionType.ORDER)
+                .filter(p -> Boolean.TRUE.equals(p.getStatus()))
+                .map(Policy::getCurrencyValue)
+                .orElse(BigDecimal.ZERO);
     }
 
 }
