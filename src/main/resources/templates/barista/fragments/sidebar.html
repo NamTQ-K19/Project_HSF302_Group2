@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="sidebar(activePage)" class="sidebar">
+    <div class="sidebar-brand">
+        <p>Brew Master Coffee Shop</p>
+    </div>
+
+    <div class="sidebar-menu">
+        <span class="sidebar-label">Chức năng</span>
+
+        <a th:href="@{/barista/dashboard}"
+           th:classappend="${activePage == 'dashboard' ? ' active' : ''}"
+           class="menu-btn"
+           style="text-decoration: none; display: block;">
+             📝 Hàng đợi pha chế
+        </a>
+
+        <a th:href="@{/barista/statistics}"
+           th:classappend="${activePage == 'statistics' ? ' active' : ''}"
+           class="menu-btn"
+           style="text-decoration: none; display: block;">
+             📊 Thống kê hôm nay
+        </a>
+
+        <a th:href="@{/barista/profile}"
+           th:classappend="${activePage == 'profile' ? ' active' : ''}"
+           class="menu-btn"
+           style="text-decoration: none; display: block;">
+             👤 Hồ sơ cá nhân
+        </a>
+    </div>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="sidebar-footer">
+        <form th:action="@{/logout}" method="post" style="margin: 0;">
+            <button type="submit" class="menu-btn" style="color: #f87171; width: 100%; text-align: left;">
+                 Đăng xuất
+            </button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

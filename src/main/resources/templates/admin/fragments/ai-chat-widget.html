@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="widget">
+    <!-- AI Chatbox Widget Styles -->
+    <style>
+        .ai-fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background-color: #d48c46;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(212,140,70,0.4);
+            cursor: pointer;
+            z-index: 9999;
+            transition: transform 0.3s ease, background-color 0.3s;
+        }
+        .ai-fab:hover {
+            transform: scale(1.05);
+            background-color: #c67a32;
+        }
+        .ai-chat-popup {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 380px;
+            height: 600px;
+            background-color: #fdf6eb;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(20px);
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            overflow: hidden;
+            font-family: inherit;
+        }
+        .ai-chat-popup.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+        .ai-chat-header {
+            background-color: #fdf6eb;
+            color: #333;
+            padding: 20px 20px 15px 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #efe4d3;
+        }
+        .ai-header-icon {
+            width: 44px;
+            height: 44px;
+            background-color: #b5651d;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            position: relative;
+            margin-right: 15px;
+        }
+        .ai-header-icon .online-dot {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 12px;
+            height: 12px;
+            background-color: #10b981;
+            border: 2px solid #fdf6eb;
+            border-radius: 50%;
+        }
+        .ai-header-info {
+            flex-grow: 1;
+        }
+        .ai-header-info h4 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 800;
+            color: #3e2723;
+        }
+        .ai-header-info p {
+            margin: 0;
+            font-size: 12px;
+            color: #8d6e63;
+        }
+        .ai-chat-close {
+            background: none;
+            border: none;
+            color: #8d6e63;
+            cursor: pointer;
+            font-size: 24px;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        .ai-chat-close:hover {
+            color: #3e2723;
+        }
+        .ai-chat-history {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #fcf8f2;
+        }
+        .ai-message-row {
+            display: flex;
+            margin-bottom: 16px;
+            align-items: flex-end;
+        }
+        .ai-message-row.user {
+            justify-content: flex-end;
+        }
+        .ai-message-row.model {
+            justify-content: flex-start;
+            align-items: flex-start;
+        }
+        .ai-avatar {
+            width: 32px;
+            height: 32px;
+            background-color: #a65a22;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+        .ai-message-bubble {
+            max-width: 75%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14.5px;
+            word-wrap: break-word;
+            line-height: 1.5;
+        }
+        .ai-message-row.user .ai-message-bubble {
+            background-color: #b5651d;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        .ai-message-row.model .ai-message-bubble {
+            background-color: #f3e8d9;
+            color: #3e2723;
+            border-top-left-radius: 4px;
+        }
+        .ai-message-bubble strong {
+            color: inherit;
+        }
+        .ai-message-row.model .ai-message-bubble strong {
+            color: #b5651d;
+        }
+        .ai-message-bubble p {
+            margin-bottom: 8px;
+        }
+        .ai-message-bubble p:last-child {
+            margin-bottom: 0;
+        }
+        .ai-chat-input-area {
+            padding: 15px 20px 20px 20px;
+            background-color: #fdf6eb;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .ai-chat-input-area input {
+            flex-grow: 1;
+            padding: 12px 20px;
+            background-color: #ece4d9;
+            border: none;
+            border-radius: 25px;
+            outline: none;
+            font-size: 14px;
+            color: #3e2723;
+            transition: background-color 0.2s;
+        }
+        .ai-chat-input-area input::placeholder {
+            color: #9e8e7e;
+        }
+        .ai-chat-input-area input:focus {
+            background-color: #e5d9c9;
+        }
+        .ai-chat-input-area button {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: #e0ab88;
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            flex-shrink: 0;
+        }
+        .ai-chat-input-area button:hover {
+            background-color: #d48c46;
+        }
+        .ai-typing-indicator {
+            display: none;
+            color: #8d6e63;
+            font-style: italic;
+            font-size: 0.85em;
+            margin-bottom: 10px;
+            margin-left: 42px;
+        }
+    </style>
+
+    <!-- AI Chatbox Widget HTML -->
+    <div class="ai-fab" id="aiFabBtn" title="Hỏi AI phân tích báo cáo">
+        <span class="material-symbols-outlined" id="aiFabIcon" style="font-size: 30px;">auto_awesome</span>
+    </div>
+
+    <div class="ai-chat-popup" id="aiChatPopup">
+        <div class="ai-chat-header">
+            <div class="ai-header-icon">
+                <span class="material-symbols-outlined">auto_awesome</span>
+                <span class="online-dot"></span>
+            </div>
+            <div class="ai-header-info">
+                <h4>Brew & Soul AI</h4>
+                <p>Trợ lý thông minh • Online</p>
+            </div>
+            <button class="ai-chat-close" id="aiCloseBtn">&times;</button>
+        </div>
+        <div class="ai-chat-history" id="aiChatHistory">
+            <div class="ai-message-row model">
+                <div class="ai-avatar"><span class="material-symbols-outlined" style="font-size: 18px;">local_cafe</span></div>
+                <div class="ai-message-bubble">
+                    Xin chào! Tôi là Trợ lý AI. Dữ liệu báo cáo doanh thu đã sẵn sàng. Bạn muốn phân tích hay có chiến lược gì không?
+                </div>
+            </div>
+            <div id="aiTypingIndicator" class="ai-typing-indicator">AI đang suy nghĩ...</div>
+        </div>
+        <div class="ai-chat-input-area">
+            <input type="text" id="aiChatInput" placeholder="Nhắn tin cho AI..." autocomplete="off">
+            <button id="aiSendBtn">
+                <span class="material-symbols-outlined" style="font-size: 20px;">send</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script th:inline="javascript">
+        // AI Chatbox Logic
+        document.addEventListener("DOMContentLoaded", function() {
+            const aiFabBtn = document.getElementById('aiFabBtn');
+            const aiChatPopup = document.getElementById('aiChatPopup');
+            const aiCloseBtn = document.getElementById('aiCloseBtn');
+            const aiChatHistoryDiv = document.getElementById('aiChatHistory');
+            const aiChatInput = document.getElementById('aiChatInput');
+            const aiSendBtn = document.getElementById('aiSendBtn');
+            const aiTypingIndicator = document.getElementById('aiTypingIndicator');
+            
+            let aiMessageHistory = [];
+
+            const aiFabIcon = document.getElementById('aiFabIcon');
+
+            // Toggle Popup
+            aiFabBtn.addEventListener('click', () => {
+                aiChatPopup.classList.toggle('active');
+                if (aiChatPopup.classList.contains('active')) {
+                    aiFabIcon.textContent = 'close';
+                } else {
+                    aiFabIcon.textContent = 'auto_awesome';
+                }
+            });
+            aiCloseBtn.addEventListener('click', () => {
+                aiChatPopup.classList.remove('active');
+                aiFabIcon.textContent = 'auto_awesome';
+            });
+
+            function appendAiMessage(role, text) {
+                const row = document.createElement('div');
+                row.className = 'ai-message-row ' + role;
+                
+                if (role === 'model') {
+                    const avatar = document.createElement('div');
+                    avatar.className = 'ai-avatar';
+                    avatar.innerHTML = '<span class="material-symbols-outlined" style="font-size: 18px;">local_cafe</span>';
+                    row.appendChild(avatar);
+                }
+
+                const bubble = document.createElement('div');
+                bubble.className = 'ai-message-bubble';
+                
+                if (role === 'model') {
+                    bubble.innerHTML = marked.parse(text);
+                } else {
+                    bubble.textContent = text;
+                }
+                
+                row.appendChild(bubble);
+                aiChatHistoryDiv.insertBefore(row, aiTypingIndicator);
+                scrollAiToBottom();
+            }
+
+            function scrollAiToBottom() {
+                aiChatHistoryDiv.scrollTop = aiChatHistoryDiv.scrollHeight;
+            }
+
+            async function sendAiMessage() {
+                const text = aiChatInput.value.trim();
+                if (!text) return;
+
+                appendAiMessage('user', text);
+                aiMessageHistory.push({ role: 'user', text: text });
+                aiChatInput.value = '';
+                
+                aiTypingIndicator.style.display = 'block';
+                scrollAiToBottom();
+                
+                try {
+                    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+                    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+                    const response = await fetch(/*[[@{/admin/revenue-analysis/chat}]]*/ '/admin/revenue-analysis/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            [csrfHeader]: csrfToken
+                        },
+                        body: JSON.stringify(aiMessageHistory)
+                    });
+                    
+                    const data = await response.json();
+                    aiTypingIndicator.style.display = 'none';
+
+                    if (response.ok) {
+                        const aiReply = data.reply;
+                        appendAiMessage('model', aiReply);
+                        aiMessageHistory.push({ role: 'model', text: aiReply });
+                    } else {
+                        appendAiMessage('model', 'Lỗi: ' + (data.error || 'Không thể kết nối đến AI.'));
+                        aiMessageHistory.pop();
+                    }
+                } catch (error) {
+                    aiTypingIndicator.style.display = 'none';
+                    appendAiMessage('model', 'Đã xảy ra lỗi mạng: ' + error.message);
+                    aiMessageHistory.pop();
+                }
+            }
+
+            aiSendBtn.addEventListener('click', sendAiMessage);
+            aiChatInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendAiMessage();
+                }
+            });
+        });
+    </script>
+</th:block>
+</body>
+</html>

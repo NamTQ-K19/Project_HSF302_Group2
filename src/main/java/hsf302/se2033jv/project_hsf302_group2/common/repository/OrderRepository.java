@@ -87,4 +87,18 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
             @Param("fromDate") LocalDateTime fromDate,
             @Param("toDate") LocalDateTime toDate,
             Pageable pageable);
+
+    @Query(value = "SELECT MONTH(o.created_at) as month, SUM(o.total_amount) as revenue " +
+            "FROM orders o WHERE o.order_status = 'COMPLETED' " +
+            "GROUP BY MONTH(o.created_at)", nativeQuery = true)
+    List<Object[]> getRevenueByMonth();
+
+    @Query(value = "SELECT TOP 10 p.name as productName, SUM(od.quantity) as quantity " +
+            "FROM order_details od " +
+            "JOIN orders o ON od.order_id = o.order_id " +
+            "JOIN products p ON od.product_id = p.product_id " +
+            "WHERE o.order_status = 'COMPLETED' " +
+            "GROUP BY p.product_id, p.name " +
+            "ORDER BY quantity DESC", nativeQuery = true)
+    List<Object[]> getTopSellingProducts();
 }

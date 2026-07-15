@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chatbox - Phân tích Doanh thu</title>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .chat-container {
+            max-width: 800px;
+            margin: 30px auto;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            height: 70vh;
+            background-color: #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .chat-header {
+            background-color: #0d6efd;
+            color: white;
+            padding: 15px;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            text-align: center;
+        }
+        .chat-history {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+        }
+        .message-row {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        .message-row.user {
+            justify-content: flex-end;
+        }
+        .message-row.model {
+            justify-content: flex-start;
+        }
+        .message-bubble {
+            max-width: 75%;
+            padding: 10px 15px;
+            border-radius: 15px;
+            position: relative;
+        }
+        .message-row.user .message-bubble {
+            background-color: #0d6efd;
+            color: white;
+            border-bottom-right-radius: 0;
+        }
+        .message-row.model .message-bubble {
+            background-color: #e9ecef;
+            color: #212529;
+            border-bottom-left-radius: 0;
+        }
+        .message-bubble pre {
+            background: #212529;
+            color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .message-bubble p:last-child {
+            margin-bottom: 0;
+        }
+        .chat-input-area {
+            padding: 15px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            gap: 10px;
+            background-color: white;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+        .chat-input-area input {
+            flex-grow: 1;
+        }
+        .typing-indicator {
+            display: none;
+            color: #6c757d;
+            font-style: italic;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+<div class="container">
+    <div class="chat-container">
+        <div class="chat-header">
+            <h4 class="m-0">Trợ lý AI Phân tích Doanh thu (Gemini)</h4>
+        </div>
+        
+        <div class="chat-history" id="chatHistory">
+            <div class="message-row model">
+                <div class="message-bubble">
+                    Xin chào! Tôi là AI phân tích doanh thu của quán. Dữ liệu đã được hệ thống cập nhật. Bạn muốn hỏi gì về chiến lược kinh doanh hay tình hình doanh thu hôm nay?
+                </div>
+            </div>
+            <div id="typingIndicator" class="typing-indicator">AI đang suy nghĩ...</div>
+        </div>
+
+        <div class="chat-input-area">
+            <input type="text" id="chatInput" class="form-control" placeholder="Nhập câu hỏi của bạn tại đây (vd: Sản phẩm nào bán chạy nhất?)" autocomplete="off">
+            <button class="btn btn-primary" id="sendBtn">Gửi</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function() {
+        const chatHistoryDiv = document.getElementById('chatHistory');
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const typingIndicator = document.getElementById('typingIndicator');
+        
+        // Mảng lưu lịch sử chat
+        let messageHistory = [];
+
+        function appendMessage(role, text) {
+            const row = document.createElement('div');
+            row.className = 'message-row ' + role;
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            
+            if (role === 'model') {
+                bubble.innerHTML = marked.parse(text);
+            } else {
+                bubble.textContent = text;
+            }
+            
+            row.appendChild(bubble);
+            chatHistoryDiv.insertBefore(row, typingIndicator);
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            chatHistoryDiv.scrollTop = chatHistoryDiv.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            // Hiển thị tin nhắn user
+            appendMessage('user', text);
+            messageHistory.push({ role: 'user', text: text });
+            chatInput.value = '';
+            
+            // Hiện indicator
+            typingIndicator.style.display = 'block';
+            scrollToBottom();
+            
+            try {
+                const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+                const response = await fetch(/*[[@{/admin/revenue-analysis/chat}]]*/ '/admin/revenue-analysis/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        [csrfHeader]: csrfToken
+                    },
+                    body: JSON.stringify(messageHistory)
+                });
+                
+                const data = await response.json();
+                typingIndicator.style.display = 'none';
+
+                if (response.ok) {
+                    const aiReply = data.reply;
+                    appendMessage('model', aiReply);
+                    messageHistory.push({ role: 'model', text: aiReply });
+                } else {
+                    appendMessage('model', 'Lỗi: ' + (data.error || 'Không thể kết nối đến AI.'));
+                    messageHistory.pop(); // Revert user message from history on error
+                }
+            } catch (error) {
+                typingIndicator.style.display = 'none';
+                appendMessage('model', 'Đã xảy ra lỗi mạng: ' + error.message);
+                messageHistory.pop();
+            }
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    });
+</script>
+</body>
+</html>
