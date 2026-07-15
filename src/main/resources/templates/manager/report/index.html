@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="vi">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Báo cáo & Thống kê - BrewMaster</title>
+    <!-- Thymeleaf Tailwind import without wrapper div -->
+    <th:block th:replace="~{catalog/tailwind-head :: tailwind-head}"></th:block>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
+
+    <!-- Printable Style Overrides -->
+    <style>
+        @media print {
+            aside, header, form, nav, button, a {
+                display: none !important;
+            }
+            main {
+                overflow: visible !important;
+                height: auto !important;
+                position: static !important;
+            }
+            body {
+                background: white !important;
+                color: black !important;
+            }
+            section[id$="-view"] {
+                display: block !important;
+                opacity: 1 !important;
+                page-break-after: always;
+            }
+            .bg-surface-container-lowest, .bg-surface-container, .bg-surface-container-low {
+                background: transparent !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+        }
+    </style>
+
+    <!-- SEO & AI Crawlers Metadata (JSON-LD) -->
+    <script type="application/ld+json" th:inline="javascript">
+        {
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            "name": "Báo cáo & Thống kê - BrewMaster",
+            "description": "Hệ thống báo cáo doanh thu, đơn hàng và sản phẩm của quán cà phê BrewMaster.",
+            "publisher": {
+                "@type": "Organization",
+                "name": "BrewMaster"
+            },
+            "mainEntity": {
+                "@type": "Report",
+                "name": "Báo cáo hoạt động kinh doanh",
+                "dateCreated": /*[[${reportData.startDate}]]*/ "2026-07-13",
+                "startDate": /*[[${reportData.startDate}]]*/ "2026-07-13",
+                "endDate": /*[[${reportData.endDate}]]*/ "2026-07-13",
+                "about": {
+                    "@type": "FinancialReport",
+                    "name": "Tổng quan doanh số",
+                    "description": "Doanh thu tổng hợp đạt " + /*[[${reportData.sales.totalRevenue}]]*/ 0 + " VND"
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed antialiased flex h-screen overflow-hidden">
+
+    <!-- Sidebar fragment injection -->
+    <th:block th:replace="~{manager/layout/manager-layout :: sidebar(activePage='reports')}"></th:block>
+
+    <!-- Main Content Panel -->
+    <main class="flex-1 flex flex-col overflow-y-auto">
+        <!-- Top Title Bar -->
+        <header class="sticky top-0 z-30 bg-surface-container-lowest/80 backdrop-blur-md border-b border-outline-variant px-8 py-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <hgroup>
+                <h1 class="font-headline-sm text-on-surface m-0 font-bold flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-[28px]">bar_chart</span>
+                    Báo cáo & Thống kê
+                </h1>
+                <p class="text-body-sm text-on-surface-variant mt-1">
+                    Theo dõi tình hình kinh doanh, số liệu đơn hàng và doanh thu sản phẩm
+                </p>
+            </hgroup>
+        </header>
+
+        <!-- Section 1: Dashboard Control Bar (Always visible Date Filters & Exports at the top) -->
+        <section class="px-8 pt-8 max-w-[1400px] w-full mx-auto">
+            <section class="bg-surface-container border border-outline-variant rounded-2xl p-6 flex flex-col gap-6 shadow-sm">
+                <!-- Header with Export Actions -->
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-outline-variant pb-4">
+                    <h2 class="text-headline-sm font-bold text-on-surface m-0">Bộ lọc báo cáo</h2>
+                    
+                    <!-- Prominent Quick Export Actions moved up -->
+                    <section class="flex flex-wrap items-center gap-3">
+                        <button type="button" onclick="exportActiveTabExcel();" class="inline-flex items-center gap-2 bg-primary hover:opacity-90 text-white font-bold px-5 py-2.5 rounded-xl text-body-sm transition-all border-none cursor-pointer shadow-sm">
+                            <span class="material-symbols-outlined text-[18px]">download</span>
+                            Tải Excel
+                        </button>
+                        <button type="button" onclick="window.print();" class="inline-flex items-center gap-2 bg-[#22c55e] hover:bg-[#16a34a] text-white font-bold px-5 py-2.5 rounded-xl text-body-sm transition-all border-none cursor-pointer shadow-sm">
+                            <span class="material-symbols-outlined text-[18px]">print</span>
+                            In / Lưu PDF
+                        </button>
+                    </section>
+                </div>
+
+                <!-- Interactive Date Selector Form -->
+                <form id="filterForm" action="/manager/reports" method="get" class="flex flex-wrap items-center gap-4">
+                    <fieldset class="border-none p-0 m-0 flex items-center gap-2">
+                        <label for="periodSelect" class="text-body-sm font-bold text-on-surface-variant whitespace-nowrap">Chọn nhanh:</label>
+                        <select name="period" id="periodSelect" onchange="onPresetChange(this.value);" class="bg-surface-container-lowest border border-outline rounded-xl px-3 py-2.5 text-body-sm font-bold text-on-surface focus:border-primary outline-none cursor-pointer">
+                            <option value="today" th:selected="${period == 'today'}">Hôm nay</option>
+                            <option value="week" th:selected="${period == 'week'}">7 ngày qua</option>
+                            <option value="month" th:selected="${period == 'month'}">30 ngày qua</option>
+                            <option value="custom" th:selected="${period == 'custom'}">Khoảng ngày tùy chọn</option>
+                        </select>
+                    </fieldset>
+
+                    <fieldset class="border-none p-0 m-0 flex flex-wrap items-center gap-3">
+                        <label for="startDateInput" class="text-body-sm font-bold text-on-surface-variant">Từ ngày:</label>
+                        <input type="date" name="startDate" id="startDateInput" th:value="${startDate}" onchange="onDateInputChange();" class="bg-surface-container-lowest border border-outline rounded-xl px-3 py-2 text-body-sm text-on-surface focus:border-primary outline-none"/>
+                        
+                        <label for="endDateInput" class="text-body-sm font-bold text-on-surface-variant">Đến ngày:</label>
+                        <input type="date" name="endDate" id="endDateInput" th:value="${endDate}" onchange="onDateInputChange();" class="bg-surface-container-lowest border border-outline rounded-xl px-3 py-2 text-body-sm text-on-surface focus:border-primary outline-none"/>
+                        
+                        <button type="submit" class="bg-primary hover:opacity-90 text-white font-bold px-5 py-2.5 rounded-xl text-body-sm transition-all border-none cursor-pointer">
+                            Áp dụng
+                        </button>
+                    </fieldset>
+                </form>
+            </section>
+        </section>
+
+        <!-- Reports Content Wrapper -->
+        <section class="p-8 max-w-[1400px] w-full mx-auto flex flex-col gap-6">
+            
+            <!-- Sticky Navigation Tabs to anchor scroll directly to each report section -->
+            <nav class="flex gap-2 border-b border-outline-variant overflow-x-auto hide-scrollbar sticky top-[84px] z-20 bg-background py-2">
+                <button type="button" onclick="scrollToSection('sales', event);" id="tab-sales" class="px-6 py-3 font-bold text-body-sm border-none bg-transparent border-b-2 transition-all cursor-pointer border-primary text-primary">
+                    Báo cáo doanh thu (Sales)
+                </button>
+                <button type="button" onclick="scrollToSection('orders', event);" id="tab-orders" class="px-6 py-3 font-bold text-body-sm border-none bg-transparent border-b-2 transition-all cursor-pointer border-transparent text-on-surface-variant hover:text-primary">
+                    Báo cáo đơn hàng (Orders)
+                </button>
+                <button type="button" onclick="scrollToSection('products', event);" id="tab-products" class="px-6 py-3 font-bold text-body-sm border-none bg-transparent border-b-2 transition-all cursor-pointer border-transparent text-on-surface-variant hover:text-primary">
+                    Sản phẩm bán chạy (Products)
+                </button>
+            </nav>
+
+            <!-- Metrics Highlight Cards -->
+            <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Card 1: Revenue -->
+                <article class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm flex items-center gap-4">
+                    <span class="material-symbols-outlined text-[36px] text-primary bg-primary/10 p-3 rounded-full" aria-hidden="true">payments</span>
+                    <dl class="m-0">
+                        <dt class="text-body-sm text-on-surface-variant font-bold">Tổng doanh thu</dt>
+                        <dd class="m-0 text-headline-sm font-bold text-on-surface mt-1">
+                            <data th:value="${reportData.sales.totalRevenue}" 
+                                  th:text="${#numbers.formatDecimal(reportData.sales.totalRevenue, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                0 ₫
+                            </data>
+                        </dd>
+                    </dl>
+                </article>
+
+                <!-- Card 2: Completed Orders -->
+                <article class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm flex items-center gap-4">
+                    <span class="material-symbols-outlined text-[36px] text-primary bg-primary/10 p-3 rounded-full" aria-hidden="true">receipt_long</span>
+                    <dl class="m-0">
+                        <dt class="text-body-sm text-on-surface-variant font-bold">Đơn hoàn thành</dt>
+                        <dd class="m-0 text-headline-sm font-bold text-on-surface mt-1">
+                            <output th:text="${reportData.sales.totalCompletedOrders}">0</output>
+                        </dd>
+                    </dl>
+                </article>
+
+                <!-- Card 3: Avg Order Value -->
+                <article class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm flex items-center gap-4">
+                    <span class="material-symbols-outlined text-[36px] text-primary bg-primary/10 p-3 rounded-full" aria-hidden="true">monitoring</span>
+                    <dl class="m-0">
+                        <dt class="text-body-sm text-on-surface-variant font-bold">Giá trị đơn trung bình</dt>
+                        <dd class="m-0 text-headline-sm font-bold text-on-surface mt-1">
+                            <data th:value="${reportData.sales.avgOrderValue}" 
+                                  th:text="${#numbers.formatDecimal(reportData.sales.avgOrderValue, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                0 ₫
+                            </data>
+                        </dd>
+                    </dl>
+                </article>
+
+                <!-- Card 4: Total Products Sold -->
+                <article class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm flex items-center gap-4">
+                    <span class="material-symbols-outlined text-[36px] text-primary bg-primary/10 p-3 rounded-full" aria-hidden="true">coffee</span>
+                    <dl class="m-0">
+                        <dt class="text-body-sm text-on-surface-variant font-bold">Sản phẩm đã bán</dt>
+                        <dd class="m-0 text-headline-sm font-bold text-on-surface mt-1">
+                            <output th:text="${reportData.products.totalItemsSold}">0</output>
+                        </dd>
+                    </dl>
+                </article>
+            </section>
+
+            <!-- SECTION 1: SALES REPORT -->
+            <section id="sales-view" class="flex flex-col gap-6 scroll-mt-[140px]">
+                <!-- Trend Chart Article -->
+                <article class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm">
+                    <header class="mb-4">
+                        <h2 class="text-headline-sm font-bold text-on-surface m-0">Biểu đồ xu hướng doanh thu</h2>
+                        <p class="text-body-sm text-on-surface-variant mt-1">Thống kê doanh thu theo ngày biểu diễn dưới dạng biểu đồ vector có cấu trúc</p>
+                    </header>
+
+                    <figure class="m-0 p-4 bg-surface-container border border-outline rounded-2xl flex flex-col items-center">
+                        <!-- Pure Semantic vector SVG chart -->
+                        <svg id="salesChartSvg" viewBox="0 0 1000 350" class="w-full h-[350px]">
+                            <defs>
+                                <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-color="#745853" stop-opacity="0.25"/>
+                                    <stop offset="100%" stop-color="#745853" stop-opacity="0.0"/>
+                                </linearGradient>
+                            </defs>
+                            <!-- Grid Y horizontal indicators -->
+                            <line x1="80" y1="40" x2="960" y2="40" stroke="#efefef" stroke-width="1" />
+                            <line x1="80" y1="115" x2="960" y2="115" stroke="#efefef" stroke-width="1" />
+                            <line x1="80" y1="190" x2="960" y2="190" stroke="#efefef" stroke-width="1" />
+                            <line x1="80" y1="265" x2="960" y2="265" stroke="#efefef" stroke-width="1" />
+                            <line x1="80" y1="310" x2="960" y2="310" stroke="#e5e5e5" stroke-width="1.5" />
+                            
+                            <!-- Polyline and area paths rendered dynamically -->
+                            <path id="salesAreaPath" fill="url(#salesGrad)" d="" />
+                            <polyline id="salesLinePoly" fill="none" stroke="#745853" stroke-width="3.5" points="" />
+                            
+                            <!-- Groups for dynamic labels -->
+                            <g id="chartPoints"></g>
+                            <g id="chartXAxisText" font-size="11" font-family="Plus Jakarta Sans" fill="#706d6c"></g>
+                            <g id="chartYAxisText" font-size="11" font-family="Plus Jakarta Sans" fill="#706d6c" text-anchor="end"></g>
+                        </svg>
+                        <figcaption class="text-body-sm text-on-surface-variant font-medium mt-3">
+                            Trục hoành biểu thị Thời gian, Trục tung biểu thị Doanh thu (VND)
+                        </figcaption>
+                    </figure>
+                </article>
+
+                <!-- Sales Detail Grid List -->
+                <article class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm overflow-hidden">
+                    <header class="mb-4">
+                        <h2 class="text-headline-sm font-bold text-on-surface m-0">Chi tiết doanh thu hàng ngày</h2>
+                        <p class="text-body-sm text-on-surface-variant mt-1">Dữ liệu doanh thu thống kê chi tiết của từng ngày trong kỳ</p>
+                    </header>
+
+                    <table class="w-full text-left border-collapse">
+                        <caption>Doanh thu chi tiết theo ngày</caption>
+                        <thead>
+                            <tr class="border-b border-outline-variant bg-surface-container">
+                                <th scope="col" class="py-3 px-4 text-body-sm font-bold text-on-surface-variant w-[80px] rounded-tl-xl">STT</th>
+                                <th scope="col" class="py-3 px-4 text-body-sm font-bold text-on-surface-variant">Ngày ghi nhận</th>
+                                <th scope="col" class="py-3 px-4 text-body-sm font-bold text-on-surface-variant text-right rounded-tr-xl">Doanh số đạt</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-outline-variant">
+                            <tr th:each="point, stat : ${reportData.sales.salesTrend}" class="hover:bg-surface-container-low transition-colors">
+                                <td class="py-3 px-4 text-body-md text-on-surface-variant" th:text="${stat.count}">1</td>
+                                <td class="py-3 px-4 text-body-md font-semibold text-on-surface">
+                                    <time th:datetime="${point.date}" th:text="${point.date}">2026-07-13</time>
+                                </td>
+                                <td class="py-3 px-4 text-body-md font-bold text-primary text-right">
+                                    <data th:value="${point.revenue}" th:text="${#numbers.formatDecimal(point.revenue, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</data>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(reportData.sales.salesTrend)}">
+                                <td colspan="3" class="py-8 text-center text-on-surface-variant font-medium">Không tìm thấy dữ liệu doanh thu trong khoảng thời gian này.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </article>
+            </section>
+
+            <!-- SECTION 2: ORDERS REPORT -->
+            <section id="orders-view" class="flex flex-col gap-6 scroll-mt-[140px]">
+                <article class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Ratio Status Cards -->
+                    <section class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm">
+                        <header class="mb-4">
+                            <h3 class="text-headline-sm font-bold text-on-surface m-0">Tỷ lệ theo trạng thái đơn hàng</h3>
+                            <p class="text-body-sm text-on-surface-variant mt-1">Cơ cấu trạng thái của các đơn phát sinh trong kỳ</p>
+                        </header>
+                        <ul class="list-none p-0 m-0 flex flex-col gap-4">
+                            <li th:each="st : ${reportData.orders.ordersByStatus}" class="flex flex-col gap-1">
+                                <span class="flex justify-between text-body-sm font-bold text-on-surface">
+                                    <span th:text="${st.status == 'COMPLETED' ? 'Hoàn thành' : (st.status == 'CANCELLED' ? 'Đã hủy' : (st.status == 'PREPARING' ? 'Đang pha chế' : (st.status == 'READY' ? 'Sẵn sàng' : 'Chờ xử lý')))}">Status</span>
+                                    <output th:text="${st.count} + ' đơn'"></output>
+                                </span>
+                                <progress th:value="${st.count}" th:max="${reportData.orders.totalOrdersCount == 0 ? 1 : reportData.orders.totalOrdersCount}" class="w-full h-2 rounded-full [&::-webkit-progress-bar]:bg-surface-container [&::-webkit-progress-value]:bg-primary [&::-moz-progress-bar]:bg-primary"></progress>
+                            </li>
+                        </ul>
+                    </section>
+
+                    <!-- Serve Type Ratio -->
+                    <section class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm">
+                        <header class="mb-4">
+                            <h3 class="text-headline-sm font-bold text-on-surface m-0">Tỷ lệ theo loại phục vụ</h3>
+                            <p class="text-body-sm text-on-surface-variant mt-1">Doanh số đơn phân phối theo Dine-in, Takeaway và Delivery</p>
+                        </header>
+                        <ul class="list-none p-0 m-0 flex flex-col gap-4">
+                            <li th:each="tp : ${reportData.orders.ordersByType}" class="flex flex-col gap-1">
+                                <span class="flex justify-between text-body-sm font-bold text-on-surface">
+                                    <span th:text="${tp.type == 'DINE_IN' ? 'Tại quán' : (tp.type == 'TAKEAWAY' ? 'Mang đi' : 'Giao hàng')}">Type</span>
+                                    <output th:text="${tp.count} + ' đơn'"></output>
+                                </span>
+                                <progress th:value="${tp.count}" th:max="${reportData.orders.totalOrdersCount == 0 ? 1 : reportData.orders.totalOrdersCount}" class="w-full h-2 rounded-full [&::-webkit-progress-bar]:bg-surface-container [&::-webkit-progress-value]:bg-[#745853]/60 [&::-moz-progress-bar]:bg-[#745853]/60"></progress>
+                            </li>
+                        </ul>
+                    </section>
+                </article>
+
+                <!-- Recent Orders Table -->
+                <article class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm overflow-hidden">
+                    <header class="mb-4">
+                        <h2 class="text-headline-sm font-bold text-on-surface m-0">Danh sách đơn hàng mới nhất</h2>
+                        <p class="text-body-sm text-on-surface-variant mt-1">Danh sách 10 đơn hàng gần đây phát sinh trong kỳ</p>
+                    </header>
+
+                    <table class="w-full text-left border-collapse">
+                        <caption>Danh sách đơn hàng gần đây</caption>
+                        <thead>
+                            <tr class="border-b border-outline-variant bg-surface-container">
+                                <th scope="col" class="py-3 px-4 text-body-sm font-bold text-on-surface-variant w-[100px] rounded-tl-xl">Mã đơn</th>
+                                <th scope="col" class="py-3 px-4 text-body-sm font-bold text-on-surface-variant">Khách hàng</th>
+                                <th scope="col" class="py-3 px-4 text-body-sm font-bold text-on-surface-variant">Hình thức</th>
+                                <th scope="col" class="py-3 px-4 text-body-sm font-bold text-on-surface-variant">Trạng thái</th>
+                                <th scope="col" class="py-3 px-4 text-body-sm font-bold text-on-surface-variant text-right">Tổng tiền</th>
+                                <th scope="col" class="py-3 px-4 text-body-sm font-bold text-on-surface-variant text-center rounded-tr-xl">Thời gian tạo</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-outline-variant">
+                            <tr th:each="order : ${reportData.orders.recentOrders}" class="hover:bg-surface-container-low transition-colors">
+                                <td class="py-4 px-4 text-body-md font-semibold text-on-surface" th:text="'#' + ${order.orderId}">#1001</td>
+                                <td class="py-4 px-4 text-body-md text-on-surface" th:text="${order.user != null ? (order.user.firstName + ' ' + order.user.lastName) : 'Khách vãng lai'}">Nguyễn Văn A</td>
+                                <td class="py-4 px-4 text-body-sm font-medium">
+                                    <span th:text="${order.orderType == 'DINE_IN' ? 'Tại quán' : (order.orderType == 'TAKEAWAY' ? 'Mang đi' : 'Giao hàng')}" class="bg-secondary-container text-on-secondary-fixed px-2.5 py-1 rounded-full text-xs font-bold">Tại quán</span>
+                                </td>
+                                <td class="py-4 px-4 text-body-sm">
+                                    <span th:if="${order.orderStatus.name() == 'COMPLETED'}" class="bg-[#eafaf1] text-success px-2.5 py-1 rounded-full text-xs font-bold">Hoàn thành</span>
+                                    <span th:if="${order.orderStatus.name() == 'CANCELLED'}" class="bg-[#fdf0ee] text-error px-2.5 py-1 rounded-full text-xs font-bold">Đã hủy</span>
+                                    <span th:if="${order.orderStatus.name() == 'PREPARING'}" class="bg-primary/10 text-primary px-2.5 py-1 rounded-full text-xs font-bold">Đang pha chế</span>
+                                    <span th:if="${order.orderStatus.name() == 'READY'}" class="bg-tertiary-fixed text-primary px-2.5 py-1 rounded-full text-xs font-bold">Sẵn sàng</span>
+                                    <span th:if="${order.orderStatus.name() == 'PENDING'}" class="bg-surface-container-highest text-on-surface-variant px-2.5 py-1 rounded-full text-xs font-bold">Chờ xử lý</span>
+                                </td>
+                                <td class="py-4 px-4 text-body-md font-bold text-right">
+                                    <data th:value="${order.totalAmount}" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</data>
+                                </td>
+                                <td class="py-4 px-4 text-body-sm text-on-surface-variant text-center">
+                                    <time th:datetime="${order.createdAt}" th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">13/07/2026 10:00</time>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(reportData.orders.recentOrders)}">
+                                <td colspan="6" class="py-8 text-center text-on-surface-variant font-medium">Chưa phát sinh đơn hàng nào trong khoảng thời gian này.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </article>
+            </section>
+
+            <!-- SECTION 3: PRODUCT REPORT -->
+            <section id="products-view" class="flex flex-col gap-6 scroll-mt-[140px]">
+                <!-- Products Performance Table -->
+                <article class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm overflow-hidden">
+                    <header class="mb-4">
+                        <h2 class="text-headline-sm font-bold text-on-surface m-0">Xếp hạng sản phẩm bán chạy</h2>
+                        <p class="text-body-sm text-on-surface-variant mt-1">Danh sách xếp hạng sản phẩm theo số lượng tiêu thụ tốt nhất</p>
+                    </header>
+
+                    <table class="w-full text-left border-collapse">
+                        <caption>Bảng thống kê lượng sản phẩm bán chạy</caption>
+                        <thead>
+                            <tr class="border-b border-outline-variant bg-surface-container">
+                                <th scope="col" class="py-3 px-4 text-body-sm font-bold text-on-surface-variant w-[80px] rounded-tl-xl">Hạng</th>
+                                <th scope="col" class="py-3 px-4 text-body-sm font-bold text-on-surface-variant w-[100px]">Mã SP</th>
+                                <th scope="col" class="py-3 px-4 text-body-sm font-bold text-on-surface-variant">Tên sản phẩm</th>
+                                <th scope="col" class="py-3 px-4 text-body-sm font-bold text-on-surface-variant">Danh mục</th>
+                                <th scope="col" class="py-3 px-4 text-body-sm font-bold text-on-surface-variant text-center w-[150px]">Đã bán (Qty)</th>
+                                <th scope="col" class="py-3 px-4 text-body-sm font-bold text-on-surface-variant text-right rounded-tr-xl">Doanh thu thu về</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-outline-variant">
+                            <tr th:each="prod, stat : ${reportData.products.bestSellers}" class="hover:bg-surface-container-low transition-colors">
+                                <td class="py-4 px-4 text-body-md text-on-surface-variant font-bold" th:text="${stat.count}">1</td>
+                                <td class="py-4 px-4 text-body-md text-on-surface-variant" th:text="${prod.productId}">#101</td>
+                                <td class="py-4 px-4 text-body-md font-semibold text-on-surface" th:text="${prod.productName}">Cà phê đen</td>
+                                <td class="py-4 px-4">
+                                    <span class="bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full" th:text="${prod.categoryName}">Đồ uống</span>
+                                </td>
+                                <td class="py-4 px-4 text-body-md font-bold text-center" th:text="${prod.quantitySold}">250</td>
+                                <td class="py-4 px-4 text-body-md font-bold text-right text-primary">
+                                    <data th:value="${prod.revenue}" th:text="${#numbers.formatDecimal(prod.revenue, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</data>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(reportData.products.bestSellers)}">
+                                <td colspan="6" class="py-8 text-center text-on-surface-variant font-medium">Không tìm thấy dữ liệu tiêu thụ sản phẩm nào trong kỳ này.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </article>
+            </section>
+
+        </section>
+    </main>
+
+    <!-- Dynamic JS Logic for SVG Render and Tab Control -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        // Only serialize the safe trend data to avoid Jackson entity circular reference errors
+        const salesTrend = /*[[${reportData.sales.salesTrend}]]*/ [];
+        /*]]>*/
+
+        let activeTab = 'sales';
+
+        document.addEventListener("DOMContentLoaded", () => {
+            renderSalesChart();
+            setupScrollSpy();
+        });
+
+        // Date Presets Change Handler
+        function onPresetChange(val) {
+            if (val !== "custom") {
+                updatePresetDates(val);
+                document.getElementById("filterForm").submit();
+            }
+        }
+
+        // When dates are modified manually, switch preset dropdown state to 'custom'
+        function onDateInputChange() {
+            document.getElementById("periodSelect").value = "custom";
+        }
+
+        // Automatically update start and end dates inside inputs depending on preset selected
+        function updatePresetDates(preset) {
+            const startInput = document.getElementById("startDateInput");
+            const endInput = document.getElementById("endDateInput");
+            const today = new Date();
+            
+            const formatDate = (d) => {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            endInput.value = formatDate(today);
+
+            if (preset === "today") {
+                startInput.value = formatDate(today);
+            } else if (preset === "week") {
+                const start = new Date();
+                start.setDate(today.getDate() - 7);
+                startInput.value = formatDate(start);
+            } else if (preset === "month") {
+                const start = new Date();
+                start.setDate(today.getDate() - 30);
+                startInput.value = formatDate(start);
+            }
+        }
+
+        // Smooth Scroll to target report section with top headers offset adjustment
+        function scrollToSection(id, event) {
+            if (event) event.preventDefault();
+            activeTab = id;
+            const target = document.getElementById(id + '-view');
+            if (target) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+                highlightNavButton(id);
+            }
+        }
+
+        // Highlight selected nav tab button
+        function highlightNavButton(activeId) {
+            const tabs = ['sales', 'orders', 'products'];
+            tabs.forEach(t => {
+                const btn = document.getElementById('tab-' + t);
+                if (btn) {
+                    if (t === activeId) {
+                        btn.classList.add('border-primary', 'text-primary');
+                        btn.classList.remove('border-transparent', 'text-on-surface-variant');
+                    } else {
+                        btn.classList.remove('border-primary', 'text-primary');
+                        btn.classList.add('border-transparent', 'text-on-surface-variant');
+                    }
+                }
+            });
+        }
+
+        // Scroll Spy observer to change active tab status based on viewport position
+        function setupScrollSpy() {
+            const sections = ['sales', 'orders', 'products'];
+            const options = {
+                root: null,
+                rootMargin: '-180px 0px -45% 0px', // accounting for top offset
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.id.replace('-view', '');
+                        activeTab = id;
+                        highlightNavButton(id);
+                    }
+                });
+            }, options);
+
+            sections.forEach(s => {
+                const el = document.getElementById(s + '-view');
+                if (el) observer.observe(el);
+            });
+        }
+
+        // Dynamic Active Tab Excel download handler
+        function exportActiveTabExcel() {
+            const period = document.getElementById("periodSelect").value;
+            const startDate = document.getElementById("startDateInput").value;
+            const endDate = document.getElementById("endDateInput").value;
+            window.location.href = `/manager/reports/export/excel?period=${period}&startDate=${startDate}&endDate=${endDate}&type=${activeTab}`;
+        }
+
+        // Render dynamic SVG Line & Area chart based on Thymeleaf statistics
+        function renderSalesChart() {
+            if (!salesTrend || salesTrend.length === 0) {
+                return;
+            }
+
+            const svg = document.getElementById("salesChartSvg");
+            const areaPath = document.getElementById("salesAreaPath");
+            const linePoly = document.getElementById("salesLinePoly");
+            const pointsGroup = document.getElementById("chartPoints");
+            const xAxisGroup = document.getElementById("chartXAxisText");
+            const yAxisGroup = document.getElementById("chartYAxisText");
+
+            const width = 1000;
+            const height = 350;
+            const paddingLeft = 80;
+            const paddingRight = 40;
+            const paddingTop = 40;
+            const paddingBottom = 40;
+
+            const chartWidth = width - paddingLeft - paddingRight;
+            const chartHeight = height - paddingTop - paddingBottom;
+
+            // Compute Y limits (find max revenue)
+            let maxRevenue = 100000;
+            salesTrend.forEach(p => {
+                if (p.revenue > maxRevenue) maxRevenue = p.revenue;
+            });
+            // Ensure 10% headroom
+            maxRevenue = maxRevenue * 1.1;
+
+            // Render Y axis text labels
+            yAxisGroup.innerHTML = "";
+            const yTicksCount = 4;
+            for (let i = 0; i <= yTicksCount; i++) {
+                const val = (maxRevenue * i) / yTicksCount;
+                const yPos = height - paddingBottom - (val / maxRevenue * chartHeight);
+                
+                let label = "";
+                if (val >= 1000000) {
+                    label = (val / 1000000).toFixed(1) + "M ₫";
+                } else if (val >= 1000) {
+                    label = (val / 1000).toFixed(0) + "K ₫";
+                } else {
+                    label = val.toFixed(0) + " ₫";
+                }
+
+                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                text.setAttribute("x", paddingLeft - 15);
+                text.setAttribute("y", yPos + 4);
+                text.textContent = label;
+                yAxisGroup.appendChild(text);
+            }
+
+            // Map data coordinates
+            const points = [];
+            const len = salesTrend.length;
+            salesTrend.forEach((p, idx) => {
+                const x = paddingLeft + (idx * (chartWidth / (len > 1 ? len - 1 : 1)));
+                const y = height - paddingBottom - (p.revenue / maxRevenue * chartHeight);
+                points.push({ x, y, date: p.date, revenue: p.revenue });
+            });
+
+            // Set polyline points
+            const pointsAttr = points.map(p => `${p.x},${p.y}`).join(" ");
+            linePoly.setAttribute("points", pointsAttr);
+
+            // Set area path d attribute
+            if (points.length > 0) {
+                let d = `M ${points[0].x} ${height - paddingBottom} `;
+                points.forEach(p => {
+                    d += `L ${p.x} ${p.y} `;
+                });
+                d += `L ${points[points.length - 1].x} ${height - paddingBottom} Z`;
+                areaPath.setAttribute("d", d);
+            }
+
+            // Draw interactive dots and X axis labels
+            pointsGroup.innerHTML = "";
+            xAxisGroup.innerHTML = "";
+            const skipStep = Math.max(1, Math.ceil(len / 10));
+
+            points.forEach((p, idx) => {
+                // Interactive circles
+                const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                circle.setAttribute("cx", p.x);
+                circle.setAttribute("cy", p.y);
+                circle.setAttribute("r", "5.5");
+                circle.setAttribute("fill", "#745853");
+                circle.setAttribute("stroke", "#ffffff");
+                circle.setAttribute("stroke-width", "2");
+                circle.setAttribute("class", "cursor-pointer transition-all hover:scale-150 hover:fill-primary");
+                
+                const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+                title.textContent = `${p.date}: ${p.revenue.toLocaleString('vi-VN')} ₫`;
+                circle.appendChild(title);
+                
+                pointsGroup.appendChild(circle);
+
+                // Short format dates on X axis (DD/MM)
+                if (idx % skipStep === 0 || idx === len - 1) {
+                    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    text.setAttribute("x", p.x);
+                    text.setAttribute("y", height - paddingBottom + 20);
+                    text.setAttribute("text-anchor", "middle");
+
+                    const dateParts = p.date.split("-");
+                    const shortFormat = dateParts.length === 3 ? `${dateParts[2]}/${dateParts[1]}` : p.date;
+                    text.textContent = shortFormat;
+                    
+                    xAxisGroup.appendChild(text);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
