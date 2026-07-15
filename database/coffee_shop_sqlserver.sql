@@ -591,9 +591,11 @@ GO
 
 -- 3. Bảng CATEGORIES (Danh mục sản phẩm)
 INSERT INTO categories (name, is_active) VALUES
-(N'Cà phê pha máy', 1), (N'Cà phê truyền thống', 1), (N'Trà trái cây', 1), 
-(N'Trà sữa', 1), (N'Đá xay (Frappuccino)', 1), (N'Bánh ngọt', 1), 
-(N'Bánh mặn', 1), (N'Nước ép tươi', 1), (N'Sữa chua', 1), (N'Hạt cà phê / Merchandise', 1);
+(N'Cà phê pha máy', 1), (N'Cà phê truyền thống', 1), 
+(N'Trà trái cây', 1), (N'Trà sữa', 1), 
+(N'Đá xay (Frappuccino)', 1), (N'Bánh ngọt', 1), 
+(N'Bánh mặn', 1), (N'Nước ép tươi', 1), 
+(N'Sữa chua', 1), (N'Hạt cà phê / Merchandise', 1);
 GO
 
 -- 4. Bảng PRODUCTS (Sản phẩm)
@@ -646,11 +648,11 @@ GO
 
 -- 6. Bảng PRODUCT_IMAGES (Hình ảnh sản phẩm)
 INSERT INTO product_images (product_id, image_url, is_primary, variant_id) VALUES
-(1, 'img/products/espresso.jpg', 1, 1), (2, 'img/products/latte.jpg', 1, 3),
-(3, 'img/products/denda.jpg', 1, 7), (4, 'img/products/bacxiu.jpg', 1, 10),
-(5, 'img/products/tradao.jpg', 1, 13), (6, 'img/products/trasua.jpg', 1, 16),
-(7, 'img/products/matcha.jpg', 1, 19), (8, 'img/products/tiramisu.jpg', 1, 22),
-(9, 'img/products/banhmi.jpg', 1, 24), (10, 'img/products/epcam.jpg', 1, 28);
+(1, 'images/products/espresso.png', 1, 1), (2, 'images/products/latte.png', 1, 3),
+(3, 'images/products/denda.png', 1, 7), (4, 'images/products/bacxiu.png', 1, 10),
+(5, 'images/products/tradao.png', 1, 13), (6, 'images/products/trasua.png', 1, 16),
+(7, 'images/products/matcha.png', 1, 19), (8, 'images/products/tiramisu.png', 1, 22),
+(9, 'images/products/banhmi.png', 1, 24), (10, 'images/products/epcam.png', 1, 28);
 GO
 
 -- 7. Bảng PAYMENT_METHODS (Phương thức thanh toán)
