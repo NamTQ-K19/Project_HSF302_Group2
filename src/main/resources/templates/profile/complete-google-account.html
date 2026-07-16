@@ -64,7 +64,7 @@
             <label for="email" class="auth-label" style="display: block; font-size: 0.875rem; font-weight: 500; color: #44403c;">Email Address</label>
             <div class="auth-input-group">
               <div class="auth-input-icon-left">
-                <i data-feather="mail" class="h-4 w-4 text-stone-400"></i>
+                <i data-feather="mail" class="auth-icon"></i>
               </div>
               <input id="email" th:value="${user.email}" type="email" disabled
                 class="auth-input-readonly" />
@@ -77,7 +77,7 @@
                 <label for="username" class="auth-label" style="display: block; font-size: 0.875rem; font-weight: 500; color: #44403c;">Username</label>
                 <div class="auth-input-group">
                   <div class="auth-input-icon-left">
-                    <i data-feather="at-sign" class="h-4 w-4 text-stone-400"></i>
+                    <i data-feather="at-sign" class="auth-icon"></i>
                   </div>
                   <input id="username" name="username" th:value="${user.username}" required type="text"
                     class="auth-input" />
@@ -89,7 +89,7 @@
                 <label for="phoneNumber" class="auth-label" style="display: block; font-size: 0.875rem; font-weight: 500; color: #44403c;">Phone Number</label>
                 <div class="auth-input-group">
                   <div class="auth-input-icon-left">
-                    <i data-feather="phone" class="h-4 w-4 text-stone-400"></i>
+                    <i data-feather="phone" class="auth-icon"></i>
                   </div>
                   <input id="phoneNumber" name="phoneNumber" th:value="${user.phone}" required type="tel"
                     class="auth-input" />
@@ -103,12 +103,12 @@
                 <label for="newPassword" class="auth-label" style="display: block; font-size: 0.875rem; font-weight: 500; color: #44403c;">Password</label>
                 <div class="auth-input-group">
                   <div class="auth-input-icon-left">
-                    <i data-feather="lock" class="h-4 w-4 text-stone-400"></i>
+                    <i data-feather="lock" class="auth-icon"></i>
                   </div>
                   <input id="newPassword" name="newPassword" required type="password"
                     class="auth-input-password" />
-                  <button type="button" onclick="togglePassword('newPassword', 'eye-icon-1')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-stone-400 hover:text-stone-600 focus:outline-none">
-                    <i id="eye-icon-1" data-feather="eye" class="h-4 w-4"></i>
+                  <button type="button" onclick="togglePassword('newPassword', 'eye-icon-1')" class="auth-input-icon-right">
+                    <i id="eye-icon-1" data-feather="eye" class="auth-icon"></i>
                   </button>
                 </div>
                 <!-- Password Strength Meter -->
@@ -136,22 +136,29 @@
                 <label for="confirmPassword" class="auth-label" style="display: block; font-size: 0.875rem; font-weight: 500; color: #44403c;">Confirm Password</label>
                 <div class="auth-input-group">
                   <div class="auth-input-icon-left">
-                    <i data-feather="lock" class="h-4 w-4 text-stone-400"></i>
+                    <i data-feather="lock" class="auth-icon"></i>
                   </div>
                   <input id="confirmPassword" name="confirmPassword" required type="password"
                     class="auth-input-password" />
-                  <button type="button" onclick="togglePassword('confirmPassword', 'eye-icon-2')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-stone-400 hover:text-stone-600 focus:outline-none">
-                    <i id="eye-icon-2" data-feather="eye" class="h-4 w-4"></i>
+                  <button type="button" onclick="togglePassword('confirmPassword', 'eye-icon-2')" class="auth-input-icon-right">
+                    <i id="eye-icon-2" data-feather="eye" class="auth-icon"></i>
                   </button>
                 </div>
                 <div id="passwordError" class="auth-error-msg hidden">Passwords do not match!</div>
             </div>
         </div>
 
-        <button type="submit" class="auth-btn-primary mt-4">
-            Complete Account
-        </button>
+        <div style="display: flex; gap: 10px; margin-top: 1rem;">
+            <button type="button" class="auth-btn-primary" style="background-color: #6b7280; flex: 1;" onclick="document.getElementById('logoutForm').submit();">
+                Cancel
+            </button>
+            <button type="submit" class="auth-btn-primary" style="flex: 1;">
+                Complete Account
+            </button>
+        </div>
       </form>
+
+      <form id="logoutForm" th:action="@{/logout}" method="post" style="display: none;"></form>
 
     </div>
   </div>

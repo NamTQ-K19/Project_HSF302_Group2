@@ -43,16 +43,6 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
         }
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-        
-        // Prevent staff from logging in via the customer portal (/login)
-        String uri = request.getRequestURI();
-        boolean isStaff = authorities.stream().anyMatch(a -> !a.getAuthority().equals("ROLE_CUSTOMER"));
-        
-        if (isStaff && (uri.equals("/login") || uri.equals(request.getContextPath() + "/login"))) {
-            org.springframework.security.core.context.SecurityContextHolder.clearContext();
-            response.sendRedirect("/login?error=unauthorized_staff");
-            return;
-        }
 
         String redirectUrl = "/home"; // default
 

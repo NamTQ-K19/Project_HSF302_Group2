@@ -35,15 +35,7 @@
           <span th:text="${error}"></span>
       </div>
 
-      <!-- Login Type Toggle -->
-      <div class="auth-toggle-group">
-        <a href="/customer/login" class="auth-toggle-active">
-          <i data-feather="user" class="auth-icon-small"></i> Customer
-        </a>
-        <a href="/staff/login" class="auth-toggle-inactive">
-          <i data-feather="coffee" class="auth-icon-small"></i> Staff
-        </a>
-      </div>
+
 
       <form th:action="@{/login}" method="post" class="auth-form">
         <!-- Username Field -->
