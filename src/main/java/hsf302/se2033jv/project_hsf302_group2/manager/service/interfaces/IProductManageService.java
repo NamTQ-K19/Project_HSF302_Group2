@@ -9,5 +9,5 @@ public interface IProductManageService {
     ProductResponse getProductById(Integer id);
     ProductResponse createProduct(ProductRequest dto);
     ProductResponse updateProduct(Integer id, ProductRequest dto);
-    void deleteProduct(Integer id); // Xóa mềm (Soft delete)
+    void toggleProductStatus(Integer id);
 }

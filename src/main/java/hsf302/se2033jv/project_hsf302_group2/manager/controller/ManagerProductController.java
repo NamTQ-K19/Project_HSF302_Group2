@@ -54,16 +54,14 @@ public class ManagerProductController {
         return "redirect:/manager/products";
     }
 
-    // Xử lý xóa sản phẩm
-    @GetMapping("/delete/{id}")
-    public String deleteProduct(@PathVariable Integer id, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+    // Xử lý khóa / mở khóa sản phẩm
+    @GetMapping("/toggle-status/{id}")
+    public String toggleProductStatus(@PathVariable Integer id, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
         try {
-            productService.deleteProduct(id);
-            redirectAttributes.addFlashAttribute("successMessage", "Xóa sản phẩm thành công!");
-        } catch (org.springframework.dao.DataIntegrityViolationException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Không thể xóa sản phẩm này vì có thông tin hoặc giỏ hàng liên quan đang kết nối tới sản phẩm!");
+            productService.toggleProductStatus(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật trạng thái sản phẩm thành công!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Đã xảy ra lỗi khi xóa sản phẩm: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Đã xảy ra lỗi khi cập nhật trạng thái sản phẩm: " + e.getMessage());
         }
         return "redirect:/manager/products";
     }

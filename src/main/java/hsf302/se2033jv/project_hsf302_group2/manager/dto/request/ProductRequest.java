@@ -22,4 +22,20 @@ public class ProductRequest {
 
     @NotNull(message = "Vui lòng chọn danh mục cho sản phẩm")
     private Integer categoryId;
+
+    private java.util.List<VariantRequest> variants;
+
+    @Getter
+    @Setter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class VariantRequest {
+        private Integer id; // Dùng khi cập nhật
+        private String variantName;
+        private hsf302.se2033jv.project_hsf302_group2.common.enums.VariantSize size;
+        private hsf302.se2033jv.project_hsf302_group2.common.enums.VariantTemperature temperature;
+        private java.math.BigDecimal price;
+        private org.springframework.web.multipart.MultipartFile image;
+    }
 }

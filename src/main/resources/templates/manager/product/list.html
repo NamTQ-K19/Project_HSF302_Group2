@@ -81,7 +81,13 @@
                                 <tr th:each="prod, stat : ${products}" class="hover:bg-surface-container-low transition-colors">
                                     <td class="py-4 px-4 text-body-md font-medium text-on-surface-variant" th:text="${stat.count}">1</td>
                                     <td class="py-4 px-4 text-body-md font-medium text-on-surface-variant" th:text="${prod.id}">123</td>
-                                    <td class="py-4 px-4 text-body-md font-semibold text-on-surface" th:text="${prod.name}">Cà phê đen</td>
+                                    <td class="py-4 px-4">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-body-md font-semibold text-on-surface" th:text="${prod.name}">Cà phê đen</span>
+                                            <span th:if="${prod.isActive}" class="bg-[#16a34a]/10 text-[#16a34a] text-[10px] font-bold px-2 py-0.5 rounded-full uppercase border border-[#16a34a]/20">Đang bán</span>
+                                            <span th:unless="${prod.isActive}" class="bg-[#dc2626]/10 text-[#dc2626] text-[10px] font-bold px-2 py-0.5 rounded-full uppercase border border-[#dc2626]/20">Đã khóa</span>
+                                        </div>
+                                    </td>
                                     <td class="py-4 px-4">
                                         <span class="bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full" th:text="${prod.categoryName}">Danh mục</span>
                                     </td>
@@ -98,11 +104,11 @@
                                                 <span class="material-symbols-outlined text-[16px]">edit</span>
                                                 Sửa
                                             </button>
-                                            <a th:href="@{/manager/products/delete/{id}(id=${prod.id})}"
-                                               class="inline-flex items-center gap-1.5 bg-error/10 border border-transparent hover:border-error text-error px-3 py-1.5 rounded-lg text-body-sm font-semibold transition-all cursor-pointer no-underline"
-                                               onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này? Hành động này không thể hoàn tác!')">
-                                                <span class="material-symbols-outlined text-[16px]">delete</span>
-                                                Xóa
+                                            <a th:href="@{/manager/products/toggle-status/{id}(id=${prod.id})}"
+                                               th:class="${prod.isActive} ? 'inline-flex items-center gap-1.5 bg-[#d97706]/10 border border-transparent hover:border-[#d97706] text-[#d97706] px-3 py-1.5 rounded-lg text-body-sm font-semibold transition-all cursor-pointer no-underline' : 'inline-flex items-center gap-1.5 bg-[#16a34a]/10 border border-transparent hover:border-[#16a34a] text-[#16a34a] px-3 py-1.5 rounded-lg text-body-sm font-semibold transition-all cursor-pointer no-underline'"
+                                               onclick="return confirm('Bạn có chắc chắn muốn thay đổi trạng thái sản phẩm này?')">
+                                                <span class="material-symbols-outlined text-[16px]" th:text="${prod.isActive} ? 'lock' : 'lock_open'">lock</span>
+                                                <span th:text="${prod.isActive} ? 'Khóa' : 'Mở khóa'">Khóa</span>
                                             </a>
                                         </div>
                                     </td>
@@ -117,19 +123,19 @@
 
     <!-- Modal Overlay -->
     <div id="productModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300">
-        <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl w-full max-w-lg shadow-xl overflow-hidden transform scale-95 transition-all duration-300">
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl w-full max-w-2xl shadow-xl overflow-hidden transform scale-95 transition-all duration-300 flex flex-col max-h-[90vh]">
             <!-- Modal Header -->
-            <div class="px-6 py-5 border-b border-outline-variant flex items-center gap-2">
+            <div class="px-6 py-5 border-b border-outline-variant flex items-center gap-2 shrink-0">
                 <span id="modal-icon" class="material-symbols-outlined text-primary text-[24px]">add_circle</span>
                 <h2 id="modal-title" class="font-headline-sm text-on-surface font-bold">Thêm sản phẩm mới</h2>
             </div>
             
-            <form th:action="@{/manager/products/create}" method="post" id="productForm">
+            <form th:action="@{/manager/products/create}" method="post" id="productForm" enctype="multipart/form-data" class="flex flex-col min-h-0">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                 <input type="hidden" name="id" id="productId"/>
                 
                 <!-- Modal Body -->
-                <div class="p-6 flex flex-col gap-5">
+                <div class="p-6 flex flex-col gap-5 overflow-y-auto">
                     <div class="flex flex-col gap-2">
                         <label class="text-body-sm font-bold text-on-surface flex items-center gap-1" for="productName">
                             Tên sản phẩm <span class="text-error">*</span>
@@ -154,17 +160,30 @@
                     </div>
 
                     <div class="flex flex-col gap-2">
-                        <label class="text-body-sm font-bold text-on-surface" for="productDescription">Mô tả sản phẩm</label>
+                        <label class="text-body-sm font-bold text-on-surface">Mô tả sản phẩm</label>
                         <textarea name="description" 
                                   id="productDescription" 
                                   class="w-full bg-surface-container border border-outline rounded-xl p-3 text-body-md focus:border-primary focus:bg-background outline-none transition-all" 
                                   rows="4" 
                                   placeholder="Nhập mô tả ngắn gọn về sản phẩm..."></textarea>
                     </div>
+
+                    <div class="flex items-center justify-between border-t border-outline-variant pt-4 mt-2">
+                        <h3 class="font-headline-sm text-on-surface font-bold m-0 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">view_list</span> Danh sách biến thể
+                        </h3>
+                        <button type="button" class="inline-flex items-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-lg font-bold text-body-sm transition-colors cursor-pointer" onclick="addVariantRow()">
+                            <span class="material-symbols-outlined text-[18px]">add</span> Thêm biến thể
+                        </button>
+                    </div>
+                    
+                    <div id="variantsContainer" class="flex flex-col gap-4">
+                        <!-- Variant rows will be appended here -->
+                    </div>
                 </div>
 
                 <!-- Modal Footer -->
-                <div class="px-6 py-4 border-t border-outline-variant bg-surface-container-low flex justify-end gap-3">
+                <div class="px-6 py-4 border-t border-outline-variant bg-surface-container-low flex justify-end gap-3 shrink-0">
                     <button type="button" class="inline-flex items-center gap-1.5 bg-surface-container hover:bg-surface-container-high border border-outline text-on-surface-variant py-2.5 px-5 rounded-xl font-semibold text-body-sm transition-all cursor-pointer" onclick="closeProductModal()">
                         Đóng
                     </button>
@@ -178,6 +197,56 @@
     </div>
 
     <script>
+        let variantIndex = 0;
+
+        function addVariantRow(v = null) {
+            const container = document.getElementById('variantsContainer');
+            
+            // Build the dynamic HTML
+            const rowHtml = `
+                <div class="border border-outline-variant rounded-xl p-4 flex flex-col gap-4 bg-surface-container-lowest relative variant-item">
+                    <button type="button" class="absolute top-4 right-4 text-error hover:bg-error/10 p-1 rounded-md transition-colors" onclick="this.closest('.variant-item').remove()">
+                        <span class="material-symbols-outlined">delete</span>
+                    </button>
+                    <input type="hidden" name="variants[${variantIndex}].id" value="${v ? v.id : ''}"/>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex flex-col gap-2">
+                            <label class="text-body-sm font-bold text-on-surface">Tên biến thể <span class="text-error">*</span></label>
+                            <input type="text" name="variants[${variantIndex}].variantName" class="w-full bg-surface-container border border-outline rounded-xl p-2.5 text-body-md focus:border-primary outline-none" placeholder="VD: Lớn Nóng..." required value="${v ? v.variantName : ''}"/>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-body-sm font-bold text-on-surface">Size</label>
+                            <select name="variants[${variantIndex}].size" class="w-full bg-surface-container border border-outline rounded-xl p-2.5 text-body-md focus:border-primary outline-none">
+                                <option value="S" ${v && v.size === 'S' ? 'selected' : ''}>Nhỏ (S)</option>
+                                <option value="M" ${!v || v.size === 'M' ? 'selected' : ''}>Vừa (M)</option>
+                                <option value="L" ${v && v.size === 'L' ? 'selected' : ''}>Lớn (L)</option>
+                                <option value="XL" ${v && v.size === 'XL' ? 'selected' : ''}>Rất lớn (XL)</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-body-sm font-bold text-on-surface">Nhiệt độ</label>
+                            <select name="variants[${variantIndex}].temperature" class="w-full bg-surface-container border border-outline rounded-xl p-2.5 text-body-md focus:border-primary outline-none">
+                                <option value="COLD" ${!v || v.temperature === 'COLD' ? 'selected' : ''}>Lạnh</option>
+                                <option value="HOT" ${v && v.temperature === 'HOT' ? 'selected' : ''}>Nóng</option>
+                                <option value="ROOM" ${v && v.temperature === 'ROOM' ? 'selected' : ''}>Bình thường</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-body-sm font-bold text-on-surface">Giá (VNĐ) <span class="text-error">*</span></label>
+                            <input type="number" name="variants[${variantIndex}].price" class="w-full bg-surface-container border border-outline rounded-xl p-2.5 text-body-md focus:border-primary outline-none" required min="0" value="${v ? v.price : ''}"/>
+                        </div>
+                        <div class="flex flex-col gap-2 md:col-span-2">
+                            <label class="text-body-sm font-bold text-on-surface">Hình ảnh biến thể</label>
+                            <input type="file" name="variants[${variantIndex}].image" accept="image/*" class="w-full bg-surface-container border border-outline rounded-xl p-2 text-body-md focus:border-primary outline-none" />
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.insertAdjacentHTML('beforeend', rowHtml);
+            variantIndex++;
+        }
+
         function openAddModal() {
             document.getElementById('modal-icon').innerText = 'add_circle';
             document.getElementById('modal-title').innerText = 'Thêm sản phẩm mới';
@@ -186,6 +255,13 @@
             document.getElementById('productName').value = '';
             document.getElementById('productCategory').value = '';
             document.getElementById('productDescription').value = '';
+            
+            // Xóa hết variants cũ
+            document.getElementById('variantsContainer').innerHTML = '';
+            variantIndex = 0;
+            
+            // Thêm 1 variant mặc định
+            addVariantRow();
             
             const modal = document.getElementById('productModal');
             modal.classList.remove('opacity-0', 'pointer-events-none');
@@ -202,6 +278,14 @@
             document.getElementById('productName').value = name;
             document.getElementById('productCategory').value = catId || '';
             document.getElementById('productDescription').value = desc || '';
+            
+            // Xóa hết variants cũ
+            document.getElementById('variantsContainer').innerHTML = '';
+            variantIndex = 0;
+            
+            // Thêm 1 variant mặc định (Vì không fetch được variants hiện tại bằng JS thuần dễ dàng qua data-attributes)
+            // TODO: Ở ứng dụng thực tế có thể gọi API fetch variants và gen HTML
+            addVariantRow();
             
             const modal = document.getElementById('productModal');
             modal.classList.remove('opacity-0', 'pointer-events-none');

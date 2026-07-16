@@ -100,6 +100,7 @@ public class ProductMapper {
         if (images == null) return List.of("/img/products/placeholder.jpg");
         return images.stream()
                 .map(ProductImage::getImageUrl)
+                .distinct()
                 .collect(Collectors.toList());
     }
 
@@ -141,7 +142,15 @@ public class ProductMapper {
         if (variants == null) return List.of();
         return variants.stream()
                 .filter(v -> Boolean.TRUE.equals(v.getIsAvailable()))
-                .sorted(Comparator.comparing(v -> v.getSize() != null ? v.getSize().name() : ""))
+                .sorted(Comparator.comparingInt(v -> {
+                    if (v.getSize() == null) return 99;
+                    switch (v.getSize().name()) {
+                        case "M": return 0;
+                        case "L": return 1;
+                        case "S": return 2;
+                        default: return 99;
+                    }
+                }))
                 .map(v -> VariantDTO.builder()
                         .variantId(v.getVariantId())
                         .variantName(v.getVariantName())
