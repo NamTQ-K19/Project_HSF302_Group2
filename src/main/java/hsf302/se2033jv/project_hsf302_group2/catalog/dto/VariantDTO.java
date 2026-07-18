@@ -23,4 +23,5 @@ public class VariantDTO {
     private String temperature;
     private BigDecimal price;
     private Boolean isAvailable;
+    private String imageUrl;
 }

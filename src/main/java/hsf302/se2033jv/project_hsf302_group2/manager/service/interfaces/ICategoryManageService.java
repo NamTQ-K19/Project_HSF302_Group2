@@ -9,5 +9,5 @@ public interface ICategoryManageService {
     CategoryResponse getCategoryById(Integer id);
     CategoryResponse createCategory(CategoryRequest dto);
     CategoryResponse updateCategory(Integer id, CategoryRequest dto);
-    void deleteCategory(Integer id); // Soft delete
+    void toggleCategoryStatus(Integer id);
 }

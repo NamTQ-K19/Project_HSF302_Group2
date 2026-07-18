@@ -30,24 +30,13 @@
         <span th:if="${searchMode == 'all'}">Tất cả sản phẩm</span>
       </h1>
       <p class="text-on-surface-variant text-body-md m-0"
-         th:unless="${#lists.isEmpty(products)}"
-         th:text="'Hiển thị ' + ${#lists.size(products)} + ' sản phẩm'">
+         th:unless="${#lists.isEmpty(productPage.content)}"
+         th:text="'Hiển thị ' + ${productPage.totalElements} + ' sản phẩm'">
       </p>
     </div>
 
-    <!-- Search Form -->
-    <form th:action="@{/search}" method="get" class="flex items-center bg-surface-container-low border border-outline-variant rounded-full p-1.5 w-full md:w-96">
-      <input type="text"
-             name="keyword"
-             th:value="${keyword}"
-             placeholder="Tìm kiếm đồ uống..."
-             maxlength="50"
-             class="bg-transparent border-none focus:ring-0 text-on-surface text-body-sm px-4 w-full outline-none placeholder:text-on-surface-variant/50"
-             aria-label="Search products"/>
-      <button type="submit" class="bg-primary text-white w-10 h-10 rounded-full flex items-center justify-center hover:opacity-90 transition-opacity border-none cursor-pointer shrink-0 shadow-sm">
-        <span class="material-symbols-outlined text-[20px]">search</span>
-      </button>
-    </form>
+    
+
   </div>
 
   <div class="flex flex-col lg:flex-row gap-10">
@@ -74,15 +63,37 @@
 
     <!-- Product Grid -->
     <div class="flex-1">
-      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-10" th:if="${not #lists.isEmpty(products)}">
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-10" th:if="${not #lists.isEmpty(productPage.content)}">
         <!-- Replace with product-card fragment -->
-        <div th:each="product : ${products}">
+        <div th:each="product : ${productPage.content}">
           <div th:replace="~{catalog/product-card :: productCard(${product})}"></div>
         </div>
       </div>
 
+      <!-- Pagination Controls -->
+      <div th:if="${productPage.totalPages > 1}" class="flex justify-center items-center gap-2 mt-12">
+        <a th:if="${productPage.hasPrevious()}"
+           th:href="@{/search(keyword=${keyword}, categoryId=${selectedCategoryId}, page=${productPage.number - 1})}"
+           class="w-10 h-10 flex items-center justify-center rounded-lg bg-surface-container-low text-on-surface-variant hover:bg-primary/10 transition-colors no-underline">
+          <span class="material-symbols-outlined text-[20px]">chevron_left</span>
+        </a>
+        
+        <a th:each="i : ${#numbers.sequence(0, productPage.totalPages - 1)}"
+           th:href="@{/search(keyword=${keyword}, categoryId=${selectedCategoryId}, page=${i})}"
+           th:text="${i + 1}"
+           th:classappend="${i == productPage.number} ? 'bg-primary text-white shadow-md shadow-primary/20' : 'bg-surface-container-low text-on-surface-variant hover:bg-primary/10'"
+           class="w-10 h-10 flex items-center justify-center rounded-lg font-medium transition-all no-underline">
+        </a>
+        
+        <a th:if="${productPage.hasNext()}"
+           th:href="@{/search(keyword=${keyword}, categoryId=${selectedCategoryId}, page=${productPage.number + 1})}"
+           class="w-10 h-10 flex items-center justify-center rounded-lg bg-surface-container-low text-on-surface-variant hover:bg-primary/10 transition-colors no-underline">
+          <span class="material-symbols-outlined text-[20px]">chevron_right</span>
+        </a>
+      </div>
+
       <!-- No products found state -->
-      <div class="bg-surface-container-lowest border border-outline border-dashed rounded-3xl p-16 text-center flex flex-col items-center justify-center gap-4 mt-8" th:if="${#lists.isEmpty(products)}">
+      <div class="bg-surface-container-lowest border border-outline border-dashed rounded-3xl p-16 text-center flex flex-col items-center justify-center gap-4 mt-8" th:if="${#lists.isEmpty(productPage.content)}">
         <span class="material-symbols-outlined text-[80px] text-on-surface-variant/20 mb-4 block">search_off</span>
         <h2 class="font-headline-sm text-headline-sm text-primary m-0">Không tìm thấy sản phẩm</h2>
         <p class="text-on-surface-variant text-body-sm m-0 max-w-md" th:if="${searchMode == 'keyword'}"

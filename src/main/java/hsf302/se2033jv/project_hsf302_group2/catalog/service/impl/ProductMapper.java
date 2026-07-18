@@ -22,7 +22,15 @@ public class ProductMapper {
      * Map a Product entity to a lightweight ProductCardDTO.
      */
     public ProductCardDTO toCardDTO(Product product) {
-        String imageUrl = resolveImage(product.getImages());
+        List<ProductImage> allImages = new java.util.ArrayList<>();
+        if (product.getImages() != null) allImages.addAll(product.getImages());
+        if (product.getVariants() != null) {
+            product.getVariants().forEach(v -> {
+                if (v.getImages() != null) allImages.addAll(v.getImages());
+            });
+        }
+        
+        String imageUrl = resolveImage(allImages);
         BigDecimal minPrice = minPrice(product.getVariants());
         BigDecimal maxPrice = maxPrice(product.getVariants());
         double avgRating = avgRating(product.getReviews());
@@ -46,7 +54,16 @@ public class ProductMapper {
     public ProductDetailDTO toDetailDTO(Product product) {
         List<VariantDTO> variants = toVariantDTOs(product.getVariants());
         List<ReviewDTO> reviews = toReviewDTOs(product.getReviews());
-        List<String> allImages = allImageUrls(product.getImages());
+        
+        List<ProductImage> allProductImages = new java.util.ArrayList<>();
+        if (product.getImages() != null) allProductImages.addAll(product.getImages());
+        if (product.getVariants() != null) {
+            product.getVariants().forEach(v -> {
+                if (v.getImages() != null) allProductImages.addAll(v.getImages());
+            });
+        }
+        
+        List<String> allImages = allImageUrls(allProductImages);
         double avgRating = avgRating(product.getReviews());
         long reviewCount = countVisibleReviews(product.getReviews());
 
@@ -56,7 +73,7 @@ public class ProductMapper {
                 .description(product.getDescription())
                 .categoryId(product.getCategory() != null ? product.getCategory().getCategoryId() : null)
                 .categoryName(product.getCategory() != null ? product.getCategory().getName() : "")
-                .primaryImageUrl(resolveImage(product.getImages()))
+                .primaryImageUrl(resolveImage(allProductImages))
                 .allImageUrls(allImages)
                 .variants(variants)
                 .averageRating(avgRating)
@@ -85,7 +102,11 @@ public class ProductMapper {
                 .build();
     }
 
-    // ── private helpers ──────────────────────────────────────────────────────
+    private String normalizeUrl(String url) {
+        if (url == null || url.trim().isEmpty()) return "/img/products/placeholder.jpg";
+        if (url.startsWith("http") || url.startsWith("/")) return url;
+        return "/" + url;
+    }
 
     private String resolveImage(List<ProductImage> images) {
         if (images == null || images.isEmpty()) return "/img/products/placeholder.jpg";
@@ -93,13 +114,15 @@ public class ProductMapper {
                 .filter(i -> Boolean.TRUE.equals(i.getIsPrimary()))
                 .map(ProductImage::getImageUrl)
                 .findFirst()
-                .orElse(images.get(0).getImageUrl());
+                .map(this::normalizeUrl)
+                .orElse(normalizeUrl(images.get(0).getImageUrl()));
     }
 
     private List<String> allImageUrls(List<ProductImage> images) {
         if (images == null) return List.of("/img/products/placeholder.jpg");
         return images.stream()
                 .map(ProductImage::getImageUrl)
+                .map(this::normalizeUrl)
                 .distinct()
                 .collect(Collectors.toList());
     }
@@ -158,6 +181,7 @@ public class ProductMapper {
                         .temperature(v.getTemperature() != null ? v.getTemperature().name() : null)
                         .price(v.getPrice())
                         .isAvailable(v.getIsAvailable())
+                        .imageUrl(resolveImage(v.getImages()))
                         .build())
                 .collect(Collectors.toList());
     }

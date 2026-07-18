@@ -36,6 +36,9 @@ public class CoffeeTable {
     @Column(name = "is_active")
     private Boolean isActive;
 
+    @Column(name = "floor")
+    private Integer floor;
+
     @OneToMany(mappedBy = "table", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Order> orders;
 

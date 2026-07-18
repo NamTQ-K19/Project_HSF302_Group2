@@ -25,11 +25,29 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     List<Product> findAllActiveAvailable();
 
     /**
-     * Search products by name or description (case-insensitive).
-     * Used for UC_02 Search Product.
+     * Search products by name or description (case-insensitive) with pagination.
      */
+    @Query(value = """
+    SELECT * FROM products
+    WHERE is_active = 1
+    AND is_available = 1
+    AND (
+            name COLLATE Vietnamese_CI_AI LIKE N'%' + :keyword + N'%'
+                    OR description COLLATE Vietnamese_CI_AI LIKE N'%' + :keyword + N'%'
+    )
+    """, 
+    countQuery = """
+    SELECT count(*) FROM products
+    WHERE is_active = 1
+    AND is_available = 1
+    AND (
+            name COLLATE Vietnamese_CI_AI LIKE N'%' + :keyword + N'%'
+                    OR description COLLATE Vietnamese_CI_AI LIKE N'%' + :keyword + N'%'
+    )
+    """, nativeQuery = true)
+    org.springframework.data.domain.Page<Product> searchByKeyword(@Param("keyword") String keyword, org.springframework.data.domain.Pageable pageable);
 
-        @Query(value = """
+    @Query(value = """
     SELECT * FROM products
     WHERE is_active = 1
     AND is_available = 1
@@ -38,7 +56,7 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
                     OR description COLLATE Vietnamese_CI_AI LIKE N'%' + :keyword + N'%'
     )
     """, nativeQuery = true)
-List<Product> searchByKeyword(@Param("keyword") String keyword);
+    List<Product> searchByKeyword(@Param("keyword") String keyword);
 
     /**
      * Find one active product by ID for the detail page (UC_03).
@@ -66,6 +84,12 @@ List<Product> searchByKeyword(@Param("keyword") String keyword);
      */
     @Query("SELECT p FROM Product p WHERE p.category.categoryId = :catId AND p.isActive = true AND p.isAvailable = true")
     List<Product> findByCategoryId(@Param("catId") Integer catId);
+
+    @Query("SELECT p FROM Product p WHERE p.category.categoryId = :catId AND p.isActive = true AND p.isAvailable = true")
+    org.springframework.data.domain.Page<Product> findByCategoryId(@Param("catId") Integer catId, org.springframework.data.domain.Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE p.isActive = true AND p.isAvailable = true")
+    org.springframework.data.domain.Page<Product> findAllActiveAvailablePage(org.springframework.data.domain.Pageable pageable);
 
     List<Product> findByIsActiveTrue();
 

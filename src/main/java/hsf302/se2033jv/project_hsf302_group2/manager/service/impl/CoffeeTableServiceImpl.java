@@ -34,6 +34,7 @@ public class CoffeeTableServiceImpl implements ICoffeeTableService {
         CoffeeTable table = CoffeeTable.builder()
                 .capacity(dto.getCapacity())
                 .isActive(true)
+                .floor(dto.getFloor() != null ? dto.getFloor() : 1)
                 .build();
         return mapToResponse(tableRepository.save(table));
     }
@@ -45,15 +46,19 @@ public class CoffeeTableServiceImpl implements ICoffeeTableService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bàn với ID: " + id));
         table.setCapacity(dto.getCapacity());
         table.setIsActive(dto.isActive());
+        if (dto.getFloor() != null) {
+            table.setFloor(dto.getFloor());
+        }
         return mapToResponse(tableRepository.save(table));
     }
 
     @Override
     @Transactional
-    public void deleteTable(Integer id) {
+    public void toggleTableStatus(Integer id) {
         CoffeeTable table = tableRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bàn"));
-        tableRepository.delete(table);
+        table.setIsActive(!table.getIsActive());
+        tableRepository.save(table);
     }
 
     private CoffeeTableResponse mapToResponse(CoffeeTable table) {
@@ -61,6 +66,7 @@ public class CoffeeTableServiceImpl implements ICoffeeTableService {
                 .id(table.getTableId())
                 .capacity(table.getCapacity())
                 .isActive(table.getIsActive() != null ? table.getIsActive() : true)
+                .floor(table.getFloor() != null ? table.getFloor() : 1)
                 .build();
     }
 }

@@ -57,10 +57,11 @@ public class CategoryManageServiceImpl implements ICategoryManageService {
 
     @Override
     @Transactional
-    public void deleteCategory(Integer id) {
+    public void toggleCategoryStatus(Integer id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy Category với ID: " + id));
-        categoryRepository.delete(category);
+        category.setIsActive(!category.getIsActive());
+        categoryRepository.save(category);
     }
 
     private CategoryResponse mapToResponse(Category category) {

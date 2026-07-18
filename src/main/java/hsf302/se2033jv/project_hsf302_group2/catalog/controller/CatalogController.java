@@ -66,23 +66,29 @@ public class CatalogController {
     public String searchProducts(
             @RequestParam(name = "keyword", required = false, defaultValue = "") String keyword,
             @RequestParam(name = "categoryId", required = false) Integer categoryId,
+            @RequestParam(name = "page", defaultValue = "0") int page,
             Model model) {
 
         model.addAttribute("keyword", keyword);
         model.addAttribute("categories", homepageService.getActiveCategories());
         model.addAttribute("selectedCategoryId", categoryId);
 
+        int pageSize = 9;
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, pageSize);
+        org.springframework.data.domain.Page<hsf302.se2033jv.project_hsf302_group2.catalog.dto.ProductCardDTO> productPage;
+
         if (categoryId != null) {
-            model.addAttribute("products", productSearchService.filterByCategory(categoryId));
+            productPage = productSearchService.filterByCategory(categoryId, pageable);
             model.addAttribute("searchMode", "category");
         } else if (!keyword.isBlank()) {
-            model.addAttribute("products", productSearchService.searchByKeyword(keyword));
+            productPage = productSearchService.searchByKeyword(keyword, pageable);
             model.addAttribute("searchMode", "keyword");
         } else {
-            model.addAttribute("products", homepageService.getBestSellers());
+            productPage = productSearchService.getAllProducts(pageable);
             model.addAttribute("searchMode", "all");
         }
-
+        
+        model.addAttribute("productPage", productPage);
         return "catalog/search-results";
     }
 

@@ -97,11 +97,12 @@
                                                     <span class="material-symbols-outlined text-[16px]">edit</span>
                                                     Sửa
                                                 </button>
-                                                <a th:href="@{/manager/categories/delete/{id}(id=${cat.id})}"
-                                                   class="inline-flex items-center gap-1.5 bg-error/10 border border-transparent hover:border-error text-error px-3 py-1.5 rounded-lg text-body-sm font-semibold transition-all cursor-pointer no-underline"
-                                                   onclick="return confirm('Bạn có chắc chắn muốn xóa danh mục này? Hành động này không thể hoàn tác!')">
-                                                    <span class="material-symbols-outlined text-[16px]">delete</span>
-                                                    Xóa
+                                                <a th:href="@{/manager/categories/toggle-status/{id}(id=${cat.id})}"
+                                                   class="inline-flex items-center gap-1.5 border px-3 py-1.5 rounded-lg text-body-sm font-semibold transition-all cursor-pointer no-underline"
+                                                   th:classappend="${cat.active} ? 'bg-error/10 border-transparent hover:border-error text-error' : 'bg-[#eafaf1] border-transparent hover:border-[#27ae60] text-[#27ae60]'"
+                                                   th:onclick="${cat.active} ? 'return confirm(''Bạn có chắc chắn muốn khóa danh mục này?'')' : 'return confirm(''Bạn có chắc chắn muốn mở khóa danh mục này?'')'">
+                                                    <span class="material-symbols-outlined text-[16px]" th:text="${cat.active} ? 'lock' : 'lock_open'">lock</span>
+                                                    <span th:text="${cat.active} ? 'Khóa' : 'Mở khóa'"></span>
                                                 </a>
                                             </div>
                                         </td>

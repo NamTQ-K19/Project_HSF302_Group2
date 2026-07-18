@@ -28,32 +28,32 @@ public class ProductSearchServiceImpl implements IProductSearchService {
     private final ProductMapper productMapper;
 
     @Override
-    public List<ProductCardDTO> searchByKeyword(String keyword) {
-        // Validate: empty keyword → empty result (not an error)
+    public org.springframework.data.domain.Page<ProductCardDTO> searchByKeyword(String keyword, org.springframework.data.domain.Pageable pageable) {
         if (!StringUtils.hasText(keyword)) {
-            return Collections.emptyList();
+            return org.springframework.data.domain.Page.empty(pageable);
         }
 
-        // Sanitize: trim and limit to max 50 characters per screen spec
         String sanitized = keyword.trim();
         if (sanitized.length() > KEYWORD_MAX_LENGTH) {
             sanitized = sanitized.substring(0, KEYWORD_MAX_LENGTH);
         }
 
-        return productRepository.searchByKeyword(sanitized)
-                .stream()
-                .map(productMapper::toCardDTO)
-                .collect(Collectors.toList());
+        return productRepository.searchByKeyword(sanitized, pageable)
+                .map(productMapper::toCardDTO);
     }
 
     @Override
-    public List<ProductCardDTO> filterByCategory(Integer categoryId) {
+    public org.springframework.data.domain.Page<ProductCardDTO> filterByCategory(Integer categoryId, org.springframework.data.domain.Pageable pageable) {
         if (categoryId == null) {
-            return Collections.emptyList();
+            return org.springframework.data.domain.Page.empty(pageable);
         }
-        return productRepository.findByCategoryId(categoryId)
-                .stream()
-                .map(productMapper::toCardDTO)
-                .collect(Collectors.toList());
+        return productRepository.findByCategoryId(categoryId, pageable)
+                .map(productMapper::toCardDTO);
+    }
+
+    @Override
+    public org.springframework.data.domain.Page<ProductCardDTO> getAllProducts(org.springframework.data.domain.Pageable pageable) {
+        return productRepository.findAllActiveAvailablePage(pageable)
+                .map(productMapper::toCardDTO);
     }
 }

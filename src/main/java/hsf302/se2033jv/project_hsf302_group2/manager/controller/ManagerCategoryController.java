@@ -47,15 +47,13 @@ public class ManagerCategoryController {
         return "redirect:/manager/categories";
     }
 
-    @GetMapping("/delete/{id}")
-    public String deleteCategory(@PathVariable Integer id, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+    @GetMapping("/toggle-status/{id}")
+    public String toggleCategoryStatus(@PathVariable Integer id, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
         try {
-            categoryService.deleteCategory(id);
-            redirectAttributes.addFlashAttribute("successMessage", "Xóa danh mục thành công!");
-        } catch (org.springframework.dao.DataIntegrityViolationException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Không thể xóa danh mục này vì danh mục đang được liên kết với sản phẩm hoặc dữ liệu khác trong hệ thống!");
+            categoryService.toggleCategoryStatus(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Thay đổi trạng thái danh mục thành công!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Đã xảy ra lỗi khi xóa danh mục: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Đã xảy ra lỗi khi thay đổi trạng thái danh mục: " + e.getMessage());
         }
         return "redirect:/manager/categories";
     }

@@ -8,5 +8,5 @@ public interface ICoffeeTableService {
     List<CoffeeTableResponse> getAllTables();
     CoffeeTableResponse createTable(CoffeeTableRequest dto);
     CoffeeTableResponse updateTable(Integer id, CoffeeTableRequest dto);
-    void deleteTable(Integer id);
+    void toggleTableStatus(Integer id);
 }

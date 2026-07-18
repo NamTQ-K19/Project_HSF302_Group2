@@ -15,4 +15,5 @@ public class CoffeeTableResponse {
     private Integer id;
     private Integer capacity;
     private boolean isActive;
+    private Integer floor;
 }

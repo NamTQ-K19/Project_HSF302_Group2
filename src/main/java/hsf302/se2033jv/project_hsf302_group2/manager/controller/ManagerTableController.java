@@ -47,15 +47,13 @@ public class ManagerTableController {
         return "redirect:/manager/tables";
     }
 
-    @GetMapping("/delete/{id}")
-    public String deleteTable(@PathVariable Integer id, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+    @GetMapping("/toggle-status/{id}")
+    public String toggleTableStatus(@PathVariable Integer id, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
         try {
-            tableService.deleteTable(id);
-            redirectAttributes.addFlashAttribute("successMessage", "Xóa bàn nước thành công!");
-        } catch (org.springframework.dao.DataIntegrityViolationException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Không thể xóa bàn này vì bàn đang được liên kết với thông tin đặt bàn hoặc hóa đơn hiện tại!");
+            tableService.toggleTableStatus(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Thay đổi trạng thái bàn nước thành công!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Đã xảy ra lỗi khi xóa bàn nước: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Đã xảy ra lỗi khi thay đổi trạng thái bàn nước: " + e.getMessage());
         }
         return "redirect:/manager/tables";
     }

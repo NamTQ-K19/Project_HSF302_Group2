@@ -9,6 +9,25 @@ function updatePrice(radio) {
     });
     const label = radio.closest('.variant-option');
     if (label) label.classList.add('selected');
+
+    const imageUrl = radio.dataset.image;
+    if (imageUrl && imageUrl !== '/img/products/placeholder.jpg') {
+        const mainImage = document.getElementById('mainImage');
+        if (mainImage) {
+            mainImage.src = imageUrl;
+            
+            let thumbs = document.querySelectorAll('.thumbnail-list img, .flex.gap-4.overflow-x-auto img');
+            thumbs.forEach(t => {
+                t.classList.remove('border-primary');
+                t.classList.add('border-transparent');
+                
+                if (t.src.endsWith(imageUrl) || t.getAttribute('src') === imageUrl) {
+                    t.classList.remove('border-transparent');
+                    t.classList.add('border-primary');
+                }
+            });
+        }
+    }
 }
 
 

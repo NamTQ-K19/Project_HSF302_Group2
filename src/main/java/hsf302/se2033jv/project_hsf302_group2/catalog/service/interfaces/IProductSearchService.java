@@ -12,15 +12,21 @@ public interface IProductSearchService {
 
     /**
      * Search products whose name or description contains the given keyword.
-     * Returns an empty list (never null) when no matches are found.
+     * Returns an empty page (never null) when no matches are found.
      *
      * @param keyword the raw search input from the user (trimmed, max 50 chars)
-     * @return list of matching product cards
+     * @param pageable pagination parameters
+     * @return page of matching product cards
      */
-    List<ProductCardDTO> searchByKeyword(String keyword);
+    org.springframework.data.domain.Page<ProductCardDTO> searchByKeyword(String keyword, org.springframework.data.domain.Pageable pageable);
 
     /**
-     * Filter products by category ID.
+     * Filter products by category ID with pagination.
      */
-    List<ProductCardDTO> filterByCategory(Integer categoryId);
+    org.springframework.data.domain.Page<ProductCardDTO> filterByCategory(Integer categoryId, org.springframework.data.domain.Pageable pageable);
+
+    /**
+     * Get all active and available products with pagination.
+     */
+    org.springframework.data.domain.Page<ProductCardDTO> getAllProducts(org.springframework.data.domain.Pageable pageable);
 }

@@ -28,6 +28,9 @@
         </div>
 
         <div class="flex items-center gap-4">
+            <button type="button" class="inline-flex items-center gap-2 bg-surface-container border border-outline hover:border-primary hover:text-primary text-on-surface-variant px-5 py-2.5 rounded-full font-bold text-body-sm transition-colors cursor-pointer shadow-sm" onclick="openMapModal()">
+                <span class="material-symbols-outlined text-[18px]">map</span> Xem sơ đồ bàn
+            </button>
             <button type="button" class="inline-flex items-center gap-2 bg-[#22c55e] hover:bg-[#16a34a] text-white px-5 py-2.5 rounded-full font-bold text-body-sm transition-colors border-none cursor-pointer shadow-sm" onclick="openAddModal()">
                 <span class="material-symbols-outlined text-[18px]">add</span> Thêm bàn mới
             </button>
@@ -59,44 +62,104 @@
                     <p class="text-body-md font-medium">Chưa có bàn nước nào được thiết lập. Hãy nhấn nút phía trên để tạo mới!</p>
                 </div>
 
-                <div th:unless="${#lists.isEmpty(tables)}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    <div th:each="table : ${tables}" class="border border-outline-variant rounded-2xl p-5 bg-surface-container-lowest shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300 relative group overflow-hidden">
-
-                        <div class="flex items-center justify-between mb-4 mt-1">
-                            <div class="flex items-center gap-2">
-                                <span class="material-symbols-outlined text-primary">table_restaurant</span>
-                                <span class="font-bold text-on-surface text-body-md" th:text="'Bàn số ' + ${table.id}">Bàn số #</span>
-                            </div>
-                            <span class="text-[11px] font-bold px-2 py-0.5 rounded-md border"
-                                  th:classappend="${table.active} ? 'bg-[#eafaf1] text-[#27ae60] border-[#27ae60]/20' : 'bg-[#fdf0ee] text-error border-error/20'"
-                                  th:text="${table.active} ? 'Hoạt động' : 'Tạm ngưng'">
-                                    Hoạt động
-                                </span>
+                <div th:unless="${#lists.isEmpty(tables)}" class="flex flex-col gap-8">
+                    <!-- Tầng 1 -->
+                    <div class="flex flex-col gap-4">
+                        <div class="flex items-center gap-2 border-b border-outline-variant pb-2">
+                            <span class="material-symbols-outlined text-primary">layers</span>
+                            <h3 class="font-title-md font-bold m-0">Tầng 1</h3>
                         </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            <div th:each="table : ${tables}" th:if="${table.floor == null or table.floor == 1}" class="border border-outline-variant rounded-2xl p-5 bg-surface-container-lowest shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300 relative group overflow-hidden">
+                                <div class="flex items-center justify-between mb-4 mt-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-primary">table_restaurant</span>
+                                        <span class="font-bold text-on-surface text-body-md" th:text="'Bàn số ' + ${table.id}">Bàn số #</span>
+                                    </div>
+                                    <span class="text-[11px] font-bold px-2 py-0.5 rounded-md border"
+                                          th:classappend="${table.active} ? 'bg-[#eafaf1] text-[#27ae60] border-[#27ae60]/20' : 'bg-[#fdf0ee] text-error border-error/20'"
+                                          th:text="${table.active} ? 'Hoạt động' : 'Tạm ngưng'">
+                                            Hoạt động
+                                    </span>
+                                </div>
 
-                        <div class="flex flex-col gap-3 py-3 border-t border-b border-outline-variant/60 mb-4">
-                            <div class="flex justify-between items-center text-body-sm">
-                                <span class="text-on-surface-variant font-medium">Sức chứa:</span>
-                                <span class="font-bold text-on-surface" th:text="${table.capacity} + ' người'">4 người</span>
+                                <div class="flex flex-col gap-3 py-3 border-t border-b border-outline-variant/60 mb-4">
+                                    <div class="flex justify-between items-center text-body-sm">
+                                        <span class="text-on-surface-variant font-medium">Sức chứa:</span>
+                                        <span class="font-bold text-on-surface" th:text="${table.capacity} + ' người'">4 người</span>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-2 mt-auto">
+                                    <button type="button"
+                                            class="flex-1 inline-flex items-center justify-center gap-1.5 bg-surface-container border border-outline hover:border-primary text-on-surface-variant hover:text-primary py-2 rounded-lg text-body-sm font-semibold transition-all cursor-pointer"
+                                            th:data-id="${table.id}"
+                                            th:data-capacity="${table.capacity}"
+                                            th:data-active="${table.active}"
+                                            th:data-floor="${table.floor}"
+                                            onclick="openEditModal(this.getAttribute('data-id'), this.getAttribute('data-capacity'), this.getAttribute('data-active'), this.getAttribute('data-floor'))">
+                                        <span class="material-symbols-outlined text-[16px]">edit</span>
+                                        Sửa
+                                    </button>
+                                    <a th:href="@{/manager/tables/toggle-status/{id}(id=${table.id})}"
+                                       class="flex-1 inline-flex items-center justify-center gap-1.5 border px-3 py-2 rounded-lg text-body-sm font-semibold transition-all cursor-pointer no-underline"
+                                       th:classappend="${table.active} ? 'bg-error/10 border-transparent hover:border-error text-error' : 'bg-[#eafaf1] border-transparent hover:border-[#27ae60] text-[#27ae60]'"
+                                       th:onclick="${table.active} ? 'return confirm(''Bạn có chắc chắn muốn khóa bàn này? Khách hàng sẽ không thể đặt bàn này nữa.'')' : 'return confirm(''Bạn có chắc chắn muốn mở khóa bàn này?'')'">
+                                        <span class="material-symbols-outlined text-[16px]" th:text="${table.active} ? 'lock' : 'lock_open'">lock</span>
+                                        <span th:text="${table.active} ? 'Khóa' : 'Mở khóa'"></span>
+                                    </a>
+                                </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="flex items-center gap-2 mt-auto">
-                            <button type="button"
-                                    class="flex-1 inline-flex items-center justify-center gap-1.5 bg-surface-container border border-outline hover:border-primary text-on-surface-variant hover:text-primary py-2 rounded-lg text-body-sm font-semibold transition-all cursor-pointer"
-                                    th:data-id="${table.id}"
-                                    th:data-capacity="${table.capacity}"
-                                    th:data-active="${table.active}"
-                                    onclick="openEditModal(this.getAttribute('data-id'), this.getAttribute('data-capacity'), this.getAttribute('data-active'))">
-                                <span class="material-symbols-outlined text-[16px]">edit</span>
-                                Sửa
-                            </button>
-                            <a th:href="@{/manager/tables/delete/{id}(id=${table.id})}"
-                               class="flex-1 inline-flex items-center justify-center gap-1.5 bg-error/10 border border-transparent hover:border-error text-error py-2 rounded-lg text-body-sm font-semibold transition-all cursor-pointer no-underline"
-                               onclick="return confirm('Bạn có chắc chắn muốn xóa bàn này? Khách hàng sẽ không thể đặt bàn này nữa.')">
-                                <span class="material-symbols-outlined text-[16px]">delete</span>
-                                Xóa
-                            </a>
+                    <!-- Tầng 2 -->
+                    <div class="flex flex-col gap-4">
+                        <div class="flex items-center gap-2 border-b border-outline-variant pb-2">
+                            <span class="material-symbols-outlined text-primary">layers</span>
+                            <h3 class="font-title-md font-bold m-0">Tầng 2</h3>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            <div th:each="table : ${tables}" th:if="${table.floor == 2}" class="border border-outline-variant rounded-2xl p-5 bg-surface-container-lowest shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300 relative group overflow-hidden">
+                                <div class="flex items-center justify-between mb-4 mt-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-primary">table_restaurant</span>
+                                        <span class="font-bold text-on-surface text-body-md" th:text="'Bàn số ' + ${table.id}">Bàn số #</span>
+                                    </div>
+                                    <span class="text-[11px] font-bold px-2 py-0.5 rounded-md border"
+                                          th:classappend="${table.active} ? 'bg-[#eafaf1] text-[#27ae60] border-[#27ae60]/20' : 'bg-[#fdf0ee] text-error border-error/20'"
+                                          th:text="${table.active} ? 'Hoạt động' : 'Tạm ngưng'">
+                                            Hoạt động
+                                    </span>
+                                </div>
+
+                                <div class="flex flex-col gap-3 py-3 border-t border-b border-outline-variant/60 mb-4">
+                                    <div class="flex justify-between items-center text-body-sm">
+                                        <span class="text-on-surface-variant font-medium">Sức chứa:</span>
+                                        <span class="font-bold text-on-surface" th:text="${table.capacity} + ' người'">4 người</span>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-2 mt-auto">
+                                    <button type="button"
+                                            class="flex-1 inline-flex items-center justify-center gap-1.5 bg-surface-container border border-outline hover:border-primary text-on-surface-variant hover:text-primary py-2 rounded-lg text-body-sm font-semibold transition-all cursor-pointer"
+                                            th:data-id="${table.id}"
+                                            th:data-capacity="${table.capacity}"
+                                            th:data-active="${table.active}"
+                                            th:data-floor="${table.floor}"
+                                            onclick="openEditModal(this.getAttribute('data-id'), this.getAttribute('data-capacity'), this.getAttribute('data-active'), this.getAttribute('data-floor'))">
+                                        <span class="material-symbols-outlined text-[16px]">edit</span>
+                                        Sửa
+                                    </button>
+                                    <a th:href="@{/manager/tables/toggle-status/{id}(id=${table.id})}"
+                                       class="flex-1 inline-flex items-center justify-center gap-1.5 border px-3 py-2 rounded-lg text-body-sm font-semibold transition-all cursor-pointer no-underline"
+                                       th:classappend="${table.active} ? 'bg-error/10 border-transparent hover:border-error text-error' : 'bg-[#eafaf1] border-transparent hover:border-[#27ae60] text-[#27ae60]'"
+                                       th:onclick="${table.active} ? 'return confirm(''Bạn có chắc chắn muốn khóa bàn này? Khách hàng sẽ không thể đặt bàn này nữa.'')' : 'return confirm(''Bạn có chắc chắn muốn mở khóa bàn này?'')'">
+                                        <span class="material-symbols-outlined text-[16px]" th:text="${table.active} ? 'lock' : 'lock_open'">lock</span>
+                                        <span th:text="${table.active} ? 'Khóa' : 'Mở khóa'"></span>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -131,6 +194,16 @@
                            max="50"/>
                 </div>
 
+                <div class="flex flex-col gap-2">
+                    <label class="text-body-sm font-bold text-on-surface" for="tableFloor">
+                        Vị trí tầng <span class="text-error">*</span>
+                    </label>
+                    <select name="floor" id="tableFloor" class="w-full bg-surface-container border border-outline rounded-xl p-3 text-body-md focus:border-primary focus:bg-background outline-none transition-all">
+                        <option value="1">Tầng 1</option>
+                        <option value="2">Tầng 2</option>
+                    </select>
+                </div>
+
                 <div class="flex flex-col gap-2" id="activeGroup" style="display:none;">
                     <label class="text-body-sm font-bold text-on-surface" for="tableActive">Trạng thái hoạt động</label>
                     <select name="active" id="tableActive" class="w-full bg-surface-container border border-outline rounded-xl p-3 text-body-md focus:border-primary focus:bg-background outline-none transition-all">
@@ -153,6 +226,43 @@
     </div>
 </div>
 
+<!-- Map Modal -->
+<div id="mapModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300">
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl w-full max-w-4xl shadow-xl overflow-hidden transform scale-95 transition-all duration-300 flex flex-col max-h-[90vh]">
+        <div class="px-6 py-5 border-b border-outline-variant flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[24px]">map</span>
+                <h2 class="font-headline-sm text-on-surface font-bold m-0">Sơ đồ bàn nước</h2>
+            </div>
+            <button type="button" class="bg-transparent border-none text-on-surface-variant hover:text-error cursor-pointer flex items-center" onclick="closeMapModal()">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <div class="p-6 overflow-y-auto flex-1 flex flex-col gap-8 bg-surface-container-low">
+            <div class="flex flex-col gap-3">
+                <h3 class="font-title-md text-on-surface font-bold m-0 text-center">Tầng 1</h3>
+                <div class="bg-white rounded-xl p-2 shadow-sm border border-outline-variant/50">
+                    <img th:src="@{/images/map/floor1.png}" alt="Sơ đồ tầng 1" class="w-full h-auto rounded-lg" />
+                </div>
+            </div>
+            
+            <div class="flex flex-col gap-3">
+                <h3 class="font-title-md text-on-surface font-bold m-0 text-center">Tầng 2</h3>
+                <div class="bg-white rounded-xl p-2 shadow-sm border border-outline-variant/50">
+                    <img th:src="@{/images/map/floor2.png}" alt="Sơ đồ tầng 2" class="w-full h-auto rounded-lg" />
+                </div>
+            </div>
+        </div>
+
+        <div class="px-6 py-4 border-t border-outline-variant bg-surface-container flex justify-end">
+            <button type="button" class="inline-flex items-center gap-1.5 bg-primary hover:opacity-90 text-white py-2.5 px-6 rounded-xl font-bold text-body-sm transition-all cursor-pointer border-none" onclick="closeMapModal()">
+                Đóng
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
     function openAddModal() {
         document.getElementById('modal-icon').innerText = 'add_circle';
@@ -160,6 +270,7 @@
         document.getElementById('tableForm').action = '/manager/tables/create';
         document.getElementById('tableId').value = '';
         document.getElementById('tableCapacity').value = '4';
+        document.getElementById('tableFloor').value = '1';
 
         document.getElementById('activeGroup').style.display = 'none';
 
@@ -170,12 +281,13 @@
         document.getElementById('tableCapacity').focus();
     }
 
-    function openEditModal(id, capacity, isActive) {
+    function openEditModal(id, capacity, isActive, floor) {
         document.getElementById('modal-icon').innerText = 'edit_note';
         document.getElementById('modal-title').innerText = 'Cập nhật bàn';
         document.getElementById('tableForm').action = '/manager/tables/update/' + id;
         document.getElementById('tableId').value = id;
         document.getElementById('tableCapacity').value = capacity;
+        document.getElementById('tableFloor').value = floor ? floor : '1';
 
         document.getElementById('activeGroup').style.display = 'flex';
 
@@ -199,9 +311,29 @@
     document.getElementById('tableModal').addEventListener('click', function(e) {
         if (e.target === this) closeTableModal();
     });
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeTableModal();
+    document.getElementById('mapModal').addEventListener('click', function(e) {
+        if (e.target === this) closeMapModal();
     });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeTableModal();
+            closeMapModal();
+        }
+    });
+
+    function openMapModal() {
+        const modal = document.getElementById('mapModal');
+        modal.classList.remove('opacity-0', 'pointer-events-none');
+        modal.querySelector('div').classList.remove('scale-95');
+        modal.querySelector('div').classList.add('scale-100');
+    }
+
+    function closeMapModal() {
+        const modal = document.getElementById('mapModal');
+        modal.classList.add('opacity-0', 'pointer-events-none');
+        modal.querySelector('div').classList.add('scale-95');
+        modal.querySelector('div').classList.remove('scale-100');
+    }
 </script>
 </body>
 </html>
