@@ -827,7 +827,7 @@ INSERT INTO product_images (product_id, image_url, is_primary, variant_id) VALUE
 -- HÌNH ẢNH CHO TRÀ ỔI HỒNG (product_id = 8)
 -- ============================================================
 INSERT INTO product_images (product_id, image_url, is_primary, variant_id) VALUES
-(8, 'images/products/traoihongs.webp', 1, 22),
+(8, 'images/products/traoihongS.webp', 1, 22),
 (8, 'images/products/traoihongM.jpg', 0, 23),
 (8, 'images/products/traoihongsizeL.webp', 0, 24);
 
@@ -851,7 +851,7 @@ INSERT INTO product_images (product_id, image_url, is_primary, variant_id) VALUE
 -- HÌNH ẢNH CHO TRÀ SỮA TRUYỀN THỐNG (product_id = 11)
 -- ============================================================
 INSERT INTO product_images (product_id, image_url, is_primary, variant_id) VALUES
-(11, 'images/products/trasuatruyenthongsizes.webp', 1, 31),
+(11, 'images/products/trasuatruyenthongsizeS.webp', 1, 31),
 (11, 'images/products/trasuatruyenthongM.jpg', 0, 32),
 (11, 'images/products/trasuatruyenthongsizeL.webp', 0, 33);
 
@@ -1244,7 +1244,7 @@ INSERT INTO product_images (product_id, image_url, is_primary, variant_id) VALUE
 INSERT INTO product_images (product_id, image_url, is_primary, variant_id) VALUES
 (27, 'images/products/suachuanepcamS.jpg', 1, 79),
 (27, 'images/products/suachuanepcamM.jpg', 0, 80),
-(27, 'images/products/suachuanepcamL.webp', 0, 81);
+(27, 'images/products/suachuanepcamL.jpg', 0, 81);
 
 -- ============================================================
 -- HÌNH ẢNH CHO HẠT CÀ PHÊ CẦU ĐẤT ARABICA (product_id = 28)
@@ -1418,10 +1418,10 @@ INSERT INTO loyalty_points (customer_id, transaction_type, points, balance_after
 GO
 
 -- 17. Bảng POLICIES (Luật / Chính sách điểm)
-INSERT INTO policies (policy_name, policy_type, action_type, currency_value, unit, status) VALUES
-(N'Đổi điểm', 'REDEEM', 'DISCOUNT', 100, 'VND', 1),
-(N'Tích điểm hóa đơn', 'EARN', 'ORDER', 0.01, '%', 1),
-(N'Tặng điểm Review', 'EARN', 'REVIEW', 5, 'points', 1);
+INSERT INTO policies (policy_name, policy_type, action_type, currency_value, unit, status, comment) VALUES
+(N'Đổi điểm', 'REDEEM', 'DISCOUNT', 100, 'VND', 1, N'1 điểm có giá trị'),
+(N'Tích điểm hóa đơn', 'EARN', 'ORDER', 0.01, '%', 1, null),
+(N'Tặng điểm Review', 'EARN', 'REVIEW', 5, 'points', 1, null);
 GO
 
 INSERT INTO map (map_name, url_map) VALUES
@@ -1490,12 +1490,12 @@ INSERT INTO cart_items (cart_id, product_id, variant_id, quantity, special_note)
 -- cart_id 3 → customer_id 10
 (3, 5,  13, 2, N'Ít đá'),                   -- Trà Đào Cam Sả Lớn x2
 (3, 6,  16, 1, N'50% đường'),               -- Trà Sữa Size L x1
-(3, 10, 27, 1, NULL),                       -- Ép Cam Ít Đường x1
+(3, 10, 28, 1, NULL),                       -- Ép Cam Ít Đường x1
 
 -- cart_id 4 → customer_id 11
 (4, 5,  13, 2, N'Ít đá'),                   -- Trà Đào Cam Sả Lớn x2
 (4, 6,  16, 1, N'50% đường'),               -- Trà Sữa Size L x1
-(4, 10, 27, 1, NULL);
+(4, 10, 28, 1, NULL);
 GO
 
 -- ============================================================
@@ -1601,6 +1601,8 @@ select * from system_logs
 
 select * from policies
 select * from reviews
+
+select * from payment_methods
 
 UPDATE users
 SET password_hash = '$2a$10$2.SdZIwqe6nJllpI4MnfQu/GOjqg0G.0kDADLa1DiEMAybWAyyFNO'

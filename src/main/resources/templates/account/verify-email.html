@@ -58,6 +58,11 @@
           <span th:text="${errorMessage}"></span>
       </div>
 
+      <div th:if="${attemptsLeft}" class="auth-alert-error">
+          <i data-feather="alert-circle" class="auth-icon-small"></i>
+          <span th:text="'You have ' + ${attemptsLeft} + ' attempt(s) left.'"></span>
+      </div>
+
       <form th:action="@{/verify-email}" method="post" class="auth-form">
         <!-- CSRF Token -->
         <p class="hidden">

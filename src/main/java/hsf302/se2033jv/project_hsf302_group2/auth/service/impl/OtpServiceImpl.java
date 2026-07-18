@@ -41,10 +41,12 @@ public class OtpServiceImpl implements OtpService {
 
     public boolean validateOtp(String email, String otp) {
         OtpData data = otpStorage.get(email);
-        System.out.println("[DEBUG] Input OTP: " + otp + " | Stored OTP: " + data.getOtp());
+
         if (data == null) {
             return false;
         }
+
+        System.out.println("[DEBUG] Input OTP: " + otp + " | Stored OTP: " + data.getOtp());
 
         // Náº¿u OTP Ä‘Ã£ háº¿t háº¡n -> xÃ³a vÃ  tráº£ false
         if (data.getExpiryTime().isBefore(LocalDateTime.now())) {

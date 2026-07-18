@@ -158,7 +158,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         }
 
         BigDecimal finalAmount = subtotal.subtract(discountAmount);
-        Integer pointsEarned = calculatePointsEarned(finalAmount);
+        Integer pointsEarned = calculatePointsEarned(subtotal);   // ← FIX: tính điểm theo giá gốc (subtotal), không trừ giảm giá
 
         // 8. Create order
         Order order = Order.builder()

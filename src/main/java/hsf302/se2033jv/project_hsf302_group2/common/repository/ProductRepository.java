@@ -66,7 +66,7 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 
     /**
      * Best-sellers: products with the most completed order details.
-     * Used on Homepage (Top 6).
+     * Used on Homepage (Top 8).
      */
     @Query("""
         SELECT p FROM Product p

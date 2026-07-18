@@ -113,6 +113,8 @@
 
                 <h3 class="font-headline-sm text-headline-sm text-primary m-0 mb-4 h-14" th:text="${policy.policyName}">Policy Name</h3>
 
+                <p class="text-on-surface-variant text-body-sm m-0 mb-6 h-10" th:if="${policy.comment}" th:text="${policy.comment}">Comment</p>
+                
                 <div class="flex items-baseline gap-1 mb-4 text-secondary">
                     <span class="font-extrabold text-[32px] tracking-tight"
                           th:text="${policy.unit != null and #strings.contains(policy.unit,'%')}
@@ -123,8 +125,6 @@
                           th:unless="${policy.unit != null and #strings.contains(policy.unit,'%')}"
                           th:text="${policy.unit}">unit</span>
                 </div>
-
-                <p class="text-on-surface-variant text-body-sm m-0 mb-6 h-10" th:if="${policy.comment}" th:text="${policy.comment}">Comment</p>
 
                 <div class="inline-flex bg-surface-container-high text-on-surface text-[12px] font-semibold px-3 py-1 rounded-full items-center gap-1">
                     <span class="material-symbols-outlined text-[14px]">sell</span>

@@ -128,8 +128,8 @@
             <div>
                 <div class="auth-input-group">
                   <div class="auth-input-icon-left"><i data-feather="lock" class="auth-icon"></i></div>
-                  <input id="confirmPassword" required type="password"
-                    class="auth-input-password" placeholder="Confirm Password" />
+                    <input id="confirmPassword" name="confirmPassword" required type="password"
+                           class="auth-input-password" placeholder="Confirm Password" />
                   <button type="button" onclick="togglePassword('confirmPassword', 'eye-icon-2')" class="auth-input-icon-right">
                     <i id="eye-icon-2" data-feather="eye" class="auth-icon"></i>
                   </button>
@@ -285,12 +285,18 @@
                 }
 
                 let passwordValid = true;
-                if (passwordField) { 
+                if (passwordField) {
                     if (!password) {
                         setError("error-password", "Required");
                         passwordValid = false;
+                    } else if (/\s/.test(password)) {
+                        setError("error-password", "Cannot contain spaces");
+                        passwordValid = false;
                     } else if (password.length < 8 || password.length > 64) {
                         setError("error-password", "8-64 characters");
+                        passwordValid = false;
+                    } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9\s]).+$/.test(password)) {
+                        setError("error-password", "Must contain uppercase, lowercase, number & special character");
                         passwordValid = false;
                     }
                 }

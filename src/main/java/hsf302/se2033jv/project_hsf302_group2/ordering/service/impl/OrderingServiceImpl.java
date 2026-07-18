@@ -211,7 +211,7 @@ public class OrderingServiceImpl implements OrderingService {
         if (totalAmount.compareTo(BigDecimal.ZERO) < 0) {
             totalAmount = BigDecimal.ZERO;
         }
-        int pointsEarned = calculatePointsEarned(totalAmount);   // đọc động từ policies
+        int pointsEarned = calculatePointsEarned(subtotal);   // ← FIX: tính điểm theo giá gốc (subtotal), không trừ giảm giá
 
         // 4. Create Order
         Order order = Order.builder()

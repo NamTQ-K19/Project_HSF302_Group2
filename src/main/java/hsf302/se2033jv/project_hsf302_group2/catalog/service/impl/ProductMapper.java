@@ -110,21 +110,32 @@ public class ProductMapper {
 
     private String resolveImage(List<ProductImage> images) {
         if (images == null || images.isEmpty()) return "/img/products/placeholder.jpg";
-        return images.stream()
+        String url = images.stream()
                 .filter(i -> Boolean.TRUE.equals(i.getIsPrimary()))
                 .map(ProductImage::getImageUrl)
                 .findFirst()
-                .map(this::normalizeUrl)
-                .orElse(normalizeUrl(images.get(0).getImageUrl()));
+                .orElse(images.get(0).getImageUrl());
+        return normalizeImageUrl(url);
     }
 
     private List<String> allImageUrls(List<ProductImage> images) {
         if (images == null) return List.of("/img/products/placeholder.jpg");
         return images.stream()
                 .map(ProductImage::getImageUrl)
-                .map(this::normalizeUrl)
+                .map(this::normalizeImageUrl)
                 .distinct()
                 .collect(Collectors.toList());
+    }
+
+    // MỚI: đảm bảo mọi URL trả ra đều là đường dẫn tuyệt đối (bắt đầu bằng "/")
+    // hoặc URL đầy đủ (http://...), không bao giờ để URL tương đối gây lỗi
+    // phân giải sai theo path trang hiện tại (VD: /products/11 vs /search)
+    private String normalizeImageUrl(String url) {
+        if (url == null || url.isBlank()) return "/img/products/placeholder.jpg";
+        if (url.startsWith("/") || url.startsWith("http://") || url.startsWith("https://")) {
+            return url;
+        }
+        return "/" + url;
     }
 
     private BigDecimal minPrice(List<ProductVariant> variants) {

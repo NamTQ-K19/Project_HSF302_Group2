@@ -13,6 +13,10 @@ import hsf302.se2033jv.project_hsf302_group2.auth.service.interfaces.UserService
 import hsf302.se2033jv.project_hsf302_group2.common.repository.RoleRepository;
 import hsf302.se2033jv.project_hsf302_group2.auth.service.interfaces.OtpService;
 import hsf302.se2033jv.project_hsf302_group2.auth.service.interfaces.PasswordService;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Controller
 public class RegisterController {
@@ -35,7 +39,9 @@ public class RegisterController {
     }
 
     @PostMapping(path = "/register")
-    public String doRegister(Model model, @ModelAttribute User user, HttpSession session){
+    public String doRegister(Model model, @ModelAttribute User user,
+                             @RequestParam(required = false) String confirmPassword,   // ← THÊM
+                             HttpSession session){
         String firstName = user.getFirstName();
         String lastName = user.getLastName();
         String username = user.getUsername();
@@ -99,6 +105,35 @@ public class RegisterController {
             return "account/register";
         }
 
+        // ← THÊM: Validate độ phức tạp mật khẩu theo đúng Business Rule đã tài liệu hóa
+        if (password == null || password.isBlank()) {
+            model.addAttribute("errorMessage", "Password cannot be null or blank");
+            return "account/register";
+        }
+        if (password.contains(" ")) {
+            model.addAttribute("errorMessage", "Password cannot contain spaces");
+            return "account/register";
+        }
+        if (password.length() < 8 || password.length() > 64) {
+            model.addAttribute("errorMessage", "Password must be between 8 and 64 characters");
+            return "account/register";
+        }
+        if (!password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^a-zA-Z0-9\\s]).+$")) {
+            model.addAttribute("errorMessage",
+                    "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character");
+            return "account/register";
+        }
+
+        // ← THÊM: Validate confirm password ở Backend
+        if (confirmPassword == null || confirmPassword.isBlank()) {
+            model.addAttribute("errorMessage", "Confirm password cannot be null or blank");
+            return "account/register";
+        }
+        if (!password.equals(confirmPassword)) {
+            model.addAttribute("errorMessage", "Password and confirm password do not match");
+            return "account/register";
+        }
+
         // All validations passed. Hash the password and set default fields.
         String hashPassword = BCrypt.hashpw(password, BCrypt.gensalt());
         user.setPasswordHash(hashPassword);
@@ -114,6 +149,7 @@ public class RegisterController {
         user.setRole(customerRole);
 
         session.setAttribute("pendingUser", user);
+        session.setAttribute("registerOtpAttempts", 0);   // Gap A: khởi tạo bộ đếm số lần nhập sai OTP
         passwordService.sendOtpForRegister(user.getEmail());
 
         return "redirect:/verify-email";
@@ -125,6 +161,11 @@ public class RegisterController {
 
         if (pendingUser == null) {
             return "redirect:/register?error=expired";
+        }
+
+        Integer attempts = (Integer) session.getAttribute("registerOtpAttempts");
+        if (attempts != null && attempts > 0) {
+            model.addAttribute("attemptsLeft", 3 - attempts);
         }
 
         model.addAttribute("email", pendingUser.getEmail());
@@ -143,10 +184,38 @@ public class RegisterController {
             return "account/register";
         }
 
+        Integer attempts = (Integer) session.getAttribute("registerOtpAttempts");
+        if (attempts == null) {
+            attempts = 0;
+        }
+
+        // Gap A: đã vượt quá số lần cho phép trước đó (phòng trường hợp F5/gửi lại form cũ)
+        if (attempts >= 3) {
+            session.removeAttribute("pendingUser");
+            session.removeAttribute("registerOtpAttempts");
+            String errorMessage = "You have exceeded the maximum number of attempts (3). Please register again.";
+            return "redirect:/register?errorMessage=" + URLEncoder.encode(errorMessage, StandardCharsets.UTF_8);
+        }
+
         boolean valid = otpService.validateOtp(pendingUser.getEmail(), otp);
 
         if (!valid) {
-            return "redirect:/login?errorMessage=The OTP code is incorrect or has expired!";
+            attempts++;
+            session.setAttribute("registerOtpAttempts", attempts);
+
+            // Gap A: vừa chạm mốc 3 lần sai -> buộc đăng ký lại từ đầu
+            if (attempts >= 3) {
+                session.removeAttribute("pendingUser");
+                session.removeAttribute("registerOtpAttempts");
+                String errorMessage = "You have exceeded the maximum number of attempts (3). Please register again.";
+                return "redirect:/register?errorMessage=" + URLEncoder.encode(errorMessage, StandardCharsets.UTF_8);
+            }
+
+            // Gap B: quay lại ĐÚNG trang verify-email để nhập lại ngay, thay vì /login
+            model.addAttribute("errorMessage", "The OTP code is incorrect or has expired!");
+            model.addAttribute("attemptsLeft", 3 - attempts);
+            model.addAttribute("email", pendingUser.getEmail());
+            return "account/verify-email";
         }
 
         try {
@@ -159,6 +228,7 @@ public class RegisterController {
         }
 
         session.removeAttribute("pendingUser");
+        session.removeAttribute("registerOtpAttempts");
 
         return "redirect:/login?successMessage=Your account has been successfully registered. Welcome aboard!";
     }

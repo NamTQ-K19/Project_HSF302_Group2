@@ -13,7 +13,7 @@ public class PasswordServiceImpl implements PasswordService {
     UserRepository userRepository;
     OtpService otpService;
     JavaMailSender mailSender;
-    private static final String PASSWORD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
+    private static final String PASSWORD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,64}$";
     private static final String EMAIL_REGEX = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
 
     public PasswordServiceImpl(UserRepository userRepository, OtpService otpService, JavaMailSender mailSender) {
@@ -70,7 +70,7 @@ public class PasswordServiceImpl implements PasswordService {
                     "    </div>\n" +
                     "    <div style=\"background-color: #ffffff; padding: 40px 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center;\">\n" +
                     "        <h2 style=\"color: #34495e; font-size: 22px; margin-top: 0; margin-bottom: 20px;\">OTP Verification Code</h2>\n" +
-                    "        <p style=\"color: #555; font-size: 16px; line-height: 1.6; margin-bottom: 30px;\">Hello,<br>Here is your secure OTP code. Please use it to verify your request. This code will expire in <strong style=\"color: #e74c3c;\">3 minutes</strong>.</p>\n" +
+                    "        <p style=\"color: #555; font-size: 16px; line-height: 1.6; margin-bottom: 30px;\">Hello,<br>Here is your secure OTP code. Please use it to verify your request. This code will expire in <strong style=\"color: #e74c3c;\">15 minutes</strong>.</p>\n" +
                     "        <div style=\"margin: 35px 0;\">\n" +
                     "            <span style=\"display: inline-block; padding: 15px 40px; font-size: 36px; font-weight: 800; color: #ffffff; background: linear-gradient(135deg, #3498db, #2980b9); border-radius: 8px; letter-spacing: 6px; box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);\">" + otp + "</span>\n" +
                     "        </div>\n" +
@@ -110,7 +110,7 @@ public class PasswordServiceImpl implements PasswordService {
         }
 
         if (!newPassword.matches(PASSWORD_REGEX)) {
-            throw new IllegalArgumentException("Password must be at least 8 characters long and include uppercase letters, " +
+            throw new IllegalArgumentException("Password must be 8-64 characters long and include uppercase letters, " +
                     "lowercase letters, numbers, and special characters!");
         }
 
