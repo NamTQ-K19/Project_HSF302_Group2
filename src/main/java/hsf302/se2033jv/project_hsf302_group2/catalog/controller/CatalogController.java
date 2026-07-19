@@ -92,11 +92,11 @@ public class CatalogController {
         return "catalog/search-results";
     }
 
-    // ── UC_03: View Product Details ───────────────────────────────────────────
+    // ── UC-13: View Product Details ───────────────────────────────────────────
 
     /**
-     * Product detail page — triggered by clicking a product card (TRG-01 UC_03).
-     * Returns 404 view when the product is hidden/deleted (AT1 UC_03).
+     * Product detail page — triggered by clicking a product card (TRG-01 UC-13).
+     * Returns 404 view when the product is hidden/deleted (AT1 UC-13).
      */
     @GetMapping("/products/{productId}")
     public String viewProductDetail(@PathVariable Integer productId, Model model) {

@@ -473,36 +473,6 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         }
     }
 
-    /**
-     * Cộng điểm tích lũy cho đơn hàng.
-     * ⚠️ CHƯA được gọi ở bất kỳ đâu trong use case Payment này.
-     * Sẽ được gọi từ use case "Cashier/Manager xác nhận hoàn tất đơn hàng"
-     * khi Order.status chuyển sang COMPLETED — use case đó chưa implement.
-     */
-    private void creditEarnedPoints(Order order) {
-        Integer pointsEarned = order.getPointsEarned();
-        if (pointsEarned == null || pointsEarned <= 0) return;
-
-        boolean alreadyCredited = loyaltyPointRepository.existsByReferenceTypeAndReferenceIdAndTransactionType(
-                ReferenceType.ORDER, order.getOrderId(), TransactionType.EARN);
-        if (alreadyCredited) return;
-
-        User customer = order.getUser();
-        Integer newBalance = getCurrentPoints(customer.getUserId()) + pointsEarned;
-
-        LoyaltyPoint earn = LoyaltyPoint.builder()
-                .customer(customer)
-                .transactionType(TransactionType.EARN)
-                .points(pointsEarned)
-                .balanceAfter(newBalance)
-                .referenceType(ReferenceType.ORDER)
-                .referenceId(order.getOrderId())
-                .note("Tích điểm từ đơn hàng #" + order.getOrderId())
-                .createdAt(LocalDateTime.now())
-                .build();
-        loyaltyPointRepository.save(earn);
-    }
-
     private void refundUsedPointsIfAny(Order order) {
         if (order.getDiscountAmount() == null || order.getDiscountAmount().compareTo(BigDecimal.ZERO) <= 0) return;
 

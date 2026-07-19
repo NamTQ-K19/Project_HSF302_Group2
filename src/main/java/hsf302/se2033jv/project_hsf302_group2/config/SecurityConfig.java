@@ -59,12 +59,13 @@ public class SecurityConfig {
                                 "/favicon.ico", "/webjars/**", "/search", "/loyalty-policy",
                                 "/customer/payment/vnpay/return", "/ai-chat/**")
                         .permitAll()
-                        .requestMatchers("/admin/**").authenticated()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/customer/profile/**").authenticated()
                         .requestMatchers("/customer/points/**").authenticated()
                         .requestMatchers("/customer/reservations/**").authenticated()
-                        .requestMatchers("/manager/**").authenticated()
-                        .requestMatchers("/cashier/**").authenticated()
+                        .requestMatchers("/manager/**").hasRole("MANAGER")
+                        .requestMatchers("/cashier/**").hasRole("CASHIER")
+                        .requestMatchers("/barista/**").hasRole("BARISTA")
                         .anyRequest().authenticated())
 
                 .formLogin(form -> form

@@ -5,6 +5,7 @@ import hsf302.se2033jv.project_hsf302_group2.admin.dto.request.ReservationConfig
 import hsf302.se2033jv.project_hsf302_group2.admin.dto.request.SystemConfigRequest;
 import hsf302.se2033jv.project_hsf302_group2.common.entity.SystemConfig;
 import hsf302.se2033jv.project_hsf302_group2.common.service.interfaces.ConfigService;
+import hsf302.se2033jv.project_hsf302_group2.common.util.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,19 +33,30 @@ public class AdminConfigController {
      */
     @GetMapping
     public String showConfigPage(Model model) {
-        // Lấy tất cả config theo nhóm từ Service
-        Map<String, List<SystemConfig>> groupedConfigs = configService.getGroupedConfigs();
+        try {
+            Map<String, List<SystemConfig>> groupedConfigs = configService.getGroupedConfigs();
 
-        // Lấy config cho từng nhóm
-        GeneralConfigRequest generalConfig = configService.getGeneralConfig();
-        SystemConfigRequest systemConfig = configService.getSystemConfig();
-        ReservationConfigRequest reservationConfig = configService.getReservationConfig();
+            GeneralConfigRequest generalConfig = configService.getGeneralConfig();
+            SystemConfigRequest systemConfig = configService.getSystemConfig();
+            ReservationConfigRequest reservationConfig = configService.getReservationConfig();
 
-        model.addAttribute("groupedConfigs", groupedConfigs);
-        model.addAttribute("configGroups", groupedConfigs.keySet());
-        model.addAttribute("generalConfig", generalConfig);
-        model.addAttribute("systemConfig", systemConfig);
-        model.addAttribute("reservationConfig", reservationConfig);
+            model.addAttribute("groupedConfigs", groupedConfigs);
+            model.addAttribute("configGroups", groupedConfigs.keySet());
+            model.addAttribute("generalConfig", generalConfig);
+            model.addAttribute("systemConfig", systemConfig);
+            model.addAttribute("reservationConfig", reservationConfig);
+            model.addAttribute("criticalError", false);   // MỚI
+
+        } catch (Exception e) {
+            // EX1: load config từ DB thất bại
+            log.error("Critical error loading system configuration: {}", e.getMessage(), e);
+            model.addAttribute("criticalError", true);   // MỚI
+            model.addAttribute("criticalErrorMessage",
+                    "Critical Error: Failed to load system configuration properties. "
+                            + "Please refresh the page or contact the technical team.");   // MỚI
+            // Không đưa groupedConfigs vào model → PHẦN 3 (config cards) tự động ẩn
+            // nhờ th:if có sẵn: groupedConfigs != null and !groupedConfigs.isEmpty()
+        }
 
         return "admin/system-config";
     }
@@ -66,7 +78,8 @@ public class AdminConfigController {
         }
 
         try {
-            configService.updateGeneralConfig(request);
+            Integer adminId = SecurityUtils.getCurrentUserId().intValue();   // MỚI
+            configService.updateGeneralConfig(request, adminId);             // sửa: thêm adminId
             redirectAttributes.addFlashAttribute("successMessage",
                     "Cập nhật cấu hình chung thành công!");
         } catch (Exception e) {
@@ -74,7 +87,6 @@ public class AdminConfigController {
             redirectAttributes.addFlashAttribute("errorMessage",
                     "Cập nhật thất bại: " + e.getMessage());
         }
-
         return "redirect:/admin/config";
     }
 
@@ -84,15 +96,17 @@ public class AdminConfigController {
     @PostMapping("/general/reset")
     public String resetGeneralConfig(RedirectAttributes redirectAttributes) {
         try {
+            Integer adminId = SecurityUtils.getCurrentUserId().intValue();
+
             // Reset từng config
-            configService.resetConfig("site_name");
-            configService.resetConfig("site_phone");
-            configService.resetConfig("site_email");
-            configService.resetConfig("site_address");
-            configService.resetConfig("site_hours");
-            configService.resetConfig("site_logo");
-            configService.resetConfig("site_favicon");
-            configService.resetConfig("site_description");
+            configService.resetConfig("site_name", adminId);
+            configService.resetConfig("site_phone", adminId);
+            configService.resetConfig("site_email", adminId);
+            configService.resetConfig("site_address", adminId);
+            configService.resetConfig("site_hours", adminId);
+            configService.resetConfig("site_logo", adminId);
+            configService.resetConfig("site_favicon", adminId);
+            configService.resetConfig("site_description", adminId);
 
             redirectAttributes.addFlashAttribute("successMessage",
                     "Đã reset tất cả cấu hình chung về giá trị mặc định!");
@@ -121,7 +135,8 @@ public class AdminConfigController {
         }
 
         try {
-            configService.updateSystemConfig(request);
+            Integer adminId = SecurityUtils.getCurrentUserId().intValue();
+            configService.updateSystemConfig(request, adminId);
             redirectAttributes.addFlashAttribute("successMessage",
                     "Cập nhật cấu hình hệ thống thành công!");
         } catch (Exception e) {
@@ -139,11 +154,13 @@ public class AdminConfigController {
     @PostMapping("/system/reset")
     public String resetSystemConfig(RedirectAttributes redirectAttributes) {
         try {
-            configService.resetConfig("maintenance_mode");
-            configService.resetConfig("maintenance_message");
-            configService.resetConfig("log_retention_days");
-            configService.resetConfig("default_language");
-            configService.resetConfig("items_per_page");
+            Integer adminId = SecurityUtils.getCurrentUserId().intValue();
+
+            configService.resetConfig("maintenance_mode", adminId);
+            configService.resetConfig("maintenance_message", adminId);
+            configService.resetConfig("log_retention_days", adminId);
+            configService.resetConfig("default_language", adminId);
+            configService.resetConfig("items_per_page", adminId);
 
             redirectAttributes.addFlashAttribute("successMessage",
                     "Đã reset tất cả cấu hình hệ thống về giá trị mặc định!");
@@ -172,7 +189,8 @@ public class AdminConfigController {
         }
 
         try {
-            configService.updateReservationConfig(request);
+            Integer adminId = SecurityUtils.getCurrentUserId().intValue();
+            configService.updateReservationConfig(request, adminId);
             redirectAttributes.addFlashAttribute("successMessage",
                     "Cập nhật cấu hình đặt bàn thành công!");
         } catch (Exception e) {
@@ -190,13 +208,15 @@ public class AdminConfigController {
     @PostMapping("/reservation/reset")
     public String resetReservationConfig(RedirectAttributes redirectAttributes) {
         try {
-            configService.resetConfig("reservation_deposit_amount");
-            configService.resetConfig("reservation_hold_minutes");
-            configService.resetConfig("reservation_max_per_day");
-            configService.resetConfig("reservation_max_advance_days");
-            configService.resetConfig("reservation_min_advance_hours");
-            configService.resetConfig("reservation_max_party_size");
-            configService.resetConfig("reservation_cancel_before_minutes");
+            Integer adminId = SecurityUtils.getCurrentUserId().intValue();
+
+            configService.resetConfig("reservation_deposit_amount", adminId);
+            configService.resetConfig("reservation_hold_minutes", adminId);
+            configService.resetConfig("reservation_max_per_day", adminId);
+            configService.resetConfig("reservation_max_advance_days", adminId);
+            configService.resetConfig("reservation_min_advance_hours", adminId);
+            configService.resetConfig("reservation_max_party_size", adminId);
+            configService.resetConfig("reservation_cancel_before_minutes", adminId);
 
             redirectAttributes.addFlashAttribute("successMessage",
                     "Đã reset tất cả cấu hình đặt bàn về giá trị mặc định!");
@@ -219,7 +239,8 @@ public class AdminConfigController {
             RedirectAttributes redirectAttributes) {
 
         try {
-            configService.updateConfig(configKey, configValue);
+            Integer adminId = SecurityUtils.getCurrentUserId().intValue();
+            configService.updateConfig(configKey, configValue, adminId);
             redirectAttributes.addFlashAttribute("successMessage",
                     "Cập nhật cấu hình thành công!");
         } catch (Exception e) {
@@ -240,7 +261,8 @@ public class AdminConfigController {
             RedirectAttributes redirectAttributes) {
 
         try {
-            int updatedCount = configService.updateBatchConfigs(allParams);
+            Integer adminId = SecurityUtils.getCurrentUserId().intValue();
+            int updatedCount = configService.updateBatchConfigs(allParams, adminId);
             redirectAttributes.addFlashAttribute("successMessage",
                     "Cập nhật thành công " + updatedCount + " cấu hình!");
         } catch (Exception e) {
@@ -261,7 +283,8 @@ public class AdminConfigController {
             RedirectAttributes redirectAttributes) {
 
         try {
-            configService.resetConfig(configKey);
+            Integer adminId = SecurityUtils.getCurrentUserId().intValue();
+            configService.resetConfig(configKey, adminId);
             redirectAttributes.addFlashAttribute("successMessage",
                     "Đã reset cấu hình " + configKey + " về giá trị mặc định!");
         } catch (Exception e) {

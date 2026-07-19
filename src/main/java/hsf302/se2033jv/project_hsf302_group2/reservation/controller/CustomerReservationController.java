@@ -63,22 +63,35 @@ public class CustomerReservationController {
             Authentication auth) {
 
         User user = profileService.getCurrentUser(auth.getName());
-        int pageSize = 10;
-        Pageable pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "createdAt"));
-        
-        Page<ReservationResponse> reservationPage = reservationService.getMyReservations(user.getUserId(), pageable);
-        
-        long pendingCount = reservationService.getMyReservations(user.getUserId()).stream()
-                .filter(r -> r.getStatus() == hsf302.se2033jv.project_hsf302_group2.common.enums.ReservationStatus.PENDING)
-                .count();
 
-        model.addAttribute("user", user);
-        model.addAttribute("reservationPage", reservationPage);
-        model.addAttribute("reservations", reservationPage.getContent());
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", reservationPage.getTotalPages());
-        model.addAttribute("pendingCount", pendingCount);
-        return "reservation/my-reservations";
+        try {
+            int pageSize = 10;
+            Pageable pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+            Page<ReservationResponse> reservationPage = reservationService.getMyReservations(user.getUserId(), pageable);
+
+            long pendingCount = reservationService.getMyReservations(user.getUserId()).stream()
+                    .filter(r -> r.getStatus() == hsf302.se2033jv.project_hsf302_group2.common.enums.ReservationStatus.PENDING)
+                    .count();
+
+            model.addAttribute("user", user);
+            model.addAttribute("reservationPage", reservationPage);
+            model.addAttribute("reservations", reservationPage.getContent());
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", reservationPage.getTotalPages());
+            model.addAttribute("pendingCount", pendingCount);
+            return "reservation/my-reservations";
+
+        } catch (Exception e) {
+            log.error("Error loading customer reservation list: {}", e.getMessage(), e);
+            model.addAttribute("user", user);
+            model.addAttribute("errorMessage", "Không thể tải danh sách đặt bàn. Vui lòng thử lại sau.");
+            model.addAttribute("reservations", java.util.Collections.emptyList());
+            model.addAttribute("currentPage", 0);
+            model.addAttribute("totalPages", 0);
+            model.addAttribute("pendingCount", 0L);
+            return "reservation/my-reservations";
+        }
     }
 
     // Trang xac nhan huy dat ban

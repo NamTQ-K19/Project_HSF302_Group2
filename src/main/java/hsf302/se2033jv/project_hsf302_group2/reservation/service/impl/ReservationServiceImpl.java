@@ -105,11 +105,20 @@ public class ReservationServiceImpl implements ReservationService {
                 });
 
         // 4. Cập nhật reservation
+        User canceller = User.builder().userId(customerId).build();
         reservation.setStatus(CANCELLED);
-        reservation.setCancelledBy(User.builder().userId(customerId).build());
+        reservation.setCancelledBy(canceller);
         reservation.setCancelledAt(LocalDateTime.now());
         reservation.setCancellationReason(request.getCancellationReason());
         reservationRepository.save(reservation);
+
+        // 5. Giải phóng liên kết bàn (dọn dữ liệu quan hệ reservation_tables)
+        releaseTables(reservation);
+
+        // 6. Ghi audit log — theo yêu cầu bổ sung (mục 4)
+        logSystemAction(canceller, "CANCEL_RESERVATION", "reservations",
+                reservation.getReservationId(),
+                "Khách hàng tự hủy đặt bàn: " + request.getCancellationReason());
     }
 
     @Override
@@ -282,52 +291,6 @@ public class ReservationServiceImpl implements ReservationService {
         Reservation reservation = reservationRepository
                 .findByReservationIdAndCustomerUserId(reservationId, customerId)
                 .orElseThrow(() -> new ReservationNotFoundException(reservationId));
-        return convertToResponse(reservation);
-    }
-
-    @Override
-    public Page<MakeReservationResponse> getCustomerReservations(Integer customerId, Pageable pageable) {
-        Page<Reservation> reservations = reservationRepository.findByCustomerUserId(customerId, pageable);
-        return reservations.map(this::convertToResponse);
-    }
-
-    @Override
-    @Transactional
-    public MakeReservationResponse cancelReservation(Integer reservationId, Integer customerId, String reason) {
-        log.info("Cancelling reservation {} by customer {}", reservationId, customerId);
-
-        Reservation reservation = reservationRepository
-                .findByReservationIdAndCustomerUserId(reservationId, customerId)
-                .orElseThrow(() -> new ReservationNotFoundException(reservationId));
-
-        if (reservation.getStatus() == ReservationStatus.CANCELLED) {
-            throw new ReservationException("Đặt bàn đã được hủy trước đó");
-        }
-
-        if (reservation.getStatus() == ReservationStatus.COMPLETED) {
-            throw new ReservationException("Không thể hủy đặt bàn đã hoàn thành");
-        }
-
-        reservation.setStatus(ReservationStatus.CANCELLED);
-        reservation.setCancellationReason(reason);
-        reservation.setCancelledAt(LocalDateTime.now());
-        reservation.setCancelledBy(userRepository.findById(customerId).orElse(null));
-
-        releaseTables(reservation);
-
-        ReservationDeposit deposit = depositRepository.findByReservationReservationId(reservationId).orElse(null);
-        if (deposit != null && deposit.getPaymentStatus() == DepositPaymentStatus.PAID) {
-            deposit.setPaymentStatus(DepositPaymentStatus.FORFEITED);
-            deposit.setRefundNote("Hủy đặt bàn - Không hoàn tiền cọc theo chính sách");
-            depositRepository.save(deposit);
-        }
-
-        reservationRepository.save(reservation);
-
-        User customer = userRepository.findById(customerId).orElse(null);
-        logSystemAction(customer, "CANCEL_RESERVATION", "reservations",
-                reservationId, "Hủy đặt bàn: " + reason);
-
         return convertToResponse(reservation);
     }
 

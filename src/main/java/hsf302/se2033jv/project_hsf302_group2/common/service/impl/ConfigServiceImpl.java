@@ -5,7 +5,9 @@ import hsf302.se2033jv.project_hsf302_group2.admin.dto.request.ReservationConfig
 import hsf302.se2033jv.project_hsf302_group2.admin.dto.request.SystemConfigRequest;
 import hsf302.se2033jv.project_hsf302_group2.common.entity.SystemConfig;
 import hsf302.se2033jv.project_hsf302_group2.common.repository.SystemConfigRepository;
+import hsf302.se2033jv.project_hsf302_group2.common.repository.UserRepository;
 import hsf302.se2033jv.project_hsf302_group2.common.service.interfaces.ConfigService;
+import hsf302.se2033jv.project_hsf302_group2.common.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -21,6 +23,7 @@ import java.util.*;
 public class ConfigServiceImpl implements ConfigService {
 
     private final SystemConfigRepository systemConfigRepository;
+    private final UserRepository userRepository;
 
     // CORE METHODS
     @Override
@@ -55,51 +58,55 @@ public class ConfigServiceImpl implements ConfigService {
 
     @Override
     @Transactional
-    public void updateConfig(String configKey, String configValue) {
+    public void updateConfig(String configKey, String configValue, Integer updatedByUserId) {
         SystemConfig config = systemConfigRepository.findByConfigKey(configKey)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy cấu hình: " + configKey));
         config.setConfigValue(configValue);
+        setUpdatedBy(config, updatedByUserId);   // MỚI
         systemConfigRepository.save(config);
         clearCache();
-        log.info("Config updated: {} = {}", configKey, configValue);
+        log.info("Config updated: {} = {} by user {}", configKey, configValue, updatedByUserId);
     }
 
     @Override
     @Transactional
-    public int updateBatchConfigs(Map<String, String> configs) {
+    public int updateBatchConfigs(Map<String, String> configs, Integer updatedByUserId) {
         int updatedCount = 0;
         for (Map.Entry<String, String> entry : configs.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
-
-            // Bỏ qua các param không phải config
-            if (key.startsWith("_") || key.equals("submit")) {
-                continue;
-            }
+            if (key.startsWith("_") || key.equals("submit")) continue;
 
             SystemConfig config = systemConfigRepository.findByConfigKey(key).orElse(null);
             if (config != null) {
                 config.setConfigValue(value);
+                setUpdatedBy(config, updatedByUserId);   // MỚI
                 systemConfigRepository.save(config);
                 updatedCount++;
             }
         }
         clearCache();
-        log.info("Batch updated {} configs", updatedCount);
+        log.info("Batch updated {} configs by user {}", updatedCount, updatedByUserId);
         return updatedCount;
     }
 
     @Override
     @Transactional
-    public void resetConfig(String configKey) {
+    public void resetConfig(String configKey, Integer updatedByUserId) {
         SystemConfig config = systemConfigRepository.findByConfigKey(configKey)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy cấu hình: " + configKey));
 
         String defaultValue = getDefaultValue(configKey);
         config.setConfigValue(defaultValue);
+        setUpdatedBy(config, updatedByUserId);   // MỚI
         systemConfigRepository.save(config);
         clearCache();
-        log.info("Config reset: {} = {}", configKey, defaultValue);
+        log.info("Config reset: {} = {} by user {}", configKey, defaultValue, updatedByUserId);
+    }
+
+    private void setUpdatedBy(SystemConfig config, Integer updatedByUserId) {
+        if (updatedByUserId == null) return;
+        userRepository.findById(updatedByUserId).ifPresent(config::setUpdatedBy);
     }
 
     @Override
@@ -125,7 +132,7 @@ public class ConfigServiceImpl implements ConfigService {
 
     @Override
     @Transactional
-    public void updateGeneralConfig(GeneralConfigRequest request) {
+    public void updateGeneralConfig(GeneralConfigRequest request, Integer updatedByUserId) {
         Map<String, String> configs = new LinkedHashMap<>();
         configs.put("site_name", request.getSiteName());
         configs.put("site_phone", request.getSitePhone());
@@ -136,8 +143,8 @@ public class ConfigServiceImpl implements ConfigService {
         configs.put("site_favicon", request.getSiteFavicon());
         configs.put("site_description", request.getSiteDescription());
 
-        updateBatchConfigs(configs);
-        log.info("General config updated");
+        updateBatchConfigs(configs, updatedByUserId);   // truyền xuống
+        log.info("General config updated by user {}", updatedByUserId);
     }
 
     @Override
@@ -168,7 +175,7 @@ public class ConfigServiceImpl implements ConfigService {
 
     @Override
     @Transactional
-    public void updateSystemConfig(SystemConfigRequest request) {
+    public void updateSystemConfig(SystemConfigRequest request, Integer adminId) {
         Map<String, String> configs = new LinkedHashMap<>();
         configs.put("maintenance_mode", String.valueOf(request.getMaintenanceMode()));
         configs.put("maintenance_message", request.getMaintenanceMessage());
@@ -176,8 +183,8 @@ public class ConfigServiceImpl implements ConfigService {
         configs.put("default_language", request.getDefaultLanguage());
         configs.put("items_per_page", String.valueOf(request.getItemsPerPage()));
 
-        updateBatchConfigs(configs);
-        log.info("System config updated");
+        updateBatchConfigs(configs, adminId);
+        log.info("System config updated by user {}", adminId);
     }
 
     @Override
@@ -207,7 +214,7 @@ public class ConfigServiceImpl implements ConfigService {
 
     @Override
     @Transactional
-    public void updateReservationConfig(ReservationConfigRequest request) {
+    public void updateReservationConfig(ReservationConfigRequest request, Integer adminId) {
         Map<String, String> configs = new LinkedHashMap<>();
         configs.put("reservation_deposit_amount", String.valueOf(request.getDepositAmount()));
         configs.put("reservation_hold_minutes", String.valueOf(request.getHoldMinutes()));
@@ -217,8 +224,8 @@ public class ConfigServiceImpl implements ConfigService {
         configs.put("reservation_max_party_size", String.valueOf(request.getMaxPartySize()));
         configs.put("reservation_cancel_before_minutes", String.valueOf(request.getCancelBeforeMinutes()));
 
-        updateBatchConfigs(configs);
-        log.info("Reservation config updated");
+        updateBatchConfigs(configs, adminId);
+        log.info("Reservation config updated by user {}", adminId);
     }
 
     @Override

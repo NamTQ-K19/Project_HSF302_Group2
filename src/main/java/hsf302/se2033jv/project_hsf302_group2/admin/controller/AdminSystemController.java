@@ -58,11 +58,16 @@ public class AdminSystemController {
             model.addAttribute("startDate", startDate != null ? startDate.toString() : null);
             model.addAttribute("endDate", endDate != null ? endDate.toString() : null);
 
-        } catch (Exception e) {
-            log.error("Error: {}", e.getMessage());
+        } catch (org.springframework.dao.DataAccessException e) {
+            log.error("Database error while retrieving system logs: {}", e.getMessage());
             model.addAttribute("logs", Collections.emptyList());
             model.addAttribute("totalElements", 0);
-            model.addAttribute("error", e.getMessage());
+            model.addAttribute("error", "Internal System Error. Unable to connect to the log database. Please try again later.");
+        } catch (Exception e) {
+            log.error("Unexpected error while retrieving system logs: {}", e.getMessage());
+            model.addAttribute("logs", Collections.emptyList());
+            model.addAttribute("totalElements", 0);
+            model.addAttribute("error", "Internal System Error. Unable to retrieve logs. Please try again later.");
         }
 
         return "admin/system-logs";

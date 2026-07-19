@@ -43,50 +43,6 @@ public class UserController {
         return "profile/view";
     }
 
-    @GetMapping("/edit")
-    public String editProfile(Model model, HttpSession httpSession) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String reminder = (String) httpSession.getAttribute("profileReminder");
-        if (!auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_CUSTOMER"))) {
-            return "redirect:/login";
-        }
-        User sessionUser = loggedUser.getLoggedCustomer();
-        if (sessionUser == null) {
-            return "redirect:/login";
-        }
-
-        if (reminder != null) {
-            model.addAttribute("reminder", reminder);
-            httpSession.removeAttribute("profileReminder");
-        }
-        User user = userService.getUserById(sessionUser.getUserId());
-        model.addAttribute("user", user);
-        return "profile/edit";
-    }
-
-    @PostMapping("/edit")
-    public String editProfile(@ModelAttribute(name = "user") User user, @RequestParam(value = "imgFile", required = false) MultipartFile imgFile, Model model) {
-        User sessionUser = null;
-        try {
-            sessionUser = loggedUser.getLoggedCustomer();
-            if (user.getUserId() != sessionUser.getUserId()) {
-                model.addAttribute("title", "Security Error");
-                model.addAttribute("errorMessage", "Update request denied due to invalid data.");
-                return "error-page";
-            }
-            if (user.getPhone() == null || user.getPhone().isEmpty()) {
-                return "redirect:/profile/edit";
-            }
-            userService.updateUser(user, imgFile);
-
-            return "redirect:/profile";
-        } catch (IllegalArgumentException e) {
-            model.addAttribute("errorMessage", e.getMessage());
-            model.addAttribute("user", sessionUser);
-            return "profile/edit";
-        }
-    }
-
     @GetMapping("/complete-google-account")
     public String completeGoogleAccount(Model model, HttpSession httpSession) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

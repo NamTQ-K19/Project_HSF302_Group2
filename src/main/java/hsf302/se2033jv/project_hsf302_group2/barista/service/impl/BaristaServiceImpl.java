@@ -40,36 +40,41 @@ public class BaristaServiceImpl implements BaristaService {
     @Override
     @Transactional
     public void updateItemStatus(Integer itemId, String status, String cancelReason) {
-        OrderDetail item = orderDetailRepository.findById(itemId).orElse(null);
-        if (item != null) {
-            try {
-                OrderItemStatus newStatus = OrderItemStatus.valueOf(status);
-                item.setItemStatus(newStatus);
-                if (newStatus == OrderItemStatus.CANCELLED && cancelReason != null) {
-                    item.setCancelReason(cancelReason);
-                }
-                orderDetailRepository.save(item);
+        OrderDetail item = orderDetailRepository.findById(itemId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy món với ID: " + itemId));
 
-                Order order = item.getOrder();
-                if (newStatus == OrderItemStatus.COMPLETED) {
-                    boolean allCompleted = true;
-                    for (OrderDetail d : order.getOrderDetails()) {
-                        if (d.getItemStatus() != OrderItemStatus.COMPLETED && d.getItemStatus() != OrderItemStatus.CANCELLED) {
-                            allCompleted = false;
-                            break;
-                        }
-                    }
-                    if (allCompleted) {
-                        order.setOrderStatus(OrderStatus.READY);
-                        orderRepository.save(order);
-                    }
-                } else if (newStatus == OrderItemStatus.PREPARING) {
-                    if (order.getOrderStatus() == OrderStatus.PENDING || order.getOrderStatus() == OrderStatus.CONFIRMED) {
-                        order.setOrderStatus(OrderStatus.PREPARING);
-                        orderRepository.save(order);
-                    }
+        OrderItemStatus newStatus = OrderItemStatus.valueOf(status); // ném IllegalArgumentException nếu sai, không còn bị nuốt
+
+        if (newStatus == OrderItemStatus.CANCELLED) {
+            if (cancelReason == null || cancelReason.isBlank()) {
+                throw new IllegalArgumentException("Lý do hủy món không được để trống.");
+            }
+            if (cancelReason.length() > 500) {
+                throw new IllegalArgumentException("Lý do hủy món không được vượt quá 500 ký tự.");
+            }
+            item.setCancelReason(cancelReason);
+        }
+
+        item.setItemStatus(newStatus);
+        orderDetailRepository.save(item);
+
+        Order order = item.getOrder();
+        if (newStatus == OrderItemStatus.COMPLETED) {
+            boolean allCompleted = true;
+            for (OrderDetail d : order.getOrderDetails()) {
+                if (d.getItemStatus() != OrderItemStatus.COMPLETED && d.getItemStatus() != OrderItemStatus.CANCELLED) {
+                    allCompleted = false;
+                    break;
                 }
-            } catch (IllegalArgumentException ignored) {
+            }
+            if (allCompleted) {
+                order.setOrderStatus(OrderStatus.READY);
+                orderRepository.save(order);
+            }
+        } else if (newStatus == OrderItemStatus.PREPARING) {
+            if (order.getOrderStatus() == OrderStatus.PENDING || order.getOrderStatus() == OrderStatus.CONFIRMED) {
+                order.setOrderStatus(OrderStatus.PREPARING);
+                orderRepository.save(order);
             }
         }
     }

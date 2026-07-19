@@ -40,12 +40,6 @@ public interface ReservationService {
     // Lấy chi tiết đặt bàn
     MakeReservationResponse getReservationDetail(Integer reservationId, Integer customerId);
 
-    // Lấy danh sách đặt bàn của khách hàng
-    Page<MakeReservationResponse> getCustomerReservations(Integer customerId, Pageable pageable);
-
-    // Hủy đặt bàn
-    MakeReservationResponse cancelReservation(Integer reservationId, Integer customerId, String reason);
-
     // Thanh toán tiền cọc
     ReservationConfirmationResponse payDeposit(DepositPaymentRequest request, Integer customerId);
 

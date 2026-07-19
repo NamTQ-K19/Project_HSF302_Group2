@@ -2,23 +2,22 @@ package hsf302.se2033jv.project_hsf302_group2.barista.controller;
 
 import hsf302.se2033jv.project_hsf302_group2.barista.dto.BaristaOrderDTO;
 import hsf302.se2033jv.project_hsf302_group2.barista.service.interfaces.BaristaService;
-import hsf302.se2033jv.project_hsf302_group2.common.entity.Order;
 import hsf302.se2033jv.project_hsf302_group2.common.entity.OrderDetail;
 import hsf302.se2033jv.project_hsf302_group2.common.enums.OrderItemStatus;
-import hsf302.se2033jv.project_hsf302_group2.common.enums.OrderStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Controller
+@PreAuthorize("hasRole('BARISTA')")
 public class BaristaController {
 
     @Autowired
@@ -34,12 +33,18 @@ public class BaristaController {
 
     @PostMapping("/barista/item/status")
     public String updateItemStatus(
-            @RequestParam("itemId") Integer itemId, 
+            @RequestParam("itemId") Integer itemId,
             @RequestParam("status") String status,
-            @RequestParam(required = false) String cancelReason) {
-        
-        baristaService.updateItemStatus(itemId, status, cancelReason);
-        
+            @RequestParam(required = false) String cancelReason,
+            RedirectAttributes redirectAttributes) {
+
+        try {
+            baristaService.updateItemStatus(itemId, status, cancelReason);
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error",
+                    "Trạng thái không hợp lệ: \"" + status + "\". Vui lòng chọn lại.");
+        }
+
         return "redirect:/barista/dashboard";
     }
 

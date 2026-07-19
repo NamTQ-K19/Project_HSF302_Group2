@@ -864,3 +864,17 @@
         font-size: 18px;
     }
 }
+
+.config-critical-error {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #fdf0ee;
+    border-left: 4px solid #ba1a1a;
+    color: #ba1a1a;
+    padding: 16px 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+.config-critical-error strong { display: block; margin-bottom: 4px; }
+.config-critical-error p { margin: 0; font-size: 14px; }

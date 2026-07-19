@@ -75,8 +75,10 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .orderTypeLabel(getOrderTypeLabel(order))
                 .tableNumber(order.getTable() != null ? "T" + String.format("%02d", order.getTable().getTableId()) : null)
                 .orderDate(order.getCreatedAt())
-                .customerName(order.getUser().getFirstName() + " " + order.getUser().getLastName())
-                .customerEmail(order.getUser().getEmail())
+                .customerName(order.getUser() != null
+                        ? (order.getUser().getFirstName() + " " + order.getUser().getLastName()).trim()
+                        : "Khách vãng lai")
+                .customerEmail(order.getUser() != null ? order.getUser().getEmail() : null)
                 .items(items)
                 .subtotal(order.getSubtotal())
                 .discountAmount(order.getDiscountAmount())

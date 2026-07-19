@@ -5,6 +5,7 @@ import hsf302.se2033jv.project_hsf302_group2.common.enums.*;
 import hsf302.se2033jv.project_hsf302_group2.common.exception.BusinessException;
 import hsf302.se2033jv.project_hsf302_group2.common.exception.ResourceNotFoundException;
 import hsf302.se2033jv.project_hsf302_group2.common.repository.*;
+import hsf302.se2033jv.project_hsf302_group2.customer.service.interfaces.LoyaltyPointService;
 import hsf302.se2033jv.project_hsf302_group2.ordering.dto.request.*;
 import hsf302.se2033jv.project_hsf302_group2.ordering.dto.response.*;
 import hsf302.se2033jv.project_hsf302_group2.ordering.service.interfaces.OrderingService;
@@ -42,6 +43,7 @@ public class OrderingServiceImpl implements OrderingService {
     private final LoyaltyPointRepository loyaltyPointRepository;
     private final PolicyRepository policyRepository;
     private final InvoiceService invoiceService;
+    private final LoyaltyPointService loyaltyPointService;
 
     private static final String DEFAULT_IMAGE = "/images/default-product.png";
 
@@ -264,19 +266,6 @@ public class OrderingServiceImpl implements OrderingService {
         if (Boolean.TRUE.equals(request.getIsPaidImmediately())) {
             paymentStatus = PaymentStatus.SUCCESS;
             paidAt = LocalDateTime.now();
-            if (pointsEarned > 0 && customer != null) {
-                LoyaltyPoint lp = LoyaltyPoint.builder()
-                        .customer(customer)
-                        .transactionType(TransactionType.EARN)
-                        .points(pointsEarned)
-                        .balanceAfter(getCustomerPoints(customer.getUserId()) + pointsEarned)
-                        .referenceType(ReferenceType.ORDER)
-                        .referenceId(savedOrder.getOrderId())
-                        .note("Tích điểm từ đơn POS #" + savedOrder.getOrderId())
-                        .createdAt(LocalDateTime.now())
-                        .build();
-                loyaltyPointRepository.save(lp);
-            }
         }
 
         String txRef = "POS-" + savedOrder.getOrderId() + "-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
@@ -398,6 +387,11 @@ public class OrderingServiceImpl implements OrderingService {
         order.setUpdatedAt(LocalDateTime.now());
         Order savedOrder = orderRepository.save(order);
 
+        // Cộng điểm tích lũy CHỈ khi đơn hàng chính thức hoàn tất (COMPLETED)
+        if (request.getStatus() == OrderStatus.COMPLETED) {
+            loyaltyPointService.creditOrderPoints(savedOrder);
+        }
+
         // Update items status if order is completed/cancelled
         List<OrderDetail> details = orderDetailRepository.findByOrder_OrderId(orderId);
         if (request.getStatus() == OrderStatus.COMPLETED || request.getStatus() == OrderStatus.CANCELLED || request.getStatus() == OrderStatus.PREPARING || request.getStatus() == OrderStatus.READY) {
@@ -453,21 +447,6 @@ public class OrderingServiceImpl implements OrderingService {
             invoiceService.resendInvoiceEmail(orderId);
         } catch (Exception e) {
             log.error("Không thể tự động gửi email hóa đơn cho đơn #{}: {}", orderId, e.getMessage(), e);
-        }
-
-        // Earn loyalty points if customer is present and points earned > 0
-        if (order.getPointsEarned() != null && order.getPointsEarned() > 0 && order.getUser() != null) {
-            LoyaltyPoint lp = LoyaltyPoint.builder()
-                    .customer(order.getUser())
-                    .transactionType(TransactionType.EARN)
-                    .points(order.getPointsEarned())
-                    .balanceAfter(getCustomerPoints(order.getUser().getUserId()) + order.getPointsEarned())
-                    .referenceType(ReferenceType.ORDER)
-                    .referenceId(order.getOrderId())
-                    .note("Tích điểm từ thanh toán đơn #" + order.getOrderId())
-                    .createdAt(LocalDateTime.now())
-                    .build();
-            loyaltyPointRepository.save(lp);
         }
 
         // If order was pending, confirm it

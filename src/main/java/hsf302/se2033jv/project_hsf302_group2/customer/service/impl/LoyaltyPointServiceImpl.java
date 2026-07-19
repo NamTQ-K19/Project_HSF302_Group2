@@ -1,6 +1,8 @@
 package hsf302.se2033jv.project_hsf302_group2.customer.service.impl;
 
 import hsf302.se2033jv.project_hsf302_group2.common.entity.LoyaltyPoint;
+import hsf302.se2033jv.project_hsf302_group2.common.entity.Order;
+import hsf302.se2033jv.project_hsf302_group2.common.enums.ReferenceType;
 import hsf302.se2033jv.project_hsf302_group2.common.enums.TransactionType;
 import hsf302.se2033jv.project_hsf302_group2.customer.dto.response.LoyaltyPointResponse;
 import hsf302.se2033jv.project_hsf302_group2.customer.dto.request.LoyaltyPointFilterRequest;
@@ -63,6 +65,30 @@ public class LoyaltyPointServiceImpl implements LoyaltyPointService {
         dto.setNote(lp.getNote());
         dto.setCreatedAt(lp.getCreatedAt());
         return dto;
+    }
+
+    @Override
+    public void creditOrderPoints(Order order) {
+        Integer pointsEarned = order.getPointsEarned();
+        if (pointsEarned == null || pointsEarned <= 0) return;
+
+        boolean alreadyCredited = loyaltyPointRepository.existsByReferenceTypeAndReferenceIdAndTransactionType(
+                ReferenceType.ORDER, order.getOrderId(), TransactionType.EARN);
+        if (alreadyCredited) return;
+
+        int newBalance = getCurrentBalance(order.getUser().getUserId()) + pointsEarned;
+
+        LoyaltyPoint earn = LoyaltyPoint.builder()
+                .customer(order.getUser())
+                .transactionType(TransactionType.EARN)
+                .points(pointsEarned)
+                .balanceAfter(newBalance)
+                .referenceType(ReferenceType.ORDER)
+                .referenceId(order.getOrderId())
+                .note("Tích điểm từ đơn hàng #" + order.getOrderId())
+                .createdAt(java.time.LocalDateTime.now())
+                .build();
+        loyaltyPointRepository.save(earn);
     }
 
 }

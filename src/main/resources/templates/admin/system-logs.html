@@ -32,6 +32,14 @@
         </button>
     </header>
 
+    <div th:if="${error}" class="mb-6 flex items-center gap-3 bg-error-container text-on-error-container px-5 py-4 rounded-2xl">
+        <span class="material-symbols-outlined text-[24px]">error</span>
+        <div>
+            <div class="font-bold">Lỗi hệ thống</div>
+            <div class="text-body-sm" th:text="${error}">Không thể tải nhật ký hệ thống.</div>
+        </div>
+    </div>
+
     <div class="p-8 max-w-[1400px] w-full mx-auto flex flex-col gap-6">
         <!-- Filter Section -->
         <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm">
@@ -40,7 +48,7 @@
                     <label class="block text-body-sm font-bold text-on-surface mb-2">Từ khóa</label>
                     <div class="relative">
                         <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
-                        <input type="text" name="keyword" placeholder="Tìm kiếm..." th:value="${keyword}"
+                        <input type="text" name="keyword" placeholder="Tìm theo tên đăng nhập hoặc email..." th:value="${keyword}"
                                class="w-full bg-surface-container border border-outline rounded-xl py-3 pl-10 pr-3 text-body-md focus:border-primary outline-none" />
                     </div>
                 </div>
@@ -152,7 +160,7 @@
                         </td>
                         <td class="py-4 px-6 text-body-sm text-on-surface-variant whitespace-nowrap" th:text="${log.formattedCreatedAt != null ? log.formattedCreatedAt : '-'}">-</td>
                     </tr>
-                    <tr th:if="${logs == null or logs.isEmpty()}">
+                    <tr th:if="${(logs == null or logs.isEmpty()) and error == null}">
                         <td colspan="7" class="py-12 text-center text-on-surface-variant/50">
                             <span class="material-symbols-outlined text-[48px] block mb-2 opacity-50">receipt_long</span>
                             Không tìm thấy nhật ký nào

@@ -19,33 +19,15 @@ public class SystemServiceImpl implements SystemService {
 
     @Override
     public Page<SystemLogResponse> getSystemLogs(String keyword, String action, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
-        boolean hasKeyword = keyword != null && !keyword.isBlank();
-        boolean hasAction = action != null && !action.isBlank();
-        boolean hasStartDate = startDate != null;
-        boolean hasEndDate = endDate != null;
-
-        LocalDateTime effectiveStartDate = hasStartDate ? startDate : LocalDateTime.now().minusDays(30);
-        LocalDateTime effectiveEndDate = hasEndDate ? endDate : LocalDateTime.now();
+        LocalDateTime effectiveStartDate = startDate != null ? startDate : LocalDateTime.now().minusDays(30);
+        LocalDateTime effectiveEndDate = endDate != null ? endDate : LocalDateTime.now();
 
         if (effectiveStartDate.isAfter(effectiveEndDate)) {
             throw new IllegalArgumentException("Start date must be before end date");
         }
 
-        Page<SystemLog> logsPage;
-
-        if (hasKeyword && hasAction) {
-            logsPage = systemLogRepository.findByTargetTypeContainingIgnoreCaseOrActionContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndActionAndCreatedAtBetween(
-                    keyword, keyword, keyword, action, effectiveStartDate, effectiveEndDate, pageable);
-        } else if (hasKeyword) {
-            logsPage = systemLogRepository.findByTargetTypeContainingIgnoreCaseOrActionContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndCreatedAtBetween(
-                    keyword, keyword, keyword, effectiveStartDate, effectiveEndDate, pageable);
-        } else if (hasAction) {
-            logsPage = systemLogRepository.findByActionAndCreatedAtBetween(
-                    action, effectiveStartDate, effectiveEndDate, pageable);
-        } else {
-            logsPage = systemLogRepository.findByCreatedAtBetween(
-                    effectiveStartDate, effectiveEndDate, pageable);
-        }
+        Page<SystemLog> logsPage = systemLogRepository.findWithFilters(
+                keyword, action, effectiveStartDate, effectiveEndDate, pageable);
 
         return logsPage.map(this::convertToResponse);
     }

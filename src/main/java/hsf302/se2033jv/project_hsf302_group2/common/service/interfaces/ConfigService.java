@@ -14,24 +14,26 @@ public interface ConfigService {
     Map<String, String> getAllConfigs();
     String getConfig(String key, String defaultValue);
     Map<String, List<SystemConfig>> getGroupedConfigs();
-    void updateConfig(String configKey, String configValue);
-    int updateBatchConfigs(Map<String, String> configs);
-    void resetConfig(String configKey);
+
+    void updateConfig(String configKey, String configValue, Integer updatedByUserId);
+    int updateBatchConfigs(Map<String, String> configs, Integer updatedByUserId);
+    void resetConfig(String configKey, Integer updatedByUserId);
+
     void clearCache();
 
     // ===== GENERAL CONFIG =====
     GeneralConfigRequest getGeneralConfig();
-    void updateGeneralConfig(GeneralConfigRequest request);
+    void updateGeneralConfig(GeneralConfigRequest request, Integer updatedByUserId);
     Map<String, String> getGeneralConfigMap();
 
     // ===== SYSTEM CONFIG =====
     SystemConfigRequest getSystemConfig();
-    void updateSystemConfig(SystemConfigRequest request);
+    void updateSystemConfig(SystemConfigRequest request, Integer updatedByUserId);
     Map<String, String> getSystemConfigMap();
 
     // ===== RESERVATION CONFIG =====
     ReservationConfigRequest getReservationConfig();
-    void updateReservationConfig(ReservationConfigRequest request);
+    void updateReservationConfig(ReservationConfigRequest request, Integer updatedByUserId);
     Map<String, String> getReservationConfigMap();
 
     // ===== GETTER METHODS (for other services) =====

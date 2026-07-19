@@ -20,6 +20,10 @@
         <div class="clock" id="live-clock">--:--</div>
     </div>
 
+    <div th:if="${error}" style="background:#fee2e2; color:#991b1b; padding:12px 16px; border-radius:8px; margin:0 24px 12px;">
+        <span th:text="${error}"></span>
+    </div>
+
     <div class="content-body">
         <div class="orders-container">
 
@@ -121,7 +125,7 @@
                 <button type="button" class="reason-btn" onclick="selectReason('Khác')">Khác...</button>
             </div>
             <div id="custom-reason-container" style="display: none; margin-top: 1rem;">
-                <input type="text" id="custom-reason-input" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-family: inherit; font-size: 0.95rem;" placeholder="Nhập lý do hủy..." oninput="updateCustomReason()">
+                <input type="text" id="custom-reason-input" maxlength="500" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-family: inherit; font-size: 0.95rem;" placeholder="Nhập lý do hủy... (tối đa 500 ký tự)" oninput="updateCustomReason()">
             </div>
         </div>
         <form th:action="@{/barista/item/status}" method="post" style="margin:0;">

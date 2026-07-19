@@ -71,6 +71,19 @@
         </div>
 
         <!-- ════════════════════════════════════════════════════════ -->
+        <!-- CRITICAL ERROR BANNER (EX1)                               -->
+        <!-- ════════════════════════════════════════════════════════ -->
+        <div th:if="${criticalError}" class="config-critical-error">
+            <span class="material-symbols-outlined">error</span>
+            <div>
+                <strong>Lỗi nghiêm trọng</strong>
+                <p th:text="${criticalErrorMessage}">
+                    Không thể tải cấu hình hệ thống. Vui lòng tải lại trang hoặc liên hệ đội kỹ thuật.
+                </p>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════ -->
         <!-- PHẦN 3: CONFIG CARDS - MỖI NHÓM 1 CARD RIÊNG          -->
         <!-- ════════════════════════════════════════════════════════ -->
 

@@ -10,10 +10,6 @@ public interface UserService {
     User findByUsername(String username);
     User save(User user);
     User getUserById(int userId);
-    void updateUser(User user, MultipartFile imgFile);
     void changePassword(int userId, String newPassword, String confirmPassword, String currentPassword);
     void completeGoogleAccount(int userId, String username, String phoneNumber, String newPassword, String confirmPassword);
-    User getUserByPhone(String phoneNumber);
-    void saveUser(User user);
-    List<User> getAllUsers();
 }

@@ -31,19 +31,24 @@ function selectReason(reason) {
             b.classList.remove('selected');
         }
     });
-    
+
     if (reason === 'Khác') {
         document.getElementById('custom-reason-container').style.display = 'block';
         document.getElementById('custom-reason-input').focus();
         document.getElementById('modal-cancel-reason').value = document.getElementById('custom-reason-input').value;
+        // Chưa nhập gì thì KHÔNG bật nút submit — chờ updateCustomReason() xử lý khi có nội dung
+        document.getElementById('btn-submit-report').disabled = true;
     } else {
         document.getElementById('custom-reason-container').style.display = 'none';
         document.getElementById('modal-cancel-reason').value = reason;
+        // Các lý do dựng sẵn luôn có nội dung -> bật nút submit ngay
+        document.getElementById('btn-submit-report').disabled = false;
     }
-    // Enable submit button
-    document.getElementById('btn-submit-report').disabled = false;
 }
 
 function updateCustomReason() {
-    document.getElementById('modal-cancel-reason').value = document.getElementById('custom-reason-input').value;
+    const value = document.getElementById('custom-reason-input').value.trim();
+    document.getElementById('modal-cancel-reason').value = value;
+    // Chỉ bật nút submit khi ô nhập thực sự có nội dung
+    document.getElementById('btn-submit-report').disabled = (value.length === 0);
 }

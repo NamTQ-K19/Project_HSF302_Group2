@@ -45,89 +45,6 @@ public class UserServiceImpl implements UserService {
         return userRepository.getUserByUserId(userId);
     }
 
-    public void updateUser(User user, MultipartFile imgFile) {
-        User existingUser = userRepository.findById(user.getUserId()).orElseThrow(() -> new IllegalArgumentException("User not found!"));
-        
-        // We consider Google accounts as having a specific password hash
-        boolean isGoogleAccount = existingUser.getPasswordHash().equals("GOOGLE_OAUTH_DUMMY_HASH");
-
-        if (!isGoogleAccount) {
-            if (!existingUser.getEmail().equalsIgnoreCase(user.getEmail())) {
-                if (!user.getEmail().matches(EMAIL_REGEX)) {
-                    throw new IllegalArgumentException("Email format is invalid! Example: example@gmail.com");
-                }
-                existingUser.setEmail(user.getEmail());
-            }
-            if (imgFile != null && !imgFile.isEmpty()) {
-                try {
-                    String uploadDir = "D:/SWP/Project/uploads/";
-                    String fileName = imgFile.getOriginalFilename();
-
-                    Path filePath = Paths.get(uploadDir + fileName);
-                    Files.copy(imgFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-                    existingUser.setAvatarUrl(fileName);
-                } catch (IOException e) {
-                    throw new IllegalArgumentException("Error uploading image!");
-                }
-            }
-        }
-
-        if (!user.getUsername().equalsIgnoreCase(existingUser.getUsername())) {
-            if (user.getUsername() == null || user.getUsername().isEmpty()) {
-                throw new IllegalArgumentException("The username cannot be empty.");
-            }
-            if (!user.getUsername().matches("^[a-z_][a-z0-9_]{0,14}$")) {
-                throw new IllegalArgumentException("The username must be 2-15 characters long and contain only lowercase letters, digits, and underscores (_).");
-            }
-            existingUser.setUsername(user.getUsername());
-        }
-
-        if (!user.getPhone().equalsIgnoreCase(existingUser.getPhone())) {
-            if (user.getPhone() == null || user.getPhone().isEmpty()) {
-                throw new IllegalArgumentException("The phone number cannot be empty.");
-            }
-            if (user.getPhone().length() != 10) {
-                throw new IllegalArgumentException("The phone number must be 10 digits!");
-            }
-            if (!user.getPhone().matches("\\d{10}")) {
-                throw new IllegalArgumentException("The phone number must contain only digits!");
-            }
-            if (!user.getPhone().matches("^(0)(?!\\1{9})\\d{9}$")) {
-                throw new IllegalArgumentException("Invalid phone number! It must start with 0, contain exactly 10 digits, and not be all repeated digits.");
-            }
-            existingUser.setPhone(user.getPhone());
-        }
-
-        if (user.getFirstName() == null || user.getFirstName().isEmpty()) {
-            throw new IllegalArgumentException("The first name cannot be empty.");
-        }
-        if (user.getLastName() == null || user.getLastName().isEmpty()) {
-            throw new IllegalArgumentException("The last name cannot be empty.");
-        }
-        if (!user.getFirstName().matches("^[A-Za-zÃ€-á»¹\\s]+$") || !user.getLastName().matches("^[A-Za-zÃ€-á»¹\\s]+$")) {
-            throw new IllegalArgumentException("Names can only contain letters and spaces!");
-        }
-        existingUser.setFirstName(user.getFirstName());
-        existingUser.setLastName(user.getLastName());
-
-        try {
-            userRepository.save(existingUser);
-        } catch (DataIntegrityViolationException e) {
-            String message = e.getMessage();
-            if (message != null) {
-                if (message.contains("uq_users_username")) {
-                    throw new IllegalArgumentException("The username already exists, please use a different one!");
-                } else if (message.contains("uq_users_phone")) {
-                    throw new IllegalArgumentException("The phone number already exists, please use a different one!");
-                } else if (message.contains("uq_users_email")) {
-                    throw new IllegalArgumentException("The email address already exists, please use a different one!");
-                }
-            }
-            throw new IllegalArgumentException("Duplicate data detected!");
-        }
-    }
-
     public void changePassword(int userId, String newPassword, String confirmPassword, String currentPassword) {
         User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found!"));
         if (currentPassword == null || currentPassword.isEmpty()) {
@@ -208,17 +125,5 @@ public class UserServiceImpl implements UserService {
         user.setPhone(phoneNumber);
         user.setPasswordHash(BCrypt.hashpw(newPassword, BCrypt.gensalt()));
         userRepository.save(user);
-    }
-
-    public User getUserByPhone(String phoneNumber) {
-        return userRepository.findByPhone(phoneNumber);
-    }
-
-    public void saveUser(User user) {
-        userRepository.save(user);
-    }
-
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
     }
 }
